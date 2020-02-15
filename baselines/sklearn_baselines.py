@@ -1,7 +1,5 @@
 from sklearn import tree, ensemble, neighbors, svm, covariance
 
-from baselines.sklearn_utils import get_sklearn_model_results
-
 
 # SVM
 def svm_svc(X_train, y_train):
