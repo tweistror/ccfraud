@@ -81,7 +81,7 @@ for i in range(iteration_count):
     clf = svm_svc(x_train, y_train)
     prec_svm, reca_svm, f1_svm, acc_svm = run_classification(x_test, y_test, clf, 'fraud-prediction')
 
-    # SVM
+    # kNN
     clf = knn(x_train, y_train)
     prec_knn, reca_knn, f1_knn, acc_knn = run_classification(x_test, y_test, clf, 'fraud-prediction')
 
