@@ -3,8 +3,10 @@ import numpy as np
 from utils.list_operations import sample_shuffle
 
 
-def sample_data_for_occ(x_ben, x_fraud, ratio, dataset_string):
-    n_training = int(len(x_ben) * ratio)
+def sample_data_for_occ(x_ben, x_fraud, dataset_string):
+    # TODO: Handle different datasets
+
+    n_training = len(x_ben)
     n_test = len(x_fraud)
 
     x_ben, x_fraud = sample_shuffle(x_ben), sample_shuffle(x_fraud)

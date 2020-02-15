@@ -54,7 +54,7 @@ for i in range(iteration_count):
     if dataset_string == "paysim":
         print(dataset_string)
     elif dataset_string == "ccfraud":
-        x_train, x_test, y_train, y_test = sample_data_for_occ(x_ben, x_fraud, train_test_ratio, dataset_string)
+        x_train, x_test, y_train, y_test = sample_data_for_occ(x_ben, x_fraud, dataset_string)
     elif dataset_string == "ieee":
         print(dataset_string)
 
