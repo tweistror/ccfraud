@@ -1,3 +1,5 @@
+import numpy as np
+
 from utils.list_operations import sample_shuffle
 
 
