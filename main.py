@@ -39,20 +39,22 @@ elif dataset_string == "ieee":
 occ_train_size = 700
 train_test_ratio = 0.8
 
-baseline_train_size = 1000
-baseline_negative_samples = 10
+baseline_train_size = 700
+baseline_negative_samples = 17
 
 iteration_count = 10
 
-prec_coll_occ = list()
-reca_coll_occ = list()
-f1_coll_occ = list()
-acc_coll_occ = list()
+prec_coll = list()
+reca_coll = list()
+f1_coll = list()
+acc_coll = list()
 
 occ_methods = ['OC-SVM']
+baseline_methods = ['SVM']
 
-# One-Class Classification
 for i in range(iteration_count):
+    # TODO: Outsource into new file
+    # One-Class Classification
     if dataset_string == "paysim":
         print(dataset_string)
     elif dataset_string == "ccfraud":
@@ -62,23 +64,10 @@ for i in range(iteration_count):
 
     # OC-SVM
     clf = svm_oneclass(x_train[0:occ_train_size])
-    prec_svm, reca_svm, f1_svm, acc_svm = run_one_svm(x_test, y_test, clf, 'fraud-prediction')
+    prec_ocsvm, reca_ocsvm, f1_ocsvm, acc_ocsvm = run_one_svm(x_test, y_test, clf, 'fraud-prediction')
 
-    # Add metrics for all one-class methods to collections
-    prec_coll_occ.append([prec_svm])
-    reca_coll_occ.append([reca_svm])
-    f1_coll_occ.append([f1_svm])
-    acc_coll_occ.append([acc_svm])
-
-prec_coll_bc = list()
-reca_coll_bc = list()
-f1_coll_bc = list()
-acc_coll_bc = list()
-
-baseline_methods = ['SVM']
-
-# Baseline standard classification
-for i in range(iteration_count):
+    # TODO: Outsource into new file
+    # Normal classification
     if dataset_string == "paysim":
         print(dataset_string)
     elif dataset_string == "ccfraud":
@@ -93,34 +82,27 @@ for i in range(iteration_count):
     prec_svm, reca_svm, f1_svm, acc_svm = run_svm(x_test, y_test, clf, 'fraud-prediction')
 
     # Add metrics for all one-class methods to collections
-    prec_coll_bc.append([prec_svm])
-    reca_coll_bc.append([reca_svm])
-    f1_coll_bc.append([f1_svm])
-    acc_coll_bc.append([acc_svm])
+    prec_coll.append([prec_ocsvm] + [prec_svm])
+    reca_coll.append([reca_ocsvm] + [reca_svm])
+    f1_coll.append([f1_ocsvm] + [f1_svm])
+    acc_coll.append([acc_ocsvm] + [acc_svm])
 
 
 # OCC metrics
-prec_coll_occ, reca_coll_occ, f1_coll_occ, acc_coll_occ = \
-    np.array(prec_coll_occ), np.array(reca_coll_occ), np.array(f1_coll_occ), np.array(acc_coll_occ)
-
-# BC metrics
-prec_coll_bc, reca_coll_bc, f1_coll_bc, acc_coll_bc = \
-    np.array(prec_coll_bc), np.array(reca_coll_bc), np.array(f1_coll_bc), np.array(acc_coll_bc)
+prec_coll, reca_coll, f1_coll, acc_coll = \
+    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll)
 
 print(f'Average metrics over {iteration_count} iterations')
-for index, method in enumerate(occ_methods):
-    prec = f'{np.mean(prec_coll_occ[:, index]).round(3)} \u00B1 {np.std(prec_coll_occ[:, index]).round(3)}'
-    reca = f'{np.mean(reca_coll_occ[:, index]).round(3)} \u00B1 {np.std(reca_coll_occ[:, index]).round(3)}'
-    f1 = f'{np.mean(f1_coll_occ[:, index]).round(3)} \u00B1 {np.std(f1_coll_occ[:, index]).round(3)}'
-    acc = f'{np.mean(acc_coll_occ[:, index]).round(3)} \u00B1 {np.std(acc_coll_occ[:, index]).round(3)}'
 
-    print(tabulate([[method, prec, reca, f1, acc]], headers=['Method', 'Precision', 'Recall', 'F1 score', 'Accuracy']))
+results = list()
+methods = occ_methods + baseline_methods
 
-print(f'Average metrics over {iteration_count} iterations')
-for index, method in enumerate(baseline_methods):
-    prec = f'{np.mean(prec_coll_bc[:, index]).round(3)} \u00B1 {np.std(prec_coll_bc[:, index]).round(3)}'
-    reca = f'{np.mean(reca_coll_bc[:, index]).round(3)} \u00B1 {np.std(reca_coll_bc[:, index]).round(3)}'
-    f1 = f'{np.mean(f1_coll_bc[:, index]).round(3)} \u00B1 {np.std(f1_coll_bc[:, index]).round(3)}'
-    acc = f'{np.mean(acc_coll_bc[:, index]).round(3)} \u00B1 {np.std(acc_coll_bc[:, index]).round(3)}'
+for index, method in enumerate(methods):
+    prec = f'{np.mean(prec_coll[:, index]).round(3)} \u00B1 {np.std(prec_coll[:, index]).round(3)}'
+    reca = f'{np.mean(reca_coll[:, index]).round(3)} \u00B1 {np.std(reca_coll[:, index]).round(3)}'
+    f1 = f'{np.mean(f1_coll[:, index]).round(3)} \u00B1 {np.std(f1_coll[:, index]).round(3)}'
+    acc = f'{np.mean(acc_coll[:, index]).round(3)} \u00B1 {np.std(acc_coll[:, index]).round(3)}'
+    results.append([method, prec, reca, f1, acc])
 
-    print(tabulate([[method, prec, reca, f1, acc]], headers=['Method', 'Precision', 'Recall', 'F1 score', 'Accuracy']))
+print(tabulate(results, headers=['Method', 'Precision', 'Recall', 'F1 score', 'Accuracy']))
+
