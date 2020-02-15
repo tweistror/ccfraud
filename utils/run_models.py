@@ -20,6 +20,9 @@ def run_one_svm(x_test, y_test, clf, mode):
 def run_svm(x_test, y_test, clf, mode):
     # TODO: Conditional statements for different modes (fraud and benign)
     n = 490
+    x_test = np.concatenate((x_test[y_test == 0][0:n], x_test[y_test == 1][0:n]))
+    y_test = np.concatenate((np.zeros(n), np.ones(n)))
+
     y_pred = clf.predict(x_test)
     # class_report = classification_report(y_test_svm, y_pred, target_names=['fraud', 'benign'], digits=4)
     # cm = confusion_matrix(y_test, y_pred)
