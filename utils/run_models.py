@@ -4,6 +4,7 @@ from sklearn.metrics import classification_report, precision_recall_fscore_suppo
 
 
 def run_one_svm(x_test, y_test, clf, mode):
+    # TODO: Conditional statements for different modes (fraud and benign)
     n = 490
     x_test_svm = np.concatenate((x_test[y_test == 0][0:n], x_test[y_test == 1][0:n]))
     y_test_svm = np.concatenate((np.ones(n), np.zeros(n)-1))
