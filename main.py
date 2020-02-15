@@ -3,10 +3,10 @@ from argparse import RawTextHelpFormatter
 import numpy as np
 from tabulate import tabulate
 
-from baselines.sklearn_baselines import svm_oneclass, svm_svc
+from baselines.sklearn_baselines import svm_oneclass, svm_svc, knn
 from utils.list_operations import sample_shuffle
 from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee
-from utils.run_models import run_one_svm, run_svm
+from utils.run_models import run_one_svm, run_classification
 from utils.sample_data import sample_data_for_occ, sample_data_for_normal_classification
 
 datasets = ["paysim", "ccfraud", "ieee"]
@@ -50,7 +50,7 @@ f1_coll = list()
 acc_coll = list()
 
 occ_methods = ['OC-SVM']
-baseline_methods = ['SVM']
+baseline_methods = ['SVM', 'kNN']
 
 for i in range(iteration_count):
     # TODO: Outsource into new file
@@ -79,13 +79,17 @@ for i in range(iteration_count):
 
     # SVM
     clf = svm_svc(x_train, y_train)
-    prec_svm, reca_svm, f1_svm, acc_svm = run_svm(x_test, y_test, clf, 'fraud-prediction')
+    prec_svm, reca_svm, f1_svm, acc_svm = run_classification(x_test, y_test, clf, 'fraud-prediction')
+
+    # SVM
+    clf = knn(x_train, y_train)
+    prec_knn, reca_knn, f1_knn, acc_knn = run_classification(x_test, y_test, clf, 'fraud-prediction')
 
     # Add metrics for all one-class methods to collections
-    prec_coll.append([prec_ocsvm] + [prec_svm])
-    reca_coll.append([reca_ocsvm] + [reca_svm])
-    f1_coll.append([f1_ocsvm] + [f1_svm])
-    acc_coll.append([acc_ocsvm] + [acc_svm])
+    prec_coll.append([prec_ocsvm] + [prec_svm] + [prec_knn])
+    reca_coll.append([reca_ocsvm] + [reca_svm] + [reca_knn])
+    f1_coll.append([f1_ocsvm] + [f1_svm] + [f1_knn])
+    acc_coll.append([acc_ocsvm] + [acc_svm] + [acc_knn])
 
 
 # OCC metrics

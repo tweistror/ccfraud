@@ -17,7 +17,7 @@ def run_one_svm(x_test, y_test, clf, mode):
     return precision[0], recall[0], fscore[0], acc
 
 
-def run_svm(x_test, y_test, clf, mode):
+def run_classification(x_test, y_test, clf, mode):
     # TODO: Conditional statements for different modes (fraud and benign)
     n = 490
     x_test = np.concatenate((x_test[y_test == 0][0:n], x_test[y_test == 1][0:n]))
