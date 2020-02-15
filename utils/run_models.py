@@ -1,6 +1,6 @@
 import numpy as np
 
-from sklearn.metrics import classification_report, precision_recall_fscore_support
+from sklearn.metrics import classification_report, precision_recall_fscore_support, confusion_matrix
 
 
 def run_one_svm(x_test, y_test, clf, mode):
@@ -13,5 +13,18 @@ def run_one_svm(x_test, y_test, clf, mode):
     acc = np.sum(y_pred == y_test_svm) / float(y_pred.shape[0])
 
     precision, recall, fscore, support = precision_recall_fscore_support(y_test_svm, y_pred)
+
+    return precision[0], recall[0], fscore[0], acc
+
+
+def run_svm(x_test, y_test, clf, mode):
+    # TODO: Conditional statements for different modes (fraud and benign)
+    n = 490
+    y_pred = clf.predict(x_test)
+    # class_report = classification_report(y_test_svm, y_pred, target_names=['fraud', 'benign'], digits=4)
+    # cm = confusion_matrix(y_test, y_pred)
+    acc = np.sum(y_pred == y_test) / float(y_pred.shape[0])
+
+    precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred)
 
     return precision[0], recall[0], fscore[0], acc
