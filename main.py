@@ -27,16 +27,15 @@ sample_size = 700
 
 if dataset_string == "paysim":
     x_ben, x_fraud = get_data_paysim("paysim.csv")
-    x_ben = sample_shuffle(x_ben)[0:sample_size]
+    x_ben = sample_shuffle(x_ben)[0:2000]
 elif dataset_string == "ccfraud":
     x_ben, x_fraud = get_data_ccfraud("ccfraud.csv")
-    x_ben = sample_shuffle(x_ben)[0:sample_size]
+    x_ben = sample_shuffle(x_ben)[0:2000]
 elif dataset_string == "ieee":
     x_ben, x_fraud = get_data_ieee("ieee.csv")
-    x_ben = sample_shuffle(x_ben)[0:sample_size]
+    x_ben = sample_shuffle(x_ben)[0:2000]
 
-
-column_count = x_ben.shape[1]
+train_size = 700
 train_test_ratio = 0.75
 
 iteration_count = 10
@@ -55,13 +54,12 @@ for i in range(iteration_count):
     if dataset_string == "paysim":
         print(dataset_string)
     elif dataset_string == "ccfraud":
-        x_train, x_test, y_train, y_test = sample_data_for_occ(x_ben, x_fraud, train_test_ratio,
-                                                               dataset_string)
+        x_train, x_test, y_train, y_test = sample_data_for_occ(x_ben, x_fraud, train_test_ratio, dataset_string)
     elif dataset_string == "ieee":
         print(dataset_string)
 
     # OC-SVM
-    clf = svm_oneclass(x_train[0:sample_size])
+    clf = svm_oneclass(x_train[0:train_size])
     prec_svm, reca_svm, f1_svm, acc_svm = run_one_svm(x_test, y_test, clf, 'fraud-prediction')
 
     # Add metrics for all one-class methods to collections
