@@ -41,11 +41,16 @@ train_test_ratio = 0.75
 
 iteration_count = 10
 
-svm_prec_list = list()
-svm_reca_list = list()
-svm_f1_list = list()
-svm_acc_list = list()
 
+prec_coll = list()
+reca_coll = list()
+f1_coll = list()
+acc_coll = list()
+
+occ_methods = ['OC-SVM']
+
+
+# One-Class Classification
 for i in range(iteration_count):
     if dataset_string == "paysim":
         print(dataset_string)
@@ -59,20 +64,24 @@ for i in range(iteration_count):
     clf = svm_oneclass(x_train[0:sample_size])
     prec_svm, reca_svm, f1_svm, acc_svm = run_one_svm(x_test, y_test, clf, 'fraud-prediction')
 
+    # Add metrics for all one-class methods to collections
+    prec_coll.append([prec_svm])
+    reca_coll.append([reca_svm])
+    f1_coll.append([f1_svm])
+    acc_coll.append([acc_svm])
 
-    svm_prec_list.append(prec_svm)
-    svm_reca_list.append(reca_svm)
-    svm_f1_list.append(f1_svm)
-    svm_acc_list.append(acc_svm)
 
+# Baseline standard classification
 
-prec_avg = (np.sum(svm_prec_list) / len(svm_prec_list)).round(4)
-reca_avg = (np.sum(svm_reca_list) / len(svm_reca_list)).round(4)
-f1_avg = (np.sum(svm_f1_list) / len(svm_f1_list)).round(4)
-acc_avg = (np.sum(svm_acc_list) / len(svm_acc_list)).round(4)
+prec_coll, reca_coll, f1_coll, acc_coll = \
+    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll)
 
 print(f'Average metrics over {iteration_count} iterations')
-print(tabulate([['OC-SVM', prec_avg, reca_avg, f1_avg, acc_avg]], headers=['Method', 'Precision', 'Recall', 'F1 score',
-                                                                           'Accuracy']))
+for index, method in enumerate(occ_methods):
+    prec = f'{np.mean(prec_coll[:, index]).round(3)} \u00B1 {np.std(prec_coll[:, index]).round(3)}'
+    reca = f'{np.mean(reca_coll[:, index]).round(3)} \u00B1 {np.std(reca_coll[:, index]).round(3)}'
+    f1 = f'{np.mean(f1_coll[:, index]).round(3)} \u00B1 {np.std(f1_coll[:, index]).round(3)}'
+    acc = f'{np.mean(acc_coll[:, index]).round(3)} \u00B1 {np.std(acc_coll[:, index]).round(3)}'
 
+    print(tabulate([[method, prec, reca, f1, acc]], headers=['Method', 'Precision', 'Recall', 'F1 score', 'Accuracy']))
 
