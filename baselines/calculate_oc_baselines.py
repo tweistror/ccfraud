@@ -23,7 +23,7 @@ def build_unsupervised_baselines(x_train, x_test, y_test, train_size, test_negat
     results = evaluate_model(svm_oneclass(x_train[0:train_size]), results)
 
     # Elliptic Envelope
-    results = evaluate_model(elliptic_envelope(x_train[0:train_size]),  results)
+    results = evaluate_model(elliptic_envelope(x_train[0:train_size]), results)
 
     # Isolation Forest
     results = evaluate_model(iso_forest(x_train[0:train_size]), results)
