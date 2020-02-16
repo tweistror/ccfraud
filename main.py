@@ -3,10 +3,11 @@ from argparse import RawTextHelpFormatter
 import numpy as np
 from tabulate import tabulate
 
-from baselines.sklearn_baselines import svm_oneclass, svm_svc, knn
+from baselines.calculate_baselines import build_classic_baselines
+from baselines.oc_baselines import svm_oneclass
 from utils.list_operations import sample_shuffle
 from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee
-from utils.run_models import run_one_svm, run_classification
+from utils.run_models import run_one_svm
 from utils.sample_data import sample_data_for_occ, sample_data_for_normal_classification
 
 datasets = ["paysim", "ccfraud", "ieee"]
@@ -39,8 +40,8 @@ elif dataset_string == "ieee":
 occ_train_size = 700
 train_test_ratio = 0.8
 
-baseline_train_size = 700
-baseline_negative_samples = 17
+baseline_train_size = 1000
+baseline_negative_samples = 14
 
 iteration_count = 10
 
@@ -50,7 +51,8 @@ f1_coll = list()
 acc_coll = list()
 
 occ_methods = ['OC-SVM']
-baseline_methods = ['SVM', 'kNN']
+baseline_methods = ['SVM SVC', 'kNN', 'Decision Tree', 'Random Forest', 'SVM Linear SVC', 'Gaussian NB',
+                    'Logistic Regression', 'XG Boost']
 
 for i in range(iteration_count):
     # TODO: Outsource into new file
@@ -77,19 +79,13 @@ for i in range(iteration_count):
     elif dataset_string == "ieee":
         print(dataset_string)
 
-    # SVM
-    clf = svm_svc(x_train, y_train)
-    prec_svm, reca_svm, f1_svm, acc_svm = run_classification(x_test, y_test, clf, 'fraud-prediction')
-
-    # kNN
-    clf = knn(x_train, y_train)
-    prec_knn, reca_knn, f1_knn, acc_knn = run_classification(x_test, y_test, clf, 'fraud-prediction')
+    prec_list, reca_list, f1_list, acc_list = build_classic_baselines(x_train, y_train, x_test, y_test)
 
     # Add metrics for all one-class methods to collections
-    prec_coll.append([prec_ocsvm] + [prec_svm] + [prec_knn])
-    reca_coll.append([reca_ocsvm] + [reca_svm] + [reca_knn])
-    f1_coll.append([f1_ocsvm] + [f1_svm] + [f1_knn])
-    acc_coll.append([acc_ocsvm] + [acc_svm] + [acc_knn])
+    prec_coll.append([prec_ocsvm] + prec_list)
+    reca_coll.append([reca_ocsvm] + reca_list)
+    f1_coll.append([f1_ocsvm] + f1_list)
+    acc_coll.append([acc_ocsvm] + acc_list)
 
 
 # OCC metrics
