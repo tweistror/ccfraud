@@ -26,24 +26,28 @@ args = parser.parse_args()
 dataset_string = args.dataset
 verbosity = int(args.v)
 
+# Specify positive samples to load
+positive_samples = 40000
+
 if dataset_string == "paysim":
     x_ben, x_fraud = get_data_paysim("paysim.csv")
-    benign_fraud_ratio = len(x_ben) / (len(x_ben) + len(x_fraud))
-    x_ben = sample_shuffle(x_ben)[0:40000]
+    unsupervised_train_size = 5000
+    supervised_train_size = 2000
+    supervised_train_negative_samples = 50
+    test_negative_samples = 1000
+    x_ben = sample_shuffle(x_ben)
 elif dataset_string == "ccfraud":
     x_ben, x_fraud = get_data_ccfraud("ccfraud.csv")
-    benign_fraud_ratio = len(x_ben) / (len(x_ben) + len(x_fraud))
-    x_ben = sample_shuffle(x_ben)[0:40000]
+    unsupervised_train_size = 700
+    supervised_train_size = 1000
+    supervised_train_negative_samples = 10
+    test_negative_samples = 490
+    x_ben = sample_shuffle(x_ben)
 elif dataset_string == "ieee":
     x_ben, x_fraud = get_data_ieee("ieee.csv")
-    benign_fraud_ratio = len(x_ben) / (len(x_ben) + len(x_fraud))
-    x_ben = sample_shuffle(x_ben)[0:40000]
+    unsupervised_train_size = 700
+    x_ben = sample_shuffle(x_ben)
 
-occ_train_size = 700
-train_test_ratio = 0.8
-
-baseline_train_size = 1000
-baseline_negative_samples = 10
 
 iteration_count = 10
 
@@ -58,7 +62,7 @@ baseline_methods = ['SVM SVC', 'kNN', 'Decision Tree', 'Random Forest', 'SVM Lin
 
 start_time_complete = datetime.now()
 if verbosity > 0:
-    print('Start iterations')
+    print(f'Start {iteration_count} iterations')
 
 for i in range(iteration_count):
     start_time = datetime.now()
@@ -66,30 +70,22 @@ for i in range(iteration_count):
         print(f'Starting iteration #{i+1}')
 
 
-    # One-Class Classification
-    if dataset_string == "paysim":
-        print(dataset_string)
-    elif dataset_string == "ccfraud":
-        x_train, x_test, y_train, y_test = sample_data_for_occ(x_ben, x_fraud, dataset_string)
-    elif dataset_string == "ieee":
-        print(dataset_string)
+    # Sampe for One-Class Classification
+    x_train, x_test, y_train, y_test = sample_data_for_occ(x_ben, x_fraud)
 
-    prec_oc_list, reca_oc_list, f1_oc_list, acc_oc_list = build_oc_baselines(x_train, x_test, y_test, occ_train_size)
+    prec_oc_list, reca_oc_list, f1_oc_list, acc_oc_list = build_oc_baselines(x_train, x_test, y_test,
+                                                                             unsupervised_train_size, test_negative_samples)
 
+    # Some verbosity output
     if verbosity > 1:
         print(f'Iteration #{i+1} unsupervised finished, supervised coming up')
 
     # Normal classification
-    if dataset_string == "paysim":
-        print(dataset_string)
-    elif dataset_string == "ccfraud":
-        x_train, x_test, y_train, y_test = \
-            sample_data_for_normal_classification(x_ben, x_fraud, baseline_train_size, baseline_negative_samples,
-                                                  dataset_string)
-    elif dataset_string == "ieee":
-        print(dataset_string)
 
-    prec_list, reca_list, f1_list, acc_list = build_classic_baselines(x_train, y_train, x_test, y_test)
+    x_train, x_test, y_train, y_test = \
+        sample_data_for_normal_classification(x_ben, x_fraud, supervised_train_size, supervised_train_negative_samples)
+
+    prec_list, reca_list, f1_list, acc_list = build_classic_baselines(x_train, y_train, x_test, y_test, test_negative_samples)
 
     # Add metrics for all methods to collections
     prec_coll.append(prec_oc_list + prec_list)
