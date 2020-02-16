@@ -7,7 +7,7 @@ def svm_oneclass(x):
 
 
 def elliptic_envelope(x):
-    clf = covariance.EllipticEnvelope()
+    clf = covariance.EllipticEnvelope(support_fraction=1)
     return clf.fit(x)
 
 

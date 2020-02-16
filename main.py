@@ -4,10 +4,9 @@ import numpy as np
 from tabulate import tabulate
 
 from baselines.calculate_baselines import build_classic_baselines
-from baselines.oc_baselines import svm_oneclass
+from baselines.calculate_oc_baselines import build_oc_baselines
 from utils.list_operations import sample_shuffle
 from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee
-from utils.run_models import run_one_svm
 from utils.sample_data import sample_data_for_occ, sample_data_for_normal_classification
 
 datasets = ["paysim", "ccfraud", "ieee"]
@@ -50,12 +49,11 @@ reca_coll = list()
 f1_coll = list()
 acc_coll = list()
 
-occ_methods = ['OC-SVM']
+occ_methods = ['OC-SVM', 'Elliptic Envelope', 'Isolation Forest']
 baseline_methods = ['SVM SVC', 'kNN', 'Decision Tree', 'Random Forest', 'SVM Linear SVC', 'Gaussian NB',
                     'Logistic Regression', 'XG Boost']
 
 for i in range(iteration_count):
-    # TODO: Outsource into new file
     # One-Class Classification
     if dataset_string == "paysim":
         print(dataset_string)
@@ -64,9 +62,7 @@ for i in range(iteration_count):
     elif dataset_string == "ieee":
         print(dataset_string)
 
-    # OC-SVM
-    clf = svm_oneclass(x_train[0:occ_train_size])
-    prec_ocsvm, reca_ocsvm, f1_ocsvm, acc_ocsvm = run_one_svm(x_test, y_test, clf, 'fraud-prediction')
+    prec_oc_list, reca_oc_list, f1_oc_list, acc_oc_list = build_oc_baselines(x_train, x_test, y_test, occ_train_size)
 
     # Normal classification
     if dataset_string == "paysim":
@@ -80,14 +76,13 @@ for i in range(iteration_count):
 
     prec_list, reca_list, f1_list, acc_list = build_classic_baselines(x_train, y_train, x_test, y_test)
 
-    # Add metrics for all one-class methods to collections
-    prec_coll.append([prec_ocsvm] + prec_list)
-    reca_coll.append([reca_ocsvm] + reca_list)
-    f1_coll.append([f1_ocsvm] + f1_list)
-    acc_coll.append([acc_ocsvm] + acc_list)
+    # Add metrics for all methods to collections
+    prec_coll.append(prec_oc_list + prec_list)
+    reca_coll.append(reca_oc_list + reca_list)
+    f1_coll.append(f1_oc_list + f1_list)
+    acc_coll.append(acc_oc_list + acc_list)
 
 
-# OCC metrics
 prec_coll, reca_coll, f1_coll, acc_coll = \
     np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll)
 
