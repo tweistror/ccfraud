@@ -24,7 +24,7 @@ parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Specify ver
 
 args = parser.parse_args()
 dataset_string = args.dataset
-verbosity = args.v
+verbosity = int(args.v)
 
 if dataset_string == "paysim":
     x_ben, x_fraud = get_data_paysim("paysim.csv")
@@ -57,12 +57,12 @@ baseline_methods = ['SVM SVC', 'kNN', 'Decision Tree', 'Random Forest', 'SVM Lin
                     'Logistic Regression', 'XG Boost', 'SGD', 'Gaussian Process', 'Decision Tree', 'Adaboost']
 
 start_time_complete = datetime.now()
-if verbosity == '1':
+if verbosity > 0:
     print('Start iterations')
 
 for i in range(iteration_count):
     start_time = datetime.now()
-    if verbosity == '2':
+    if verbosity > 1:
         print(f'Starting iteration #{i+1}')
 
 
@@ -76,7 +76,7 @@ for i in range(iteration_count):
 
     prec_oc_list, reca_oc_list, f1_oc_list, acc_oc_list = build_oc_baselines(x_train, x_test, y_test, occ_train_size)
 
-    if verbosity == '2':
+    if verbosity > 1:
         print(f'Iteration #{i+1} unsupervised finished, supervised coming up')
 
     # Normal classification
@@ -97,12 +97,12 @@ for i in range(iteration_count):
     f1_coll.append(f1_oc_list + f1_list)
     acc_coll.append(acc_oc_list + acc_list)
 
-    if verbosity == '1':
+    if verbosity > 0:
         time_required = str(datetime.now() - start_time)
         print(f'Iteration #{i+1} finished in {time_required}')
 
 
-if verbosity == '1':
+if verbosity > 1:
     time_required = str(datetime.now() - start_time_complete)
     print(f'All {iteration_count} iterations finished in {time_required}')
 
