@@ -3,7 +3,7 @@ import numpy as np
 from utils.list_operations import sample_shuffle
 
 
-def sample_data_for_occ(x_ben, x_fraud):
+def sample_data_for_unsupervised_baselines(x_ben, x_fraud):
     n_training = len(x_ben)
     n_test = len(x_fraud)
 
@@ -21,7 +21,7 @@ def sample_data_for_occ(x_ben, x_fraud):
     return x_train, x_test, y_train, y_test
 
 
-def sample_data_for_normal_classification(x_ben, x_fraud, train_size, negative_samples):
+def sample_data_for_supervised_baselines(x_ben, x_fraud, train_size, negative_samples):
     # Calculate dimensions
     n_train_benign = train_size - negative_samples
     n_train_fraud = train_size - n_train_benign

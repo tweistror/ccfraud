@@ -4,11 +4,11 @@ import numpy as np
 from tabulate import tabulate
 from datetime import datetime
 
-from baselines.calculate_baselines import build_classic_baselines
-from baselines.calculate_oc_baselines import build_oc_baselines
+from baselines.calculate_baselines import build_supervised_baselines
+from baselines.calculate_oc_baselines import build_unsupervised_baselines
 from utils.list_operations import sample_shuffle
 from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee
-from utils.sample_data import sample_data_for_occ, sample_data_for_normal_classification
+from utils.sample_data import sample_data_for_unsupervised_baselines, sample_data_for_supervised_baselines
 
 datasets = ["paysim", "ccfraud", "ieee"]
 
@@ -27,27 +27,32 @@ dataset_string = args.dataset
 verbosity = int(args.v)
 
 # Specify positive samples to load
-positive_samples = 40000
+positive_samples = 10000
 
 if dataset_string == "paysim":
-    x_ben, x_fraud = get_data_paysim("paysim.csv")
+    x_ben, x_fraud = get_data_paysim("paysim.csv", positive_samples=positive_samples, verbosity=verbosity)
     unsupervised_train_size = 5000
     supervised_train_size = 2000
     supervised_train_negative_samples = 50
     test_negative_samples = 1000
     x_ben = sample_shuffle(x_ben)
 elif dataset_string == "ccfraud":
-    x_ben, x_fraud = get_data_ccfraud("ccfraud.csv")
+    x_ben, x_fraud = get_data_ccfraud("ccfraud.csv", positive_samples=positive_samples, verbosity=verbosity)
     unsupervised_train_size = 700
     supervised_train_size = 1000
     supervised_train_negative_samples = 10
     test_negative_samples = 490
     x_ben = sample_shuffle(x_ben)
 elif dataset_string == "ieee":
-    x_ben, x_fraud = get_data_ieee("ieee.csv")
-    unsupervised_train_size = 700
+    x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", positive_samples=positive_samples, verbosity=verbosity)
+    print(x_ben.shape)
+    print(x_fraud.shape)
+    unsupervised_train_size = 500
+    supervised_train_size = 2000
+    supervised_train_negative_samples = 50
+    test_negative_samples = 500
     x_ben = sample_shuffle(x_ben)
-
+    x_fraud = sample_shuffle(x_fraud[0:2000])
 
 iteration_count = 10
 
@@ -69,23 +74,22 @@ for i in range(iteration_count):
     if verbosity > 1:
         print(f'Starting iteration #{i+1}')
 
-
-    # Sampe for One-Class Classification
-    x_train, x_test, y_train, y_test = sample_data_for_occ(x_ben, x_fraud)
-
-    prec_oc_list, reca_oc_list, f1_oc_list, acc_oc_list = build_oc_baselines(x_train, x_test, y_test,
-                                                                             unsupervised_train_size, test_negative_samples)
+    # Sample data for unsupervised learning baselines
+    x_train, x_test, y_train, y_test = sample_data_for_unsupervised_baselines(x_ben, x_fraud)
+    # Execute unsupervised learning baselines
+    prec_oc_list, reca_oc_list, f1_oc_list, acc_oc_list = build_unsupervised_baselines(x_train, x_test, y_test,
+                                                                                       unsupervised_train_size, test_negative_samples)
 
     # Some verbosity output
     if verbosity > 1:
         print(f'Iteration #{i+1} unsupervised finished, supervised coming up')
 
-    # Normal classification
 
+    # Sample data for supervised learning baselines
     x_train, x_test, y_train, y_test = \
-        sample_data_for_normal_classification(x_ben, x_fraud, supervised_train_size, supervised_train_negative_samples)
-
-    prec_list, reca_list, f1_list, acc_list = build_classic_baselines(x_train, y_train, x_test, y_test, test_negative_samples)
+        sample_data_for_supervised_baselines(x_ben, x_fraud, supervised_train_size, supervised_train_negative_samples)
+    # Execute supervised learning baselines
+    prec_list, reca_list, f1_list, acc_list = build_supervised_baselines(x_train, y_train, x_test, y_test, test_negative_samples)
 
     # Add metrics for all methods to collections
     prec_coll.append(prec_oc_list + prec_list)

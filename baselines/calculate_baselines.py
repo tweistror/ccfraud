@@ -3,7 +3,7 @@ from baselines.classic_baselines import svm_svc, knn, random_forest, decision_tr
 from utils.run_models import run_classification
 
 
-def build_classic_baselines(x_train, y_train, x_test, y_test, test_negative_samples):
+def build_supervised_baselines(x_train, y_train, x_test, y_test, test_negative_samples):
 
     def evaluate_model(clf, lists):
         prec, reca, f1, acc = run_classification(x_test, y_test, clf, test_negative_samples, 'fraud-prediction')

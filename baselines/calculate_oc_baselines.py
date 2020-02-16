@@ -2,7 +2,7 @@ from baselines.oc_baselines import svm_oneclass, elliptic_envelope, iso_forest, 
 from utils.run_models import run_one_svm
 
 
-def build_oc_baselines(x_train, x_test, y_test, train_size, test_negative_samples):
+def build_unsupervised_baselines(x_train, x_test, y_test, train_size, test_negative_samples):
 
     def evaluate_model(clf, lists):
         prec, reca, f1, acc = run_one_svm(x_test, y_test, clf, test_negative_samples, 'fraud-prediction')
