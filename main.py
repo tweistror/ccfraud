@@ -45,8 +45,6 @@ elif dataset_string == "ccfraud":
     x_ben = sample_shuffle(x_ben)
 elif dataset_string == "ieee":
     x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", positive_samples=positive_samples, verbosity=verbosity)
-    print(x_ben.shape)
-    print(x_fraud.shape)
     unsupervised_train_size = 500
     supervised_train_size = 2000
     supervised_train_negative_samples = 50
