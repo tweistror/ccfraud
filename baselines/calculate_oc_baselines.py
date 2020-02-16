@@ -32,13 +32,3 @@ def build_oc_baselines(x_train, x_test, y_test, train_size, test_negative_sample
     results = evaluate_model(local_outlier_factor(x_train[0:train_size]), results)
 
     return results['prec_list'], results['reca_list'], results['f1_list'], results['acc_list']
-
-
-# def evaluate_model(clf, x_test, y_test, train_size, lists):
-#     prec, reca, f1, acc = run_one_svm(x_test, y_test, clf, train_size, 'fraud-prediction')
-#     lists['prec_list'].append(prec)
-#     lists['reca_list'].append(reca)
-#     lists['f1_list'].append(f1)
-#     lists['acc_list'].append(acc)
-#
-#     return lists
