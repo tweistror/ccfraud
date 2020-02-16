@@ -1,4 +1,3 @@
-# SVM
 from baselines.classic_baselines import svm_svc, knn, random_forest, decision_tree, svm_linearsvc, gnb, xgboost, logistic_regression
 from utils.run_models import run_classification
 
