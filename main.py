@@ -68,7 +68,6 @@ for i in range(iteration_count):
     clf = svm_oneclass(x_train[0:occ_train_size])
     prec_ocsvm, reca_ocsvm, f1_ocsvm, acc_ocsvm = run_one_svm(x_test, y_test, clf, 'fraud-prediction')
 
-    # TODO: Outsource into new file
     # Normal classification
     if dataset_string == "paysim":
         print(dataset_string)
