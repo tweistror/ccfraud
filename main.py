@@ -2,6 +2,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 import numpy as np
 from tabulate import tabulate
+from datetime import datetime
 
 from baselines.calculate_baselines import build_classic_baselines
 from baselines.calculate_oc_baselines import build_oc_baselines
@@ -19,28 +20,30 @@ parser.add_argument("--method", choices=["sk-svm", "sk-knn", "sk-mlp", "sk-nb", 
 parser.add_argument("--mode", choices=["baseline", "solo"], help='''Execution mode: 
 `baseline` for comparison to other baseline methods
 `solo` for executing the chosen method only''')
+parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Specify verbosity")
 
 args = parser.parse_args()
 dataset_string = args.dataset
+verbosity = args.v
 
 if dataset_string == "paysim":
     x_ben, x_fraud = get_data_paysim("paysim.csv")
     benign_fraud_ratio = len(x_ben) / (len(x_ben) + len(x_fraud))
-    x_ben = sample_shuffle(x_ben)[0:2000]
+    x_ben = sample_shuffle(x_ben)[0:40000]
 elif dataset_string == "ccfraud":
     x_ben, x_fraud = get_data_ccfraud("ccfraud.csv")
     benign_fraud_ratio = len(x_ben) / (len(x_ben) + len(x_fraud))
-    x_ben = sample_shuffle(x_ben)[0:2000]
+    x_ben = sample_shuffle(x_ben)[0:40000]
 elif dataset_string == "ieee":
     x_ben, x_fraud = get_data_ieee("ieee.csv")
     benign_fraud_ratio = len(x_ben) / (len(x_ben) + len(x_fraud))
-    x_ben = sample_shuffle(x_ben)[0:2000]
+    x_ben = sample_shuffle(x_ben)[0:40000]
 
 occ_train_size = 700
 train_test_ratio = 0.8
 
 baseline_train_size = 1000
-baseline_negative_samples = 14
+baseline_negative_samples = 10
 
 iteration_count = 10
 
@@ -53,7 +56,16 @@ occ_methods = ['OC-SVM', 'Elliptic Envelope', 'Isolation Forest', 'kNN Local Out
 baseline_methods = ['SVM SVC', 'kNN', 'Decision Tree', 'Random Forest', 'SVM Linear SVC', 'Gaussian NB',
                     'Logistic Regression', 'XG Boost', 'SGD', 'Gaussian Process', 'Decision Tree', 'Adaboost']
 
+start_time_complete = datetime.now()
+if verbosity == '1':
+    print('Start iterations')
+
 for i in range(iteration_count):
+    start_time = datetime.now()
+    if verbosity == '2':
+        print(f'Starting iteration #{i+1}')
+
+
     # One-Class Classification
     if dataset_string == "paysim":
         print(dataset_string)
@@ -63,6 +75,9 @@ for i in range(iteration_count):
         print(dataset_string)
 
     prec_oc_list, reca_oc_list, f1_oc_list, acc_oc_list = build_oc_baselines(x_train, x_test, y_test, occ_train_size)
+
+    if verbosity == '2':
+        print(f'Iteration #{i+1} unsupervised finished, supervised coming up')
 
     # Normal classification
     if dataset_string == "paysim":
@@ -82,6 +97,14 @@ for i in range(iteration_count):
     f1_coll.append(f1_oc_list + f1_list)
     acc_coll.append(acc_oc_list + acc_list)
 
+    if verbosity == '1':
+        time_required = str(datetime.now() - start_time)
+        print(f'Iteration #{i+1} finished in {time_required}')
+
+
+if verbosity == '1':
+    time_required = str(datetime.now() - start_time_complete)
+    print(f'All {iteration_count} iterations finished in {time_required}')
 
 prec_coll, reca_coll, f1_coll, acc_coll = \
     np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll)
