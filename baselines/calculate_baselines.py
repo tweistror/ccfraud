@@ -1,4 +1,5 @@
-from baselines.classic_baselines import svm_svc, knn, random_forest, decision_tree, svm_linearsvc, gnb, xgboost, logistic_regression
+from baselines.classic_baselines import svm_svc, knn, random_forest, decision_tree, svm_linearsvc, gnb, xgboost, \
+    logistic_regression, sgd, gaussian_process, adaboost
 from utils.run_models import run_classification
 
 
@@ -33,6 +34,18 @@ def build_classic_baselines(x_train, y_train, x_test, y_test):
 
     # XGBoost
     results = evaluate_model(xgboost(x_train, y_train), x_test, y_test, results)
+
+    # SGD Classifier
+    results = evaluate_model(sgd(x_train, y_train), x_test, y_test, results)
+
+    # Gaussian Process
+    results = evaluate_model(gaussian_process(x_train, y_train), x_test, y_test, results)
+
+    # Decision Tree
+    results = evaluate_model(decision_tree(x_train, y_train), x_test, y_test, results)
+
+    # Adaboost
+    results = evaluate_model(adaboost(x_train, y_train), x_test, y_test, results)
 
     return results['prec_list'], results['reca_list'], results['f1_list'], results['acc_list']
 

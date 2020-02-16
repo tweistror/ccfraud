@@ -1,4 +1,4 @@
-from baselines.oc_baselines import svm_oneclass, elliptic_envelope, iso_forest
+from baselines.oc_baselines import svm_oneclass, elliptic_envelope, iso_forest, local_outlier_factor
 from utils.run_models import run_one_svm
 
 
@@ -18,6 +18,9 @@ def build_oc_baselines(x_train, x_test, y_test, train_size):
 
     # Isolation Forest
     results = evaluate_model(iso_forest(x_train[0:train_size]), x_test, y_test, results)
+
+    # kNN Local Outlier Factor
+    results = evaluate_model(local_outlier_factor(x_train[0:train_size]), x_test, y_test, results)
 
     return results['prec_list'], results['reca_list'], results['f1_list'], results['acc_list']
 

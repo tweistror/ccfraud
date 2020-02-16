@@ -49,9 +49,9 @@ reca_coll = list()
 f1_coll = list()
 acc_coll = list()
 
-occ_methods = ['OC-SVM', 'Elliptic Envelope', 'Isolation Forest']
+occ_methods = ['OC-SVM', 'Elliptic Envelope', 'Isolation Forest', 'kNN Local Outlier Factor']
 baseline_methods = ['SVM SVC', 'kNN', 'Decision Tree', 'Random Forest', 'SVM Linear SVC', 'Gaussian NB',
-                    'Logistic Regression', 'XG Boost']
+                    'Logistic Regression', 'XG Boost', 'SGD', 'Gaussian Process', 'Decision Tree', 'Adaboost']
 
 for i in range(iteration_count):
     # One-Class Classification
@@ -92,6 +92,12 @@ results = list()
 methods = occ_methods + baseline_methods
 
 for index, method in enumerate(methods):
+    if index == 0:
+        results.append(['Unsupervised Learning Methods'])
+
+    if index == len(occ_methods):
+        results.append(['Supervised Learning Methods'])
+
     prec = f'{np.mean(prec_coll[:, index]).round(3)} \u00B1 {np.std(prec_coll[:, index]).round(3)}'
     reca = f'{np.mean(reca_coll[:, index]).round(3)} \u00B1 {np.std(reca_coll[:, index]).round(3)}'
     f1 = f'{np.mean(f1_coll[:, index]).round(3)} \u00B1 {np.std(f1_coll[:, index]).round(3)}'
