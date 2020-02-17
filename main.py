@@ -24,33 +24,32 @@ parser.add_argument("--mode", choices=["baseline", "solo"], help='''Execution mo
 `baseline` for comparison to other baseline methods
 `solo` for executing the chosen method only''')
 parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Specify verbosity")
+parser.add_argument("--iterations", default=10, help="Specify number of iterations each method is executed")
 
 args = parser.parse_args()
 dataset_string = args.dataset
 verbosity = int(args.v)
 method = args.method
 baselines = args.baselines
+iteration_count = int(args.iterations)
 
 # Specify positive samples to load
-positive_samples = 10000
+positive_samples = 20000
 
-# Load data
-if baselines is not None:
-    if dataset_string == "paysim":
-        x_ben, x_fraud = get_data_paysim("paysim.csv", positive_samples=positive_samples, verbosity=verbosity)
-        x_ben = sample_shuffle(x_ben)
-    elif dataset_string == "ccfraud":
-        x_ben, x_fraud = get_data_ccfraud("ccfraud.csv", positive_samples=positive_samples, verbosity=verbosity)
-        x_ben = sample_shuffle(x_ben)
-    elif dataset_string == "ieee":
-        x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", positive_samples=positive_samples,
-                                       verbosity=verbosity)
-        x_ben = sample_shuffle(x_ben)
-        x_fraud = sample_shuffle(x_fraud[0:2000])
+if dataset_string == "paysim":
+    x_ben, x_fraud = get_data_paysim("paysim.csv", positive_samples=positive_samples, verbosity=verbosity)
+    x_ben = sample_shuffle(x_ben)
+elif dataset_string == "ccfraud":
+    x_ben, x_fraud = get_data_ccfraud("ccfraud.csv", positive_samples=positive_samples, verbosity=verbosity)
+    x_ben = sample_shuffle(x_ben)
+elif dataset_string == "ieee":
+    x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", positive_samples=positive_samples,
+                                   verbosity=verbosity)
+    x_ben = sample_shuffle(x_ben)
+    x_fraud = sample_shuffle(x_fraud[0:2000])
 
 # Set parameters
 usv_train, sv_train, sv_train_fraud, test_fraud = get_parameters(dataset_string)
-iteration_count = 10
 
 # Initialize collections for evaluation results
 prec_coll = list()
@@ -79,7 +78,7 @@ for i in range(iteration_count):
         print(f'Starting iteration #{i + 1}')
 
     if method == 'oc-gan':
-        prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, usv_train, test_fraud)
+        prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
@@ -145,7 +144,5 @@ if verbosity > 1:
 prec_coll, reca_coll, f1_coll, acc_coll, method_list = \
     np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll), np.array(method_list)
 
-print(prec_coll, reca_coll, f1_coll, acc_coll, method_list)
-
-print_results(method_list, iteration_count,
+print_results(method_list, dataset_string, iteration_count,
               len(method_special_list), len(method_usv_list), prec_coll, reca_coll, f1_coll, acc_coll)
