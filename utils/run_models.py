@@ -16,7 +16,7 @@ def run_usv_classification(x_test, y_test, clf, negative_samples, mode):
     return precision[0], recall[0], fscore[0], acc
 
 
-def run_classification(x_test, y_test, clf, negative_samples, mode):
+def run_sv_classification(x_test, y_test, clf, negative_samples, mode):
     # TODO: Conditional statements for different modes (fraud and benign)
     x_test = np.concatenate((x_test[y_test == 0][0:negative_samples], x_test[y_test == 1][0:negative_samples]))
     y_test = np.concatenate((np.zeros(negative_samples), np.ones(negative_samples)))
