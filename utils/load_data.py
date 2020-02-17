@@ -22,13 +22,8 @@ def get_data_paysim(path, positive_samples=10000, verbosity=0):
     # Extract `positive_samples` of benign transactions and all fraud transactions
     x_ben = data.loc[data['isFraud'] == 0].sample(positive_samples)
     x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
-    # extracted_data = pd.concat([benign, fraud])
-    # x = extracted_data.loc[:, extracted_data.columns != 'isFraud']
-    # y = extracted_data.loc[:, 'isFraud']
 
     scaler = MinMaxScaler()
-    # x = scaler.fit_transform(x.values)
-    # y = y.values
 
     x_ben = scaler.fit_transform(x_ben)
     x_fraud = scaler.fit_transform(x_fraud)
@@ -133,7 +128,7 @@ def get_parameters(dataset_string):
         usv_train = 5000
         sv_train = 2000
         sv_train_fraud = 50
-        test_fraud = 1000
+        test_fraud = 5000
     elif dataset_string == 'ccfraud':
         usv_train = 700
         sv_train = 1000
