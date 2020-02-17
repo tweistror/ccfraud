@@ -29,9 +29,9 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
 
 
     # Define placeholders for labeled-data, unlabeled-data, noise-data and target-data.
-    X_oc = tf.placeholder(tf.float32, shape=[None, dim_input])
-    Z = tf.placeholder(tf.float32, shape=[None, Z_dim])
-    X_tar = tf.placeholder(tf.float32, shape=[None, dim_input])
+    X_oc =  tf.compat.v1.placeholder(tf.float32, shape=[None, dim_input])
+    Z = tf.compat.v1.placeholder(tf.float32, shape=[None, Z_dim])
+    X_tar = tf.compat.v1.placeholder(tf.float32, shape=[None, dim_input])
 
     # Declare weights and biases of discriminator.
     D_W1 = tf.Variable(xavier_init([D_dim[0], D_dim[1]]))
@@ -95,21 +95,21 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
     D_prob_tar_gen, D_logit_tar_gen, D_h2_tar_gen = discriminator_tar(G_sample)
 
     # Discriminator loss
-    y_real = tf.placeholder(tf.int32, shape=[None, D_dim[3]])
-    y_gen = tf.placeholder(tf.int32, shape=[None, D_dim[3]])
+    y_real = tf.compat.v1.placeholder(tf.int32, shape=[None, D_dim[3]])
+    y_gen = tf.compat.v1.placeholder(tf.int32, shape=[None, D_dim[3]])
 
     D_loss_real = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=D_logit_real, labels=y_real))
     D_loss_gen = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=D_logit_gen, labels=y_gen))
 
     ent_real_loss = -tf.reduce_mean(
         tf.reduce_sum(
-            tf.multiply(D_prob_real, tf.log(D_prob_real)), 1
+            tf.multiply(D_prob_real, tf.math.log(D_prob_real)), 1
         )
     )
 
     ent_gen_loss = -tf.reduce_mean(
         tf.reduce_sum(
-            tf.multiply(D_prob_gen, tf.log(D_prob_gen)), 1
+            tf.multiply(D_prob_gen, tf.math.log(D_prob_gen)), 1
         )
     )
 
@@ -118,7 +118,7 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
     # Generator loss
     pt_loss = pull_away_loss(D_h2_tar_gen)
 
-    y_tar = tf.placeholder(tf.int32, shape=[None, D_dim[3]])
+    y_tar = tf.compat.v1.placeholder(tf.int32, shape=[None, D_dim[3]])
     T_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=D_logit_tar, labels=y_tar))
     tar_thrld = tf.divide(tf.reduce_max(D_prob_tar_gen[:, -1]) +
                           tf.reduce_min(D_prob_tar_gen[:, -1]), 2)
@@ -128,7 +128,7 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
                     tar_thrld))
     condition = tf.greater(tf.zeros_like(indicator), indicator)
     mask_tar = tf.where(condition, tf.zeros_like(indicator), indicator)
-    G_ent_loss = tf.reduce_mean(tf.multiply(tf.log(D_prob_tar_gen[:, -1]), mask_tar))
+    G_ent_loss = tf.reduce_mean(tf.multiply(tf.math.log(D_prob_tar_gen[:, -1]), mask_tar))
 
     fm_loss = tf.reduce_mean(
         tf.sqrt(
@@ -140,9 +140,9 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
 
     G_loss = pt_loss + G_ent_loss + fm_loss
 
-    D_solver = tf.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(D_loss, var_list=theta_D)
-    G_solver = tf.train.AdamOptimizer().minimize(G_loss, var_list=theta_G)
-    T_solver = tf.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(T_loss, var_list=theta_T)
+    D_solver = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(D_loss, var_list=theta_D)
+    G_solver = tf.compat.v1.train.AdamOptimizer().minimize(G_loss, var_list=theta_G)
+    T_solver = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(T_loss, var_list=theta_T)
 
     # Process data
     x_ben = sample_shuffle_uspv(x_ben)
@@ -162,8 +162,8 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
     y_test = np.zeros(len(x_test))
     y_test[test_fraud:] = 1
 
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
+    sess = tf.compat.v1.Session()
+    sess.run(tf.compat.v1.global_variables_initializer())
 
     # Pre-training for target distribution
     _ = sess.run(T_solver,
@@ -216,7 +216,7 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
     acc = np.sum(y_pred == y_test) / float(y_pred.shape[0])
     precision, recall, f1, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
-    if verbosity ==1:
+    if verbosity == 1:
         print(conf_mat)
         draw_trend(d_ben_pro, d_fake_pro, d_val_pro, fm_loss_coll, f1_score)
 
