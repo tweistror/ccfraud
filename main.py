@@ -92,10 +92,10 @@ for i in range(iteration_count):
 
     if baselines == 'usv' or baselines == 'both':
         # Sample data for unsupervised learning baselines
-        x_train, x_test, y_train, y_test = sample_data_for_unsupervised_baselines(x_ben, x_fraud)
+        x_train, x_test, y_test = sample_data_for_unsupervised_baselines(x_ben, x_fraud, usv_train)
         # Execute unsupervised learning baselines
         prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
-            build_unsupervised_baselines(x_train, x_test, y_test, usv_train, test_fraud)
+            build_unsupervised_baselines(x_train, x_test, y_test, test_fraud)
 
         # Add metrics to collections
         prec_list = prec_list + prec_usv_list
