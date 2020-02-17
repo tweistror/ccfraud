@@ -4,10 +4,10 @@ import numpy as np
 from tabulate import tabulate
 from datetime import datetime
 
-from baselines.calculate_baselines import build_supervised_baselines
-from baselines.calculate_oc_baselines import build_unsupervised_baselines
+from baselines.calculate_sv_baselines import build_supervised_baselines
+from baselines.calculate_usv_baselines import build_unsupervised_baselines
 from utils.list_operations import sample_shuffle
-from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee
+from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee, get_parameters
 from utils.sample_data import sample_data_for_unsupervised_baselines, sample_data_for_supervised_baselines
 
 datasets = ["paysim", "ccfraud", "ieee"]
@@ -29,39 +29,29 @@ verbosity = int(args.v)
 # Specify positive samples to load
 positive_samples = 10000
 
+
+# Load data
 if dataset_string == "paysim":
     x_ben, x_fraud = get_data_paysim("paysim.csv", positive_samples=positive_samples, verbosity=verbosity)
-    unsupervised_train_size = 5000
-    supervised_train_size = 2000
-    supervised_train_negative_samples = 50
-    test_negative_samples = 1000
     x_ben = sample_shuffle(x_ben)
 elif dataset_string == "ccfraud":
     x_ben, x_fraud = get_data_ccfraud("ccfraud.csv", positive_samples=positive_samples, verbosity=verbosity)
-    unsupervised_train_size = 700
-    supervised_train_size = 1000
-    supervised_train_negative_samples = 10
-    test_negative_samples = 490
     x_ben = sample_shuffle(x_ben)
 elif dataset_string == "ieee":
     x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", positive_samples=positive_samples, verbosity=verbosity)
-    unsupervised_train_size = 500
-    supervised_train_size = 2000
-    supervised_train_negative_samples = 50
-    test_negative_samples = 500
     x_ben = sample_shuffle(x_ben)
     x_fraud = sample_shuffle(x_fraud[0:2000])
 
+# Set parameters
+usv_train, sv_train, sv_train_fraud, test_fraud = get_parameters(dataset_string)
 iteration_count = 10
 
+# Initialize collections for evaluation results
 prec_coll = list()
 reca_coll = list()
 f1_coll = list()
 acc_coll = list()
-
-occ_methods = ['OC-SVM', 'Elliptic Envelope', 'Isolation Forest', 'kNN Local Outlier Factor']
-baseline_methods = ['SVM SVC', 'kNN', 'Decision Tree', 'Random Forest', 'SVM Linear SVC', 'Gaussian NB',
-                    'Logistic Regression', 'XG Boost', 'SGD', 'Gaussian Process', 'Decision Tree', 'Adaboost']
+method_list = list()
 
 start_time_complete = datetime.now()
 if verbosity > 0:
@@ -75,25 +65,28 @@ for i in range(iteration_count):
     # Sample data for unsupervised learning baselines
     x_train, x_test, y_train, y_test = sample_data_for_unsupervised_baselines(x_ben, x_fraud)
     # Execute unsupervised learning baselines
-    prec_oc_list, reca_oc_list, f1_oc_list, acc_oc_list = build_unsupervised_baselines(x_train, x_test, y_test,
-                                                                                       unsupervised_train_size, test_negative_samples)
+    prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
+        build_unsupervised_baselines(x_train, x_test, y_test, usv_train, test_fraud)
 
     # Some verbosity output
     if verbosity > 1:
         print(f'Iteration #{i+1} unsupervised finished, supervised coming up')
 
-
     # Sample data for supervised learning baselines
     x_train, x_test, y_train, y_test = \
-        sample_data_for_supervised_baselines(x_ben, x_fraud, supervised_train_size, supervised_train_negative_samples)
+        sample_data_for_supervised_baselines(x_ben, x_fraud, sv_train, sv_train_fraud)
     # Execute supervised learning baselines
-    prec_list, reca_list, f1_list, acc_list = build_supervised_baselines(x_train, y_train, x_test, y_test, test_negative_samples)
+    prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
+        build_supervised_baselines(x_train, y_train, x_test, y_test, test_fraud)
 
     # Add metrics for all methods to collections
-    prec_coll.append(prec_oc_list + prec_list)
-    reca_coll.append(reca_oc_list + reca_list)
-    f1_coll.append(f1_oc_list + f1_list)
-    acc_coll.append(acc_oc_list + acc_list)
+    prec_coll.append(prec_usv_list + prec_sv_list)
+    reca_coll.append(reca_usv_list + reca_sv_list)
+    f1_coll.append(f1_usv_list + f1_sv_list)
+    acc_coll.append(acc_usv_list + acc_sv_list)
+
+    if i == 0:
+        method_list = method_usv_list + method_sv_list
 
     if verbosity > 0:
         time_required = str(datetime.now() - start_time)
@@ -104,19 +97,18 @@ if verbosity > 1:
     time_required = str(datetime.now() - start_time_complete)
     print(f'All {iteration_count} iterations finished in {time_required}')
 
-prec_coll, reca_coll, f1_coll, acc_coll = \
-    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll)
+prec_coll, reca_coll, f1_coll, acc_coll, method_list = \
+    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll), np.array(method_list)
 
 print(f'Average metrics over {iteration_count} iterations')
 
 results = list()
-methods = occ_methods + baseline_methods
 
-for index, method in enumerate(methods):
+for index, method in enumerate(method_list):
     if index == 0:
         results.append(['Unsupervised Learning Methods'])
 
-    if index == len(occ_methods):
+    if index == len(method_usv_list):
         results.append(['Supervised Learning Methods'])
 
     prec = f'{np.mean(prec_coll[:, index]).round(3)} \u00B1 {np.std(prec_coll[:, index]).round(3)}'

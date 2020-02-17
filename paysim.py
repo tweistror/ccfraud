@@ -1,8 +1,8 @@
 import numpy as np
 from tabulate import tabulate
 
-from baselines.calculate_baselines import build_supervised_baselines
-from baselines.calculate_oc_baselines import build_unsupervised_baselines
+from baselines.calculate_sv_baselines import build_supervised_baselines
+from baselines.calculate_usv_baselines import build_unsupervised_baselines
 from utils.list_operations import sample_shuffle
 from utils.load_data import get_data_paysim
 from utils.sample_data import sample_data_for_unsupervised_baselines, sample_data_for_supervised_baselines

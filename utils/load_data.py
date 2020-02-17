@@ -122,3 +122,23 @@ def load_data(path, verbosity=0):
         print(f'{path}: Dataset loaded in {time_required}')
 
     return data
+
+
+def get_parameters(dataset_string):
+    if dataset_string == 'paysim':
+        usv_train = 5000
+        sv_train = 2000
+        sv_train_fraud = 50
+        test_fraud = 1000
+    elif dataset_string == 'ccfraud':
+        usv_train = 700
+        sv_train = 1000
+        sv_train_fraud = 10
+        test_fraud = 490
+    elif dataset_string == 'ieee':
+        usv_train = 1000
+        sv_train = 2000
+        sv_train_fraud = 50
+        test_fraud = 500
+
+    return usv_train, sv_train, sv_train_fraud, test_fraud
