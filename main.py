@@ -1,13 +1,13 @@
 import argparse
 from argparse import RawTextHelpFormatter
 import numpy as np
-from tabulate import tabulate
 from datetime import datetime
 
 from baselines.calculate_sv_baselines import build_supervised_baselines
 from baselines.calculate_usv_baselines import build_unsupervised_baselines
 from utils.list_operations import sample_shuffle
 from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee, get_parameters
+from utils.printing import print_results
 from utils.sample_data import sample_data_for_unsupervised_baselines, sample_data_for_supervised_baselines
 
 datasets = ["paysim", "ccfraud", "ieee"]
@@ -100,22 +100,5 @@ if verbosity > 1:
 prec_coll, reca_coll, f1_coll, acc_coll, method_list = \
     np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll), np.array(method_list)
 
-print(f'Average metrics over {iteration_count} iterations')
-
-results = list()
-
-for index, method in enumerate(method_list):
-    if index == 0:
-        results.append(['Unsupervised Learning Methods'])
-
-    if index == len(method_usv_list):
-        results.append(['Supervised Learning Methods'])
-
-    prec = f'{np.mean(prec_coll[:, index]).round(3)} \u00B1 {np.std(prec_coll[:, index]).round(3)}'
-    reca = f'{np.mean(reca_coll[:, index]).round(3)} \u00B1 {np.std(reca_coll[:, index]).round(3)}'
-    f1 = f'{np.mean(f1_coll[:, index]).round(3)} \u00B1 {np.std(f1_coll[:, index]).round(3)}'
-    acc = f'{np.mean(acc_coll[:, index]).round(3)} \u00B1 {np.std(acc_coll[:, index]).round(3)}'
-    results.append([method, prec, reca, f1, acc])
-
-print(tabulate(results, headers=['Method', 'Precision', 'Recall', 'F1 score', 'Accuracy']))
+print_results(method_list, iteration_count, len(method_usv_list), prec_coll, reca_coll, f1_coll, acc_coll)
 
