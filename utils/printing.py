@@ -2,10 +2,10 @@ from tabulate import tabulate
 import numpy as np
 
 
-def print_results(method_list, iteration_count, special_count, usv_count, prec_coll, reca_coll, f1_coll, acc_coll):
+def print_results(method_list, dataset_string, iteration_count, special_count, usv_count, prec_coll, reca_coll, f1_coll, acc_coll):
     results = list()
 
-    print(f'Average metrics over {iteration_count} iterations')
+    print(f'{dataset_string}:  Average metrics over {iteration_count} iterations')
 
     for index, method in enumerate(method_list):
         if index == special_count - 1:
