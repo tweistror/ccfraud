@@ -14,135 +14,134 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
         usv_train = 2000
         test_fraud = 9000
         mb_size = 70
-        D_dim = [dim_input, 30, 15, 2]
-        G_dim = [15, 30, dim_input]
-        Z_dim = G_dim[0]
+        d_dim = [dim_input, 30, 15, 2]
+        g_dim = [15, 30, dim_input]
+        z_dim = g_dim[0]
     elif dataset_string == "ccfraud":
         mb_size = 70
-        D_dim = [dim_input, 100, 50, 2]
-        G_dim = [50, 100, dim_input]
-        Z_dim = G_dim[0]
+        d_dim = [dim_input, 100, 50, 2]
+        g_dim = [50, 100, dim_input]
+        z_dim = g_dim[0]
     elif dataset_string == "ieee":
         mb_size = 70
 
-    # Set dimensions for discrimator, generator and
-
+    # Set dimensions for discriminator, generator and
 
     # Define placeholders for labeled-data, unlabeled-data, noise-data and target-data.
-    X_oc =  tf.compat.v1.placeholder(tf.float32, shape=[None, dim_input])
-    Z = tf.compat.v1.placeholder(tf.float32, shape=[None, Z_dim])
-    X_tar = tf.compat.v1.placeholder(tf.float32, shape=[None, dim_input])
+    x_oc = tf.compat.v1.placeholder(tf.float32, shape=[None, dim_input])
+    z = tf.compat.v1.placeholder(tf.float32, shape=[None, z_dim])
+    x_tar = tf.compat.v1.placeholder(tf.float32, shape=[None, dim_input])
 
     # Declare weights and biases of discriminator.
-    D_W1 = tf.Variable(xavier_init([D_dim[0], D_dim[1]]))
-    D_b1 = tf.Variable(tf.zeros(shape=[D_dim[1]]))
+    d_w1 = tf.Variable(xavier_init([d_dim[0], d_dim[1]]))
+    d_b1 = tf.Variable(tf.zeros(shape=[d_dim[1]]))
 
-    D_W2 = tf.Variable(xavier_init([D_dim[1], D_dim[2]]))
-    D_b2 = tf.Variable(tf.zeros(shape=[D_dim[2]]))
+    d_w2 = tf.Variable(xavier_init([d_dim[1], d_dim[2]]))
+    d_b2 = tf.Variable(tf.zeros(shape=[d_dim[2]]))
 
-    D_W3 = tf.Variable(xavier_init([D_dim[2], D_dim[3]]))
-    D_b3 = tf.Variable(tf.zeros(shape=[D_dim[3]]))
+    d_w3 = tf.Variable(xavier_init([d_dim[2], d_dim[3]]))
+    d_b3 = tf.Variable(tf.zeros(shape=[d_dim[3]]))
 
-    theta_D = [D_W1, D_W2, D_W3, D_b1, D_b2, D_b3]
+    theta_d = [d_w1, d_w2, d_w3, d_b1, d_b2, d_b3]
 
     # Declare weights and biases of generator.
-    G_W1 = tf.Variable(xavier_init([G_dim[0], G_dim[1]]))
-    G_b1 = tf.Variable(tf.zeros(shape=[G_dim[1]]))
+    g_w1 = tf.Variable(xavier_init([g_dim[0], g_dim[1]]))
+    g_b1 = tf.Variable(tf.zeros(shape=[g_dim[1]]))
 
-    G_W2 = tf.Variable(xavier_init([G_dim[1], G_dim[2]]))
-    G_b2 = tf.Variable(tf.zeros(shape=[G_dim[2]]))
+    g_w2 = tf.Variable(xavier_init([g_dim[1], g_dim[2]]))
+    g_b2 = tf.Variable(tf.zeros(shape=[g_dim[2]]))
 
-    theta_G = [G_W1, G_W2, G_b1, G_b2]
+    theta_g = [g_w1, g_w2, g_b1, g_b2]
 
     # Declare weights and biases of pre-train net for density estimation.
-    T_W1 = tf.Variable(xavier_init([D_dim[0], D_dim[1]]))
-    T_b1 = tf.Variable(tf.zeros(shape=[D_dim[1]]))
+    t_w1 = tf.Variable(xavier_init([d_dim[0], d_dim[1]]))
+    t_b1 = tf.Variable(tf.zeros(shape=[d_dim[1]]))
 
-    T_W2 = tf.Variable(xavier_init([D_dim[1], D_dim[2]]))
-    T_b2 = tf.Variable(tf.zeros(shape=[D_dim[2]]))
+    t_w2 = tf.Variable(xavier_init([d_dim[1], d_dim[2]]))
+    t_b2 = tf.Variable(tf.zeros(shape=[d_dim[2]]))
 
-    T_W3 = tf.Variable(xavier_init([D_dim[2], D_dim[3]]))
-    T_b3 = tf.Variable(tf.zeros(shape=[D_dim[3]]))
+    t_w3 = tf.Variable(xavier_init([d_dim[2], d_dim[3]]))
+    t_b3 = tf.Variable(tf.zeros(shape=[d_dim[3]]))
 
-    theta_T = [T_W1, T_W2, T_W3, T_b1, T_b2, T_b3]
+    theta_t = [t_w1, t_w2, t_w3, t_b1, t_b2, t_b3]
 
     def generator(z):
-        G_h1 = tf.nn.relu(tf.matmul(z, G_W1) + G_b1)
-        G_logit = tf.nn.tanh(tf.matmul(G_h1, G_W2) + G_b2)
-        return G_logit
+        g_h1 = tf.nn.relu(tf.matmul(z, g_w1) + g_b1)
+        g_logit = tf.nn.tanh(tf.matmul(g_h1, g_w2) + g_b2)
+        return g_logit
 
     def discriminator(x):
-        D_h1 = tf.nn.relu(tf.matmul(x, D_W1) + D_b1)
-        D_h2 = tf.nn.relu(tf.matmul(D_h1, D_W2) + D_b2)
-        D_logit = tf.matmul(D_h2, D_W3) + D_b3
-        D_prob = tf.nn.softmax(D_logit)
-        return D_prob, D_logit, D_h2
+        d_h1 = tf.nn.relu(tf.matmul(x, d_w1) + d_b1)
+        d_h2 = tf.nn.relu(tf.matmul(d_h1, d_w2) + d_b2)
+        d_logit = tf.matmul(d_h2, d_w3) + d_b3
+        d_prob = tf.nn.softmax(d_logit)
+        return d_prob, d_logit, d_h2
 
     # Pre-train net for density estimation.
     def discriminator_tar(x):
-        T_h1 = tf.nn.relu(tf.matmul(x, T_W1) + T_b1)
-        T_h2 = tf.nn.relu(tf.matmul(T_h1, T_W2) + T_b2)
-        T_logit = tf.matmul(T_h2, T_W3) + T_b3
-        T_prob = tf.nn.softmax(T_logit)
-        return T_prob, T_logit, T_h2
+        t_h1 = tf.nn.relu(tf.matmul(x, t_w1) + t_b1)
+        t_h2 = tf.nn.relu(tf.matmul(t_h1, t_w2) + t_b2)
+        t_logit = tf.matmul(t_h2, t_w3) + t_b3
+        t_prob = tf.nn.softmax(t_logit)
+        return t_prob, t_logit, t_h2
 
-    D_prob_real, D_logit_real, D_h2_real = discriminator(X_oc)
+    d_prob_real, d_logit_real, d_h2_real = discriminator(x_oc)
 
-    G_sample = generator(Z)
-    D_prob_gen, D_logit_gen, D_h2_gen = discriminator(G_sample)
+    g_sample = generator(z)
+    d_prob_gen, d_logit_gen, d_h2_gen = discriminator(g_sample)
 
-    D_prob_tar, D_logit_tar, D_h2_tar = discriminator_tar(X_tar)
-    D_prob_tar_gen, D_logit_tar_gen, D_h2_tar_gen = discriminator_tar(G_sample)
+    d_prob_tar, d_logit_tar, d_h2_tar = discriminator_tar(x_tar)
+    d_prob_tar_gen, d_logit_tar_gen, d_h2_tar_gen = discriminator_tar(g_sample)
 
     # Discriminator loss
-    y_real = tf.compat.v1.placeholder(tf.int32, shape=[None, D_dim[3]])
-    y_gen = tf.compat.v1.placeholder(tf.int32, shape=[None, D_dim[3]])
+    y_real = tf.compat.v1.placeholder(tf.int32, shape=[None, d_dim[3]])
+    y_gen = tf.compat.v1.placeholder(tf.int32, shape=[None, d_dim[3]])
 
-    D_loss_real = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=D_logit_real, labels=y_real))
-    D_loss_gen = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=D_logit_gen, labels=y_gen))
+    d_loss_real = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=d_logit_real, labels=y_real))
+    d_loss_gen = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=d_logit_gen, labels=y_gen))
 
     ent_real_loss = -tf.reduce_mean(
         tf.reduce_sum(
-            tf.multiply(D_prob_real, tf.math.log(D_prob_real)), 1
+            tf.multiply(d_prob_real, tf.math.log(d_prob_real)), 1
         )
     )
 
     ent_gen_loss = -tf.reduce_mean(
         tf.reduce_sum(
-            tf.multiply(D_prob_gen, tf.math.log(D_prob_gen)), 1
+            tf.multiply(d_prob_gen, tf.math.log(d_prob_gen)), 1
         )
     )
 
-    D_loss = D_loss_real + D_loss_gen + 1.85 * ent_real_loss
+    d_loss = d_loss_real + d_loss_gen + 1.85 * ent_real_loss
 
     # Generator loss
-    pt_loss = pull_away_loss(D_h2_tar_gen)
+    pt_loss = pull_away_loss(d_h2_tar_gen)
 
-    y_tar = tf.compat.v1.placeholder(tf.int32, shape=[None, D_dim[3]])
-    T_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=D_logit_tar, labels=y_tar))
-    tar_thrld = tf.divide(tf.reduce_max(D_prob_tar_gen[:, -1]) +
-                          tf.reduce_min(D_prob_tar_gen[:, -1]), 2)
+    y_tar = tf.compat.v1.placeholder(tf.int32, shape=[None, d_dim[3]])
+    t_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=d_logit_tar, labels=y_tar))
+    tar_thrld = tf.divide(tf.reduce_max(d_prob_tar_gen[:, -1]) +
+                          tf.reduce_min(d_prob_tar_gen[:, -1]), 2)
 
     indicator = tf.sign(
-        tf.subtract(D_prob_tar_gen[:, -1],
+        tf.subtract(d_prob_tar_gen[:, -1],
                     tar_thrld))
     condition = tf.greater(tf.zeros_like(indicator), indicator)
     mask_tar = tf.where(condition, tf.zeros_like(indicator), indicator)
-    G_ent_loss = tf.reduce_mean(tf.multiply(tf.math.log(D_prob_tar_gen[:, -1]), mask_tar))
+    g_ent_loss = tf.reduce_mean(tf.multiply(tf.math.log(d_prob_tar_gen[:, -1]), mask_tar))
 
     fm_loss = tf.reduce_mean(
         tf.sqrt(
             tf.reduce_sum(
-                tf.square(D_logit_real - D_logit_gen), 1
+                tf.square(d_logit_real - d_logit_gen), 1
             )
         )
     )
 
-    G_loss = pt_loss + G_ent_loss + fm_loss
+    g_loss = pt_loss + g_ent_loss + fm_loss
 
-    D_solver = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(D_loss, var_list=theta_D)
-    G_solver = tf.compat.v1.train.AdamOptimizer().minimize(G_loss, var_list=theta_G)
-    T_solver = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(T_loss, var_list=theta_T)
+    d_solver = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(d_loss, var_list=theta_d)
+    g_solver = tf.compat.v1.train.AdamOptimizer().minimize(g_loss, var_list=theta_g)
+    t_solver = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(t_loss, var_list=theta_t)
 
     # Process data
     x_ben = sample_shuffle_uspv(x_ben)
@@ -166,9 +165,9 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
     sess.run(tf.compat.v1.global_variables_initializer())
 
     # Pre-training for target distribution
-    _ = sess.run(T_solver,
+    _ = sess.run(t_solver,
                  feed_dict={
-                     X_tar: x_pre,
+                     x_tar: x_pre,
                      y_tar: y_pre
                  })
 
@@ -180,35 +179,35 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
     n_round = 200
 
     for n_epoch in range(n_round):
-        X_mb_oc = sample_shuffle_uspv(x_train)
+        x_mb_oc = sample_shuffle_uspv(x_train)
 
         for n_batch in range(int(q)):
-            _, D_loss_curr, ent_real_curr = sess.run([D_solver, D_loss, ent_real_loss],
+            _, d_loss_curr, ent_real_curr = sess.run([d_solver, d_loss, ent_real_loss],
                                                      feed_dict={
-                                                         X_oc: X_mb_oc[n_batch * mb_size:(n_batch + 1) * mb_size],
-                                                         Z: sample_Z(mb_size, Z_dim),
+                                                         x_oc: x_mb_oc[n_batch * mb_size:(n_batch + 1) * mb_size],
+                                                         z: sample_Z(mb_size, z_dim),
                                                          y_real: y_real_mb,
                                                          y_gen: y_fake_mb
                                                      })
 
-            _, G_loss_curr, fm_loss_curr = sess.run([G_solver, G_loss, fm_loss],
-                                                    feed_dict={Z: sample_Z(mb_size, Z_dim),
-                                                               X_oc: X_mb_oc[n_batch * mb_size:(n_batch + 1) * mb_size],
+            _, g_loss_curr, fm_loss_curr = sess.run([g_solver, g_loss, fm_loss],
+                                                    feed_dict={z: sample_Z(mb_size, z_dim),
+                                                               x_oc: x_mb_oc[n_batch * mb_size:(n_batch + 1) * mb_size],
                                                                })
 
-        D_prob_real_, D_prob_gen_ = sess.run([D_prob_real, D_prob_gen],
-                                             feed_dict={X_oc: x_train,
-                                                        Z: sample_Z(len(x_train), Z_dim)})
+        d_prob_real_, d_prob_gen_ = sess.run([d_prob_real, d_prob_gen],
+                                             feed_dict={x_oc: x_train,
+                                                        z: sample_Z(len(x_train), z_dim)})
 
-        D_prob_fraud_ = sess.run(D_prob_real,
-                                 feed_dict={X_oc: x_fraud[-test_fraud:]})
+        d_prob_fraud_ = sess.run(d_prob_real,
+                                 feed_dict={x_oc: x_fraud[-test_fraud:]})
 
-        d_ben_pro.append(np.mean(D_prob_real_[:, 0]))
-        d_fake_pro.append(np.mean(D_prob_gen_[:, 0]))
-        d_val_pro.append(np.mean(D_prob_fraud_[:, 0]))
+        d_ben_pro.append(np.mean(d_prob_real_[:, 0]))
+        d_fake_pro.append(np.mean(d_prob_gen_[:, 0]))
+        d_val_pro.append(np.mean(d_prob_fraud_[:, 0]))
         fm_loss_coll.append(fm_loss_curr)
 
-        prob, _ = sess.run([D_prob_real, D_logit_real], feed_dict={X_oc: x_test})
+        prob, _ = sess.run([d_prob_real, d_logit_real], feed_dict={x_oc: x_test})
         y_pred = np.argmax(prob, axis=1)
         conf_mat = classification_report(y_test, y_pred, target_names=['benign', 'fraud'], digits=4)
         f1_score.append(float(list(filter(None, conf_mat.strip().split(" ")))[12]))
