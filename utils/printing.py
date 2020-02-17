@@ -2,16 +2,17 @@ from tabulate import tabulate
 import numpy as np
 
 
-def print_results(method_list, iteration_count, usv_count, prec_coll, reca_coll, f1_coll, acc_coll):
+def print_results(method_list, iteration_count, special_count, usv_count, prec_coll, reca_coll, f1_coll, acc_coll):
     results = list()
 
     print(f'Average metrics over {iteration_count} iterations')
 
     for index, method in enumerate(method_list):
-        if index == 0:
+        if index == special_count - 1:
+            results.append(['Special Methods'])
+        if index == special_count:
             results.append(['Unsupervised Learning Methods'])
-
-        if index == usv_count:
+        if index == special_count + usv_count:
             results.append(['Supervised Learning Methods'])
 
         prec = f'{np.mean(prec_coll[:, index]).round(3)} \u00B1 {np.std(prec_coll[:, index]).round(3)}'
