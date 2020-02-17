@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 def xavier_init(size):
     in_dim = size[0]
     xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
-    return tf.random_normal(shape=size, stddev=xavier_stddev)
+    return tf.random.normal(shape=size, stddev=xavier_stddev)
 
 
 def pull_away_loss(g):
@@ -16,7 +16,7 @@ def pull_away_loss(g):
     X = tf.divide(g, Nor_mat)
     X_X = tf.square(tf.matmul(X, tf.transpose(X)))
     mask = tf.subtract(tf.ones_like(X_X),
-                       tf.diag(
+                       tf.linalg.tensor_diag(
                            tf.ones([tf.shape(X_X)[0]]))
                        )
     pt_loss = tf.divide(tf.reduce_sum(tf.multiply(X_X, mask)),
