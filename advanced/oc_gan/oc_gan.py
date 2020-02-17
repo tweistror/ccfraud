@@ -3,26 +3,30 @@ import numpy as np
 
 from sklearn.metrics import classification_report, precision_recall_fscore_support
 
-from advanced.oc_gan.load_data import get_data_ccfraud
 from advanced.oc_gan.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend
 
 
-def execute_oc_gan(dataset_string, usv_train, test_fraud, verbosity=0):
+def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbosity=0):
+    dim_input = x_ben.shape[1]
+
     # Set parameters
     if dataset_string == "paysim":
+        usv_train = 2000
+        test_fraud = 9000
         mb_size = 70
-        dim_input = 30
+        D_dim = [dim_input, 30, 15, 2]
+        G_dim = [15, 30, dim_input]
+        Z_dim = G_dim[0]
     elif dataset_string == "ccfraud":
         mb_size = 70
-        dim_input = 30
+        D_dim = [dim_input, 100, 50, 2]
+        G_dim = [50, 100, dim_input]
+        Z_dim = G_dim[0]
     elif dataset_string == "ieee":
         mb_size = 70
-        dim_input = 30
 
     # Set dimensions for discrimator, generator and
-    D_dim = [dim_input, 100, 50, 2]
-    G_dim = [50, 100, dim_input]
-    Z_dim = G_dim[0]
+
 
     # Define placeholders for labeled-data, unlabeled-data, noise-data and target-data.
     X_oc = tf.placeholder(tf.float32, shape=[None, dim_input])
@@ -141,8 +145,6 @@ def execute_oc_gan(dataset_string, usv_train, test_fraud, verbosity=0):
     T_solver = tf.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(T_loss, var_list=theta_T)
 
     # Process data
-    x_ben, x_fraud = get_data_ccfraud("ccfraud.csv")
-
     x_ben = sample_shuffle_uspv(x_ben)
     x_fraud = sample_shuffle_uspv(x_fraud)
 
@@ -208,15 +210,15 @@ def execute_oc_gan(dataset_string, usv_train, test_fraud, verbosity=0):
 
         prob, _ = sess.run([D_prob_real, D_logit_real], feed_dict={X_oc: x_test})
         y_pred = np.argmax(prob, axis=1)
-        conf_mat = classification_report(y_test, y_pred, target_names=['benign', 'vandal'], digits=4)
+        conf_mat = classification_report(y_test, y_pred, target_names=['benign', 'fraud'], digits=4)
         f1_score.append(float(list(filter(None, conf_mat.strip().split(" ")))[12]))
 
     acc = np.sum(y_pred == y_test) / float(y_pred.shape[0])
-    precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
+    precision, recall, f1, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
     if verbosity ==1:
         print(conf_mat)
         draw_trend(d_ben_pro, d_fake_pro, d_val_pro, fm_loss_coll, f1_score)
 
-    return precision[0], recall[0], fscore[0], acc, 'OC-GAN'
+    return precision[0], recall[0], f1[0], acc, 'OC-GAN'
 
