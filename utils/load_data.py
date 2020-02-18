@@ -34,22 +34,20 @@ def get_data_paysim(path, positive_samples=10000, verbosity=0):
 def get_data_ccfraud(path, positive_samples=10000, verbosity=0):
     data = load_data(path, verbosity)
 
-    # Extract `positive_samples` of benign transactions and all fraud transactions
+    scaler = MinMaxScaler()
+
+    data['scaled_amount'] = scaler.fit_transform(data['Amount'].values.reshape(-1, 1))
+    data['scaled_time'] = scaler.fit_transform(data['Time'].values.reshape(-1, 1))
+    data.drop(['Time', 'Amount'], axis=1, inplace=True)
+
     x_fraud = data.loc[data['Class'] == 1].sample(frac=1)
     x_ben = data.loc[data['Class'] == 0].sample(n=positive_samples)
 
-    scaler = MinMaxScaler()
-    x_fraud['scaled_amount'] = scaler.fit_transform(x_fraud['Amount'].values.reshape(-1, 1))
-    x_ben['scaled_amount'] = scaler.fit_transform(x_ben['Amount'].values.reshape(-1, 1))
+    x_fraud.drop(['Class'], axis=1, inplace=True)
+    x_ben.drop(['Class'], axis=1, inplace=True)
 
-    x_fraud['scaled_time'] = scaler.fit_transform(x_fraud['Time'].values.reshape(-1, 1))
-    x_ben['scaled_time'] = scaler.fit_transform(x_ben['Time'].values.reshape(-1, 1))
-
-    x_fraud.drop(['Time', 'Amount', 'Class'], axis=1, inplace=True)
-    x_ben.drop(['Time', 'Amount', 'Class'], axis=1, inplace=True)
-
-    x_ben = scaler.fit_transform(x_ben)
-    x_fraud = scaler.fit_transform(x_fraud)
+    x_fraud = x_fraud.values
+    x_ben = x_ben.values
 
     return x_ben, x_fraud
 
