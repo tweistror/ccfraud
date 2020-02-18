@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from sklearn.preprocessing import RobustScaler, MinMaxScaler, StandardScaler, LabelEncoder
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, LabelEncoder
 
 from utils.list_operations import clean_inf_nan
 
@@ -34,7 +34,7 @@ def get_data_paysim(path, positive_samples=10000, verbosity=0):
 def get_data_ccfraud(path, positive_samples=10000, verbosity=0):
     data = load_data(path, verbosity)
 
-    scaler = MinMaxScaler()
+    scaler = StandardScaler()
 
     data['scaled_amount'] = scaler.fit_transform(data['Amount'].values.reshape(-1, 1))
     data['scaled_time'] = scaler.fit_transform(data['Time'].values.reshape(-1, 1))
