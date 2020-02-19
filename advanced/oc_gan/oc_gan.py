@@ -9,7 +9,7 @@ from advanced.oc_gan.utils import xavier_init, pull_away_loss, sample_shuffle_us
 def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test,  verbosity=0):
     # Set parameters
     if dataset_string == "paysim":
-        mb_size = 70
+        mb_size = 25
         dim_input = 11
         test_fraud = int(len(x_test) / 2)
         d_dim = [dim_input, 30, 15, 2]
@@ -201,6 +201,8 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test,  verbosity=0):
         y_pred = np.argmax(prob, axis=1)
         conf_mat = classification_report(y_test, y_pred, target_names=['benign', 'fraud'], digits=4, zero_division=0)
         f1_score.append(float(list(filter(None, conf_mat.strip().split(" ")))[12]))
+
+    # TODO: Maybe add automatic stop when losing f1score
 
     acc = np.sum(y_pred == y_test) / float(y_pred.shape[0])
     precision, recall, f1, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)

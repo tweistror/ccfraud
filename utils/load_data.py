@@ -111,7 +111,7 @@ def load_data(path, verbosity=0):
 
 def get_parameters(dataset_string):
     if dataset_string == 'paysim':
-        usv_train = 5000
+        usv_train = 2000
         sv_train = 2000
         sv_train_fraud = 50
         test_fraud = 5000
