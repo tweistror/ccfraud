@@ -9,7 +9,8 @@ from sklearn.tree import DecisionTreeClassifier
 
 
 def svm_svc(x_train, y_train):
-    clf = svm.SVC()
+    # TODO: Use different kernels?
+    clf = svm.SVC(kernel='rbf')
     return clf.fit(x_train, y_train)
 
 
