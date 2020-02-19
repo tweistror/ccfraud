@@ -2,57 +2,55 @@ from datetime import datetime
 
 import pandas as pd
 
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, LabelEncoder
-
-from utils.list_operations import clean_inf_nan
+from sklearn.preprocessing import LabelEncoder
 
 root_path = './data/'
 
 
-def get_data_paysim(path, positive_samples=10000, verbosity=0):
+def get_data_paysim(path, verbosity=0):
+    # TODO: Add feature for nameOrig/nameDest relation
     data = load_data(path, verbosity)
 
-    # Drop unnecessary columns
-    # TODO: Add feature for nameOrig/nameDest relation
-    data = data.drop(columns=['nameOrig', 'nameDest', 'isFlaggedFraud'])
+    data.drop(columns=['nameOrig', 'nameDest', 'isFlaggedFraud'], inplace=True)
 
     data = pd.concat([data, pd.get_dummies(data['type'], prefix='type')], axis=1)
     data.drop(['type'], axis=1, inplace=True)
 
-    # Extract `positive_samples` of benign transactions and all fraud transactions
-    x_ben = data.loc[data['isFraud'] == 0].sample(positive_samples)
+    # Extract fraud and benign transactions and randomize order
     x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
+    x_ben = data.loc[data['isFraud'] == 0].sample(frac=1)
 
-    scaler = MinMaxScaler()
-
-    x_ben = scaler.fit_transform(x_ben)
-    x_fraud = scaler.fit_transform(x_fraud)
+    x_fraud.drop(['isFraud'], axis=1, inplace=True)
+    x_ben.drop(['isFraud'], axis=1, inplace=True)
 
     return x_ben, x_fraud
 
 
-def get_data_ccfraud(path, positive_samples=10000, verbosity=0):
+def get_data_ccfraud(path, verbosity=0):
     data = load_data(path, verbosity)
 
-    scaler = StandardScaler()
-
-    data['scaled_amount'] = scaler.fit_transform(data['Amount'].values.reshape(-1, 1))
-    data['scaled_time'] = scaler.fit_transform(data['Time'].values.reshape(-1, 1))
     data.drop(['Time', 'Amount'], axis=1, inplace=True)
 
+    # Extract fraud and benign transactions and randomize order
     x_fraud = data.loc[data['Class'] == 1].sample(frac=1)
-    x_ben = data.loc[data['Class'] == 0].sample(n=positive_samples)
+    x_ben = data.loc[data['Class'] == 0].sample(frac=1)
 
     x_fraud.drop(['Class'], axis=1, inplace=True)
     x_ben.drop(['Class'], axis=1, inplace=True)
 
-    x_fraud = x_fraud.values
-    x_ben = x_ben.values
-
     return x_ben, x_fraud
 
 
-def get_data_ieee(transaction_path, identity_path, positive_samples=10000, verbosity=0):
+def get_data_ieee(transaction_path, identity_path, verbosity=0, skip=False):
+    if skip is True:
+        start_time = datetime.now()
+        x_ben = pd.read_csv('./debug/ieee/x_ben.csv')
+        x_fraud = pd.read_csv('./debug/ieee/x_fraud.csv')
+        if verbosity > 0:
+            print(f'IEEE: Preprocessed dataset loaded in {str(datetime.now() - start_time)}')
+
+        return x_ben, x_fraud
+
     transaction_data = load_data(transaction_path, verbosity)
     identity_data = load_data(identity_path, verbosity)
 
@@ -81,11 +79,6 @@ def get_data_ieee(transaction_path, identity_path, positive_samples=10000, verbo
         except ValueError:
             pass
 
-    # Extract `positive_samples` of benign transactions and all fraud transactions
-    benign = data.loc[data['isFraud'] == 0].sample(positive_samples)
-    fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
-    data = pd.concat([benign, fraud])
-
     # Label-Encode categorical values
     for col in cat_cols:
         if col in data.columns:
@@ -93,18 +86,13 @@ def get_data_ieee(transaction_path, identity_path, positive_samples=10000, verbo
             le.fit(list(data[col].astype(str).values))
             data[col] = le.transform(list(data[col].astype(str).values))
 
-    data = data.drop(['TransactionDT', 'TransactionID'], axis=1)
+    data.drop(['TransactionDT', 'TransactionID'], axis=1, inplace=True)
 
-    x = data.loc[:, data.columns != 'isFraud']
-    y = data.loc[:, 'isFraud']
+    # Extract `positive_samples` of benign transactions and all fraud transactions
+    x_ben = data.loc[data['isFraud'] == 0].sample(frac=1)
+    x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
 
-    x = x.values
-    y = y.values
-
-    # Cleaning infinite values to NaN
-    x = clean_inf_nan(x)
-
-    return x[y == 0], x[y == 1]
+    return x_ben, x_fraud
 
 
 def load_data(path, verbosity=0):
@@ -123,7 +111,7 @@ def load_data(path, verbosity=0):
 
 def get_parameters(dataset_string):
     if dataset_string == 'paysim':
-        usv_train = 5000
+        usv_train = 2000
         sv_train = 2000
         sv_train_fraud = 50
         test_fraud = 5000
@@ -131,7 +119,7 @@ def get_parameters(dataset_string):
         usv_train = 700
         sv_train = 1000
         sv_train_fraud = 10
-        test_fraud = 490
+        test_fraud = 480
     elif dataset_string == 'ieee':
         usv_train = 1000
         sv_train = 2000

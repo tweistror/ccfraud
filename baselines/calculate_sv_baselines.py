@@ -3,10 +3,10 @@ from baselines.sv_baselines import svm_svc, knn, random_forest, decision_tree, s
 from utils.run_models import run_sv_classification
 
 
-def build_supervised_baselines(x_train, y_train, x_test, y_test, test_negative_samples):
+def build_supervised_baselines(x_train, y_train, x_test, y_test):
 
     def evaluate_model(clf, lists, label):
-        prec, reca, f1, acc = run_sv_classification(x_test, y_test, clf, test_negative_samples, 'fraud-prediction')
+        prec, reca, f1, acc = run_sv_classification(x_test, y_test, clf, 'fraud-prediction')
         lists['prec_list'].append(prec)
         lists['reca_list'].append(reca)
         lists['f1_list'].append(f1)

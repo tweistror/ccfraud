@@ -2,10 +2,10 @@ from baselines.usv_baselines import svm_oneclass, elliptic_envelope, iso_forest,
 from utils.run_models import run_usv_classification
 
 
-def build_unsupervised_baselines(x_train, x_test, y_test, test_negative_samples):
+def build_unsupervised_baselines(x_train, x_test, y_test):
 
     def evaluate_model(clf, lists, label):
-        prec, reca, f1, acc = run_usv_classification(x_test, y_test, clf, test_negative_samples, 'fraud-prediction')
+        prec, reca, f1, acc = run_usv_classification(x_test, y_test, clf, 'fraud-prediction')
         lists['prec_list'].append(prec)
         lists['reca_list'].append(reca)
         lists['f1_list'].append(f1)

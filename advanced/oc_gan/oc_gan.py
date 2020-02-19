@@ -6,19 +6,19 @@ from sklearn.metrics import classification_report, precision_recall_fscore_suppo
 from advanced.oc_gan.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend
 
 
-def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbosity=0):
-    dim_input = x_ben.shape[1]
-
+def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test,  verbosity=0):
     # Set parameters
     if dataset_string == "paysim":
-        usv_train = 2000
-        test_fraud = 9000
-        mb_size = 70
+        mb_size = 25
+        dim_input = 11
+        test_fraud = int(len(x_test) / 2)
         d_dim = [dim_input, 30, 15, 2]
         g_dim = [15, 30, dim_input]
         z_dim = g_dim[0]
     elif dataset_string == "ccfraud":
         mb_size = 70
+        dim_input = 28
+        test_fraud = int(len(x_test) / 2)
         d_dim = [dim_input, 100, 50, 2]
         g_dim = [50, 100, dim_input]
         z_dim = g_dim[0]
@@ -144,22 +144,12 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
     t_solver = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(t_loss, var_list=theta_t)
 
     # Process data
-    x_ben = sample_shuffle_uspv(x_ben)
-    x_fraud = sample_shuffle_uspv(x_fraud)
-
-    x_pre = x_ben[0:usv_train]
+    x_pre = x_usv_train
     y_pre = np.zeros(len(x_pre))
     y_pre = one_hot(y_pre, 2)
 
-    x_train = x_pre
-
     y_real_mb = one_hot(np.zeros(mb_size), 2)
     y_fake_mb = one_hot(np.ones(mb_size), 2)
-
-    x_test = x_pre[-test_fraud:].tolist() + x_fraud[-test_fraud:].tolist()
-    x_test = np.array(x_test)
-    y_test = np.zeros(len(x_test))
-    y_test[test_fraud:] = 1
 
     sess = tf.compat.v1.Session()
     sess.run(tf.compat.v1.global_variables_initializer())
@@ -171,7 +161,7 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
                      y_tar: y_pre
                  })
 
-    q = np.divide(len(x_train), mb_size)
+    q = np.divide(len(x_usv_train), mb_size)
 
     d_ben_pro, d_fake_pro, fm_loss_coll = list(), list(), list()
     f1_score = list()
@@ -179,7 +169,7 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
     n_round = 200
 
     for n_epoch in range(n_round):
-        x_mb_oc = sample_shuffle_uspv(x_train)
+        x_mb_oc = sample_shuffle_uspv(x_usv_train)
 
         for n_batch in range(int(q)):
             _, d_loss_curr, ent_real_curr = sess.run([d_solver, d_loss, ent_real_loss],
@@ -196,11 +186,11 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
                                                                })
 
         d_prob_real_, d_prob_gen_ = sess.run([d_prob_real, d_prob_gen],
-                                             feed_dict={x_oc: x_train,
-                                                        z: sample_Z(len(x_train), z_dim)})
+                                             feed_dict={x_oc: x_usv_train,
+                                                        z: sample_Z(len(x_usv_train), z_dim)})
 
         d_prob_fraud_ = sess.run(d_prob_real,
-                                 feed_dict={x_oc: x_fraud[-test_fraud:]})
+                                 feed_dict={x_oc: x_test[-test_fraud:]})
 
         d_ben_pro.append(np.mean(d_prob_real_[:, 0]))
         d_fake_pro.append(np.mean(d_prob_gen_[:, 0]))
@@ -209,8 +199,10 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
 
         prob, _ = sess.run([d_prob_real, d_logit_real], feed_dict={x_oc: x_test})
         y_pred = np.argmax(prob, axis=1)
-        conf_mat = classification_report(y_test, y_pred, target_names=['benign', 'fraud'], digits=4)
+        conf_mat = classification_report(y_test, y_pred, target_names=['benign', 'fraud'], digits=4, zero_division=0)
         f1_score.append(float(list(filter(None, conf_mat.strip().split(" ")))[12]))
+
+    # TODO: Maybe add automatic stop when losing f1score
 
     acc = np.sum(y_pred == y_test) / float(y_pred.shape[0])
     precision, recall, f1, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
@@ -219,5 +211,5 @@ def execute_oc_gan(dataset_string, x_ben, x_fraud, usv_train, test_fraud, verbos
         print(conf_mat)
         draw_trend(d_ben_pro, d_fake_pro, d_val_pro, fm_loss_coll, f1_score)
 
-    return precision[0], recall[0], f1[0], acc, 'OC-GAN'
+    return precision[1], recall[1], f1[1], acc, 'OC-GAN'
 
