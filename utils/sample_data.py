@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from utils.list_operations import sample_shuffle, clean_inf_nan
 
 
@@ -20,7 +20,15 @@ def sample_paysim(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_frau
 def sample_ccfraud(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud):
     sv_train_ben = sv_train - sv_train_fraud
 
-    return data_sampling(x_ben, x_fraud, usv_train, sv_train_ben, sv_train_fraud, test_fraud)
+    x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
+        data_sampling(x_ben, x_fraud, usv_train, sv_train_ben, sv_train_fraud, test_fraud)
+
+    sc = MinMaxScaler()
+    x_sv_train = sc.fit_transform(x_sv_train)
+    x_usv_train = sc.transform(x_usv_train)
+    x_test = sc.transform(x_test)
+
+    return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
 
 def sample_ieee(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud):
