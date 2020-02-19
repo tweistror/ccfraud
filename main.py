@@ -6,10 +6,9 @@ from datetime import datetime
 from advanced.oc_gan.oc_gan import execute_oc_gan
 from baselines.calculate_sv_baselines import build_supervised_baselines
 from baselines.calculate_usv_baselines import build_unsupervised_baselines
-from utils.list_operations import sample_shuffle
 from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee, get_parameters
 from utils.printing import print_results
-from utils.sample_data import sample_data_for_unsupervised_baselines, sample_data_for_supervised_baselines
+from utils.sample_data import sample_paysim, sample_ccfraud, sample_ieee
 
 datasets = ["paysim", "ccfraud", "ieee"]
 
@@ -33,25 +32,18 @@ method = args.method
 baselines = args.baselines
 iteration_count = int(args.iterations)
 
-# Specify positive samples to load
-positive_samples = 20000
-
 # Set parameters
 usv_train, sv_train, sv_train_fraud, test_fraud = get_parameters(dataset_string)
 
+skip_ieee_processing = True
+
 if dataset_string == "paysim":
-    x_ben, x_fraud = get_data_paysim("paysim.csv", positive_samples=positive_samples, verbosity=verbosity)
-    x_ben = sample_shuffle(x_ben)
+    x_ben, x_fraud = get_data_paysim("paysim.csv", verbosity=verbosity)
 elif dataset_string == "ccfraud":
-    x_usv_train, x_sv_train, y_sv_train, x_test, y_test = get_data_ccfraud("ccfraud.csv", usv_train, sv_train,
-                                                                           sv_train_fraud, test_fraud,
-                                                                           positive_samples=positive_samples,
-                                                                           verbosity=verbosity)
+    x_ben, x_fraud = get_data_ccfraud("ccfraud.csv", verbosity=verbosity)
 elif dataset_string == "ieee":
-    x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", positive_samples=positive_samples,
-                                   verbosity=verbosity)
-    x_ben = sample_shuffle(x_ben)
-    x_fraud = sample_shuffle(x_fraud[0:2000])
+    x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", verbosity=verbosity,
+                                   skip=skip_ieee_processing)
 
 # Initialize collections for evaluation results
 prec_coll = list()
@@ -75,6 +67,16 @@ for i in range(iteration_count):
     reca_list = list()
     f1_list = list()
     acc_list = list()
+
+    if dataset_string == "paysim":
+        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_paysim(x_ben, x_fraud, usv_train, sv_train,
+                                                                            sv_train_fraud, test_fraud)
+    elif dataset_string == "ccfraud":
+        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ccfraud(x_ben, x_fraud, usv_train, sv_train,
+                                                                             sv_train_fraud, test_fraud)
+    elif dataset_string == "ieee":
+        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ieee(x_ben, x_fraud, usv_train, sv_train,
+                                                                          sv_train_fraud, test_fraud)
 
     if verbosity > 1:
         print(f'Starting iteration #{i + 1}')
