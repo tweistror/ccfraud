@@ -36,20 +36,22 @@ iteration_count = int(args.iterations)
 # Specify positive samples to load
 positive_samples = 20000
 
+# Set parameters
+usv_train, sv_train, sv_train_fraud, test_fraud = get_parameters(dataset_string)
+
 if dataset_string == "paysim":
     x_ben, x_fraud = get_data_paysim("paysim.csv", positive_samples=positive_samples, verbosity=verbosity)
     x_ben = sample_shuffle(x_ben)
 elif dataset_string == "ccfraud":
-    x_ben, x_fraud = get_data_ccfraud("ccfraud.csv", positive_samples=positive_samples, verbosity=verbosity)
-    x_ben = sample_shuffle(x_ben)
+    x_usv_train, x_sv_train, y_sv_train, x_test, y_test = get_data_ccfraud("ccfraud.csv", usv_train, sv_train,
+                                                                           sv_train_fraud, test_fraud,
+                                                                           positive_samples=positive_samples,
+                                                                           verbosity=verbosity)
 elif dataset_string == "ieee":
     x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", positive_samples=positive_samples,
                                    verbosity=verbosity)
     x_ben = sample_shuffle(x_ben)
     x_fraud = sample_shuffle(x_fraud[0:2000])
-
-# Set parameters
-usv_train, sv_train, sv_train_fraud, test_fraud = get_parameters(dataset_string)
 
 # Initialize collections for evaluation results
 prec_coll = list()
@@ -91,11 +93,9 @@ for i in range(iteration_count):
             print(f'Special methods: Iteration #{i + 1} finished')
 
     if baselines == 'usv' or baselines == 'both':
-        # Sample data for unsupervised learning baselines
-        x_train, x_test, y_test = sample_data_for_unsupervised_baselines(x_ben, x_fraud, usv_train)
         # Execute unsupervised learning baselines
         prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
-            build_unsupervised_baselines(x_train, x_test, y_test, test_fraud)
+            build_unsupervised_baselines(x_usv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_usv_list
@@ -108,12 +108,9 @@ for i in range(iteration_count):
             print(f'Unsupervised: Iteration #{i + 1} finished')
 
     if baselines == 'sv' or baselines == 'both':
-        # Sample data for supervised learning baselines
-        x_train, x_test, y_train, y_test = \
-            sample_data_for_supervised_baselines(x_ben, x_fraud, sv_train, sv_train_fraud)
         # Execute supervised learning baselines
         prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
-            build_supervised_baselines(x_train, y_train, x_test, y_test, test_fraud)
+            build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_sv_list

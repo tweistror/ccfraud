@@ -36,10 +36,18 @@ def get_data_ccfraud(path, positive_samples=10000, verbosity=0):
 
     scaler = StandardScaler()
 
-    data['scaled_amount'] = scaler.fit_transform(data['Amount'].values.reshape(-1, 1))
-    data['scaled_time'] = scaler.fit_transform(data['Time'].values.reshape(-1, 1))
+
+def get_data_ccfraud(path, usv_train, sv_train, sv_train_fraud, test_fraud, positive_samples=10000, verbosity=0):
+    data = load_data(path, verbosity)
+
+    sv_train_ben = sv_train - sv_train_fraud
+
+    if positive_samples < sv_train + test_fraud * 2 or positive_samples < usv_train + test_fraud * 2:
+        warnings.warn('Sample size too small for correct execution. Please check parameters!')
+
     data.drop(['Time', 'Amount'], axis=1, inplace=True)
 
+    # Extract fraud and benign transactions and randomize order
     x_fraud = data.loc[data['Class'] == 1].sample(frac=1)
     x_ben = data.loc[data['Class'] == 0].sample(n=positive_samples)
 
@@ -49,7 +57,24 @@ def get_data_ccfraud(path, positive_samples=10000, verbosity=0):
     x_fraud = x_fraud.values
     x_ben = x_ben.values
 
-    return x_ben, x_fraud
+    x_usv_train = x_ben[0:usv_train]
+
+    x_sv_train_ben = x_ben[0:sv_train_ben]
+    x_sv_train_fraud = x_fraud[0:sv_train_fraud]
+    x_y_sv_train_ben = np.append(x_sv_train_ben, np.zeros((sv_train_ben, 1)), axis=1)
+    x_y_sv_train_fraud = np.append(x_sv_train_fraud, np.ones((sv_train_fraud, 1)), axis=1)
+    x_y_sv_train = np.concatenate((x_y_sv_train_ben, x_y_sv_train_fraud))
+    x_y_sv_train = sample_shuffle(x_y_sv_train)
+    x_sv_train = x_y_sv_train[:, :-1]
+    y_sv_train = x_y_sv_train[:, -1]
+
+    x_test = x_ben[-test_fraud:].tolist() + x_fraud[-test_fraud:].tolist()
+    x_test = np.array(x_test)
+
+    y_test = np.zeros(2 * test_fraud)
+    y_test[test_fraud:] = 1
+
+    return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
 
 def get_data_ieee(transaction_path, identity_path, positive_samples=10000, verbosity=0):
@@ -131,7 +156,7 @@ def get_parameters(dataset_string):
         usv_train = 700
         sv_train = 1000
         sv_train_fraud = 10
-        test_fraud = 490
+        test_fraud = 480
     elif dataset_string == 'ieee':
         usv_train = 1000
         sv_train = 2000
