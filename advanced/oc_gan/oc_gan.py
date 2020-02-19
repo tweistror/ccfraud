@@ -209,5 +209,5 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test,  verbosity=0):
         print(conf_mat)
         draw_trend(d_ben_pro, d_fake_pro, d_val_pro, fm_loss_coll, f1_score)
 
-    return precision[0], recall[0], f1[0], acc, 'OC-GAN'
+    return precision[1], recall[1], f1[1], acc, 'OC-GAN'
 
