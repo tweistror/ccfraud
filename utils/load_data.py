@@ -38,6 +38,7 @@ def get_data_paysim(path, verbosity=0):
 def get_data_ccfraud(path, verbosity=0):
     data = load_data(path, verbosity)
 
+    # Drop `Time` and `Amount`
     data.drop(['Time', 'Amount'], axis=1, inplace=True)
 
     # Extract fraud and benign transactions and randomize order
