@@ -23,7 +23,7 @@ def sample_ccfraud(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fra
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
         data_sampling(x_ben, x_fraud, usv_train, sv_train_ben, sv_train_fraud, test_fraud)
 
-    sc = MinMaxScaler()
+    sc = StandardScaler()
     x_sv_train = sc.fit_transform(x_sv_train)
     x_usv_train = sc.transform(x_usv_train)
     x_test = sc.transform(x_test)
