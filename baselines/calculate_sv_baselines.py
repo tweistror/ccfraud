@@ -1,6 +1,10 @@
+from xgboost import plot_importance
+import numpy as np
+
 from baselines.sv_baselines import svm_svc, knn, random_forest, decision_tree, svm_linearsvc, gnb, xgboost, \
     logistic_regression, sgd, gaussian_process, adaboost
 from utils.run_models import run_sv_classification
+import matplotlib.pyplot as plt
 
 
 def build_supervised_baselines(x_train, y_train, x_test, y_test):
@@ -45,7 +49,9 @@ def build_supervised_baselines(x_train, y_train, x_test, y_test):
     results = evaluate_model(logistic_regression(x_train, y_train), results, 'Logistic Regression')
 
     # XGBoost
-    results = evaluate_model(xgboost(x_train, y_train), results, 'XG Boost')
+    clf = xgboost(x_train, y_train)
+    results = evaluate_model(clf, results, 'XG Boost')
+    # plot_xgb_feature_importance(clf)
 
     # SGD Classifier
     results = evaluate_model(sgd(x_train, y_train), results, 'SGD')
@@ -60,3 +66,22 @@ def build_supervised_baselines(x_train, y_train, x_test, y_test):
     results = evaluate_model(adaboost(x_train, y_train), results, 'Adaboost')
 
     return results['prec_list'], results['reca_list'], results['f1_list'], results['acc_list'], results['method_list']
+
+
+def plot_xgb_feature_importance(clf):
+    fig = plt.figure(figsize=(14, 9))
+    ax = fig.add_subplot(111)
+
+    colours = plt.cm.Set1(np.linspace(0, 1, 9))
+
+    ax = plot_importance(clf, height=1, color=colours, grid=False, \
+                         show_values=False, importance_type='cover', ax=ax);
+    for axis in ['top', 'bottom', 'left', 'right']:
+        ax.spines[axis].set_linewidth(2)
+
+    ax.set_xlabel('importance score', size=16);
+    ax.set_ylabel('features', size=16);
+    ax.set_yticklabels(ax.get_yticklabels(), size=12);
+    ax.set_title('Ordering of features by importance to the model learnt', size=20)
+
+    plt.show()
