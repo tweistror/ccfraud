@@ -8,11 +8,20 @@ root_path = './data/'
 
 
 def get_data_paysim(path, verbosity=0):
-    # TODO: Add feature for nameOrig/nameDest relation
     data = load_data(path, verbosity)
 
+    # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
+    # Feature is not important
+    # data['nameOrig'] = data['nameOrig'].apply(lambda x: x[:1])
+    # data['nameDest'] = data['nameDest'].apply(lambda x: x[:1])
+    # data['from_to'] = data['nameOrig'] + data['nameDest']
+    # data = pd.concat([data, pd.get_dummies(data['from_to'], prefix='from_to')], axis=1)
+    # data.drop(columns=['from_to'], inplace=True)
+
+    # Drop `isFlaggedFraud` column
     data.drop(columns=['nameOrig', 'nameDest', 'isFlaggedFraud'], inplace=True)
 
+    # One-hot encode type
     data = pd.concat([data, pd.get_dummies(data['type'], prefix='type')], axis=1)
     data.drop(['type'], axis=1, inplace=True)
 
