@@ -5,7 +5,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 
 import xgboost as xgb
-from sklearn.tree import DecisionTreeClassifier
 
 
 def svm_svc(x_train, y_train):
@@ -56,11 +55,6 @@ def sgd(x_train, y_train):
 
 def gaussian_process(x_train, y_train):
     clf = GaussianProcessClassifier()
-    return clf.fit(x_train, y_train)
-
-
-def decision_tree(x_train, y_train):
-    clf = DecisionTreeClassifier()
     return clf.fit(x_train, y_train)
 
 

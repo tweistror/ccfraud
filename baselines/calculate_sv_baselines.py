@@ -59,9 +59,6 @@ def build_supervised_baselines(x_train, y_train, x_test, y_test):
     # Gaussian Process
     results = evaluate_model(gaussian_process(x_train, y_train), results, 'Gaussian Process')
 
-    # Decision Tree
-    results = evaluate_model(decision_tree(x_train, y_train), results, 'Decision Tree')
-
     # Adaboost
     results = evaluate_model(adaboost(x_train, y_train), results, 'Adaboost')
 
