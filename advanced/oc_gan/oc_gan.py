@@ -4,9 +4,10 @@ import numpy as np
 from sklearn.metrics import classification_report, precision_recall_fscore_support
 
 from advanced.oc_gan.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend
+tf.compat.v1.disable_eager_execution()
 
 
-def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test,  verbosity=0):
+def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test, verbosity=0):
     # Set parameters
     if dataset_string == "paysim":
         mb_size = 25
