@@ -6,9 +6,10 @@ from datetime import datetime
 from advanced.oc_gan.oc_gan import execute_oc_gan
 from baselines.calculate_sv_baselines import build_supervised_baselines
 from baselines.calculate_usv_baselines import build_unsupervised_baselines
+from utils.crossvalidation import Crossvalidator
 from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee, get_parameters
 from utils.printing import print_results
-from utils.sample_data import sample_paysim, sample_ccfraud, sample_ieee
+from utils.sample_data import sample_paysim, sample_ccfraud, sample_ieee, execute_nearmiss, execute_smote
 
 datasets = ["paysim", "ccfraud", "ieee"]
 
@@ -19,12 +20,11 @@ parser.add_argument("--method", choices=["oc-gan"],
                     help="Machine learning method used for classification")
 parser.add_argument("--baselines", choices=["usv", "sv", "both"],
                     help="Execute baselines or not")
-parser.add_argument("--mode", choices=["baseline", "solo"], help='''Execution mode: 
-`baseline` for comparison to other baseline methods
-`solo` for executing the chosen method only''')
 parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Specify verbosity")
 parser.add_argument("--iterations", default="10", help="Specify number of iterations each method is executed")
 parser.add_argument("--cv", help="Specify number of cross validation splits")
+parser.add_argument("--oversampling", choices=['y', 'n'], default='n', help="Use oversampling (SMOTE) or not")
+# TODO: Requirement: Oversampling only possible for oversampling `y`
 
 args = parser.parse_args()
 dataset_string = args.dataset
@@ -32,6 +32,7 @@ verbosity = int(args.v)
 method = args.method
 baselines = args.baselines
 iteration_count = int(args.iterations)
+use_oversampling = True if args.oversampling == 'y' else False
 cross_validation_count = 0 if args.cv is None else int(args.cv)
 
 # Set parameters
@@ -82,10 +83,16 @@ for i in range(iteration_count):
         x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ieee(x_ben, x_fraud, usv_train, sv_train,
                                                                           sv_train_fraud, test_fraud,
                                                                           cross_validation_count)
+    # Use ccfraud as fallback
+    else:
+        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ccfraud(x_ben, x_fraud, usv_train, sv_train,
+                                                                             sv_train_fraud, test_fraud,
+                                                                             cross_validation_count)
 
     # Over/undersampling
     if use_oversampling is True:
         x_sv_train, y_sv_train = execute_smote(x_sv_train, y_sv_train)
+
     # x_sv_train, y_sv_train = execute_nearmiss(x_sv_train, y_sv_train)
 
     # tsne_plot(x_sv_train, y_sv_train, "original.png")
@@ -127,8 +134,12 @@ for i in range(iteration_count):
 
     if baselines == 'sv' or baselines == 'both':
         # Execute supervised learning baselines
-        prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
-            build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
+        if cross_validation_count > 0:
+            cv = Crossvalidator(cross_validation_count, 'StratifiedKFold', x_sv_train, y_sv_train)
+            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = cv.execute_cv()
+        else:
+            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
+                build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_sv_list
