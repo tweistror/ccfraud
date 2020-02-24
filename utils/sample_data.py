@@ -1,4 +1,6 @@
 import numpy as np
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import NearMiss
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from utils.list_operations import sample_shuffle, clean_inf_nan
@@ -103,3 +105,17 @@ def data_sampling_cv(x_ben, x_fraud, usv_train, sv_train_ben, sv_train_fraud, te
     y_test[test_fraud:] = 1
 
     return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
+
+
+def execute_smote(x_sv_train, y_sv_train):
+    sm = SMOTE()
+    x_res, y_res = sm.fit_resample(X=x_sv_train, y=y_sv_train)
+
+    return x_res, y_res
+
+
+def execute_nearmiss(x_sv_train, y_sv_train):
+    sm = NearMiss()
+    x_res, y_res = sm.fit_resample(X=x_sv_train, y=y_sv_train)
+
+    return x_res, y_res
