@@ -23,7 +23,8 @@ parser.add_argument("--mode", choices=["baseline", "solo"], help='''Execution mo
 `baseline` for comparison to other baseline methods
 `solo` for executing the chosen method only''')
 parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Specify verbosity")
-parser.add_argument("--iterations", default=10, help="Specify number of iterations each method is executed")
+parser.add_argument("--iterations", default="10", help="Specify number of iterations each method is executed")
+parser.add_argument("--cv", help="Specify number of cross validation splits")
 
 args = parser.parse_args()
 dataset_string = args.dataset
@@ -31,9 +32,10 @@ verbosity = int(args.v)
 method = args.method
 baselines = args.baselines
 iteration_count = int(args.iterations)
+cross_validation_count = 0 if args.cv is None else int(args.cv)
 
 # Set parameters
-usv_train, sv_train, sv_train_fraud, test_fraud = get_parameters(dataset_string)
+usv_train, sv_train, sv_train_fraud, test_fraud = get_parameters(dataset_string, cross_validation_count)
 
 skip_ieee_processing = True
 
@@ -70,10 +72,12 @@ for i in range(iteration_count):
 
     if dataset_string == "paysim":
         x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_paysim(x_ben, x_fraud, usv_train, sv_train,
-                                                                            sv_train_fraud, test_fraud)
+                                                                            sv_train_fraud, test_fraud,
+                                                                            cross_validation_count)
     elif dataset_string == "ccfraud":
         x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ccfraud(x_ben, x_fraud, usv_train, sv_train,
-                                                                             sv_train_fraud, test_fraud)
+                                                                             sv_train_fraud, test_fraud,
+                                                                             cross_validation_count)
     elif dataset_string == "ieee":
         x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ieee(x_ben, x_fraud, usv_train, sv_train,
                                                                           sv_train_fraud, test_fraud)
@@ -96,8 +100,41 @@ for i in range(iteration_count):
 
     if baselines == 'usv' or baselines == 'both':
         # Execute unsupervised learning baselines
-        prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
-            build_unsupervised_baselines(x_usv_train, x_test, y_test)
+        if cross_validation_count > 0:
+            temp_prec_list = list()
+            temp_reca_list = list()
+            temp_f1_list = list()
+            temp_acc_list = list()
+
+            for index in range(cross_validation_count):
+                prec_list_1, reca_list_1, f1_list_1, acc_list_1, method_usv_list = \
+                    build_unsupervised_baselines(x_usv_train[index * usv_train:(index + 1) * usv_train],
+                                                 x_test, y_test)
+                temp_prec_list.append(prec_list_1)
+                temp_reca_list.append(reca_list_1)
+                temp_f1_list.append(f1_list_1)
+                temp_acc_list.append(acc_list_1)
+
+            temp_prec_list, temp_reca_list, temp_f1_list, temp_acc_list = \
+                np.array(temp_prec_list), np.array(temp_reca_list), np.array(temp_f1_list), np.array(temp_acc_list)
+
+            prec_usv_list = list()
+            reca_usv_list = list()
+            f1_usv_list = list()
+            acc_usv_list = list()
+            for index, method in enumerate(method_usv_list):
+                prec = np.mean(temp_prec_list[:, index]).round(3)
+                reca = np.mean(temp_reca_list[:, index]).round(3)
+                f1 = np.mean(temp_f1_list[:, index]).round(3)
+                acc = np.mean(temp_acc_list[:, index]).round(3)
+                prec_usv_list.append(prec)
+                reca_usv_list.append(reca)
+                f1_usv_list.append(f1)
+                acc_usv_list.append(acc)
+
+        else:
+            prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
+                build_unsupervised_baselines(x_usv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_usv_list
@@ -111,8 +148,41 @@ for i in range(iteration_count):
 
     if baselines == 'sv' or baselines == 'both':
         # Execute supervised learning baselines
-        prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
-            build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
+        if cross_validation_count > 0:
+            temp_prec_list = list()
+            temp_reca_list = list()
+            temp_f1_list = list()
+            temp_acc_list = list()
+
+            for index in range(cross_validation_count):
+                prec_list_1, reca_list_1, f1_list_1, acc_list_1, method_sv_list = \
+                    build_supervised_baselines(x_sv_train[index * sv_train:(index + 1) * sv_train],
+                                               y_sv_train[index * sv_train:(index + 1) * sv_train], x_test, y_test)
+                temp_prec_list.append(prec_list_1)
+                temp_reca_list.append(reca_list_1)
+                temp_f1_list.append(f1_list_1)
+                temp_acc_list.append(acc_list_1)
+
+            temp_prec_list, temp_reca_list, temp_f1_list, temp_acc_list = \
+                np.array(temp_prec_list), np.array(temp_reca_list), np.array(temp_f1_list), np.array(temp_acc_list)
+
+            prec_sv_list = list()
+            reca_sv_list = list()
+            f1_sv_list = list()
+            acc_sv_list = list()
+            for index, method in enumerate(method_sv_list):
+                prec = np.mean(temp_prec_list[:, index]).round(3)
+                reca = np.mean(temp_reca_list[:, index]).round(3)
+                f1 = np.mean(temp_f1_list[:, index]).round(3)
+                acc = np.mean(temp_acc_list[:, index]).round(3)
+                prec_sv_list.append(prec)
+                reca_sv_list.append(reca)
+                f1_sv_list.append(f1)
+                acc_sv_list.append(acc)
+
+        else:
+            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
+                build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_sv_list
