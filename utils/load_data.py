@@ -123,7 +123,7 @@ def get_parameters(dataset_string, cross_validation_count=0):
     if dataset_string == 'paysim':
         usv_train = 2000
         sv_train = 2000
-        sv_train_fraud = 50
+        sv_train_fraud = 20
         test_fraud = 5000 - cross_validation_count * sv_train_fraud
     elif dataset_string == 'ccfraud':
         usv_train = 2000
@@ -133,7 +133,7 @@ def get_parameters(dataset_string, cross_validation_count=0):
     elif dataset_string == 'ieee':
         usv_train = 1000
         sv_train = 2000
-        sv_train_fraud = 50
-        test_fraud = 1000 - cross_validation_count * sv_train_fraud
+        sv_train_fraud = 20
+        test_fraud = 5000 - cross_validation_count * sv_train_fraud
 
     return usv_train, sv_train, sv_train_fraud, test_fraud
