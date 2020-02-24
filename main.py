@@ -80,7 +80,19 @@ for i in range(iteration_count):
                                                                              cross_validation_count)
     elif dataset_string == "ieee":
         x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ieee(x_ben, x_fraud, usv_train, sv_train,
-                                                                          sv_train_fraud, test_fraud)
+                                                                          sv_train_fraud, test_fraud,
+                                                                          cross_validation_count)
+
+    # Over/undersampling
+    if use_oversampling is True:
+        x_sv_train, y_sv_train = execute_smote(x_sv_train, y_sv_train)
+    # x_sv_train, y_sv_train = execute_nearmiss(x_sv_train, y_sv_train)
+
+    # tsne_plot(x_sv_train, y_sv_train, "original.png")
+    # ex_ae(x_usv_train, x_ben, x_fraud, x_test, y_test)
+
+    # gan = GAN()
+    # gan.train(epochs=30000, batch_size=32, sample_interval=200)
 
     if verbosity > 1:
         print(f'Starting iteration #{i + 1}')
@@ -100,41 +112,8 @@ for i in range(iteration_count):
 
     if baselines == 'usv' or baselines == 'both':
         # Execute unsupervised learning baselines
-        if cross_validation_count > 0:
-            temp_prec_list = list()
-            temp_reca_list = list()
-            temp_f1_list = list()
-            temp_acc_list = list()
-
-            for index in range(cross_validation_count):
-                prec_list_1, reca_list_1, f1_list_1, acc_list_1, method_usv_list = \
-                    build_unsupervised_baselines(x_usv_train[index * usv_train:(index + 1) * usv_train],
-                                                 x_test, y_test)
-                temp_prec_list.append(prec_list_1)
-                temp_reca_list.append(reca_list_1)
-                temp_f1_list.append(f1_list_1)
-                temp_acc_list.append(acc_list_1)
-
-            temp_prec_list, temp_reca_list, temp_f1_list, temp_acc_list = \
-                np.array(temp_prec_list), np.array(temp_reca_list), np.array(temp_f1_list), np.array(temp_acc_list)
-
-            prec_usv_list = list()
-            reca_usv_list = list()
-            f1_usv_list = list()
-            acc_usv_list = list()
-            for index, method in enumerate(method_usv_list):
-                prec = np.mean(temp_prec_list[:, index]).round(3)
-                reca = np.mean(temp_reca_list[:, index]).round(3)
-                f1 = np.mean(temp_f1_list[:, index]).round(3)
-                acc = np.mean(temp_acc_list[:, index]).round(3)
-                prec_usv_list.append(prec)
-                reca_usv_list.append(reca)
-                f1_usv_list.append(f1)
-                acc_usv_list.append(acc)
-
-        else:
-            prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
-                build_unsupervised_baselines(x_usv_train, x_test, y_test)
+        prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
+            build_unsupervised_baselines(x_usv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_usv_list
@@ -148,41 +127,8 @@ for i in range(iteration_count):
 
     if baselines == 'sv' or baselines == 'both':
         # Execute supervised learning baselines
-        if cross_validation_count > 0:
-            temp_prec_list = list()
-            temp_reca_list = list()
-            temp_f1_list = list()
-            temp_acc_list = list()
-
-            for index in range(cross_validation_count):
-                prec_list_1, reca_list_1, f1_list_1, acc_list_1, method_sv_list = \
-                    build_supervised_baselines(x_sv_train[index * sv_train:(index + 1) * sv_train],
-                                               y_sv_train[index * sv_train:(index + 1) * sv_train], x_test, y_test)
-                temp_prec_list.append(prec_list_1)
-                temp_reca_list.append(reca_list_1)
-                temp_f1_list.append(f1_list_1)
-                temp_acc_list.append(acc_list_1)
-
-            temp_prec_list, temp_reca_list, temp_f1_list, temp_acc_list = \
-                np.array(temp_prec_list), np.array(temp_reca_list), np.array(temp_f1_list), np.array(temp_acc_list)
-
-            prec_sv_list = list()
-            reca_sv_list = list()
-            f1_sv_list = list()
-            acc_sv_list = list()
-            for index, method in enumerate(method_sv_list):
-                prec = np.mean(temp_prec_list[:, index]).round(3)
-                reca = np.mean(temp_reca_list[:, index]).round(3)
-                f1 = np.mean(temp_f1_list[:, index]).round(3)
-                acc = np.mean(temp_acc_list[:, index]).round(3)
-                prec_sv_list.append(prec)
-                reca_sv_list.append(reca)
-                f1_sv_list.append(f1)
-                acc_sv_list.append(acc)
-
-        else:
-            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
-                build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
+        prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
+            build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_sv_list
