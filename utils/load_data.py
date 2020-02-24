@@ -119,21 +119,21 @@ def load_data(path, verbosity=0):
     return data
 
 
-def get_parameters(dataset_string):
+def get_parameters(dataset_string, cross_validation_count=0):
     if dataset_string == 'paysim':
         usv_train = 2000
         sv_train = 2000
         sv_train_fraud = 50
-        test_fraud = 5000
+        test_fraud = 5000 - cross_validation_count * sv_train_fraud
     elif dataset_string == 'ccfraud':
-        usv_train = 700
+        usv_train = 2000
         sv_train = 1000
         sv_train_fraud = 10
-        test_fraud = 480
+        test_fraud = 480 - cross_validation_count * sv_train_fraud
     elif dataset_string == 'ieee':
         usv_train = 1000
         sv_train = 2000
         sv_train_fraud = 50
-        test_fraud = 500
+        test_fraud = 1000 - cross_validation_count * sv_train_fraud
 
     return usv_train, sv_train, sv_train_fraud, test_fraud
