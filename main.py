@@ -105,7 +105,8 @@ for i in range(iteration_count):
         print(f'Starting iteration #{i + 1}')
 
     if method == 'oc-gan':
-        prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test, y_test)
+        prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:-test_fraud],
+                                                          x_test[-test_fraud:], test_fraud, autoencoding=True)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
