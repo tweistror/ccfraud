@@ -3,28 +3,53 @@ import numpy as np
 
 from sklearn.metrics import classification_report, precision_recall_fscore_support
 
-from advanced.oc_gan.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend
+from advanced.oc_gan.autoencoding import Dense_Autoencoder
+from advanced.oc_gan.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend, \
+    preprocess_minus_1_and_pos_1
+
 tf.compat.v1.disable_eager_execution()
 
 
-def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test, verbosity=0):
+def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_test, autoencoding=False, verbosity=0):
     # Set parameters
     if dataset_string == "paysim":
         mb_size = 25
         dim_input = 11
-        test_fraud = int(len(x_test) / 2)
         d_dim = [dim_input, 30, 15, 2]
         g_dim = [15, 30, dim_input]
         z_dim = g_dim[0]
     elif dataset_string == "ccfraud":
         mb_size = 70
         dim_input = 28
-        test_fraud = int(len(x_test) / 2)
         d_dim = [dim_input, 100, 50, 2]
         g_dim = [50, 100, dim_input]
         z_dim = g_dim[0]
     elif dataset_string == "ieee":
         mb_size = 70
+
+    # Set additional parameters for autoencoding
+    if autoencoding is True:
+        if dataset_string == "paysim":
+            hid_dim = [200]
+        elif dataset_string == "ccfraud":
+            hid_dim = [100]
+            x_ben = np.concatenate((x_usv_train, x_test_benign))
+            x_fraud = x_test_fraud
+            dense_ae = Dense_Autoencoder(dim_input, hid_dim)
+            dense_ae.compile()
+            dense_ae.fit(x_usv_train)
+            dense_ae.get_hidden_layer()
+            ben_hid_repre, van_hid_repre = list(map(lambda x: dense_ae.get_hidden_representation(x), [
+                x_ben, x_fraud]))
+            ben_hid_repre, van_hid_repre = list(map(lambda x: preprocess_minus_1_and_pos_1(x),
+                                                    [ben_hid_repre, van_hid_repre]))
+            dim_input = 50
+            d_dim = [dim_input, 100, 50, 2]
+            g_dim = [50, 100, dim_input]
+            z_dim = g_dim[0]
+
+        elif dataset_string == "ieee":
+            hid_dim = [50]
 
     # Set dimensions for discriminator, generator and
 
@@ -145,12 +170,22 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test, verbosity=0):
     t_solver = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(t_loss, var_list=theta_t)
 
     # Process data
-    x_pre = x_usv_train
+    x_pre = x_usv_train if autoencoding is False else ben_hid_repre[:-n_test]
+    x_fraud = x_test_fraud if autoencoding is False else van_hid_repre
+
     y_pre = np.zeros(len(x_pre))
     y_pre = one_hot(y_pre, 2)
 
+    x_train = x_pre
+
     y_real_mb = one_hot(np.zeros(mb_size), 2)
     y_fake_mb = one_hot(np.ones(mb_size), 2)
+
+    x_test = np.concatenate((x_test_benign, x_fraud)) if autoencoding is False else \
+        np.concatenate((ben_hid_repre[-n_test:], x_fraud))
+
+    y_test = np.zeros(len(x_test))
+    y_test[n_test:] = 1
 
     sess = tf.compat.v1.Session()
     sess.run(tf.compat.v1.global_variables_initializer())
@@ -162,7 +197,7 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test, verbosity=0):
                      y_tar: y_pre
                  })
 
-    q = np.divide(len(x_usv_train), mb_size)
+    q = np.divide(len(x_train), mb_size)
 
     d_ben_pro, d_fake_pro, fm_loss_coll = list(), list(), list()
     f1_score = list()
@@ -170,7 +205,7 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test, verbosity=0):
     n_round = 200
 
     for n_epoch in range(n_round):
-        x_mb_oc = sample_shuffle_uspv(x_usv_train)
+        x_mb_oc = sample_shuffle_uspv(x_train)
 
         for n_batch in range(int(q)):
             _, d_loss_curr, ent_real_curr = sess.run([d_solver, d_loss, ent_real_loss],
@@ -187,11 +222,11 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test, y_test, verbosity=0):
                                                                })
 
         d_prob_real_, d_prob_gen_ = sess.run([d_prob_real, d_prob_gen],
-                                             feed_dict={x_oc: x_usv_train,
-                                                        z: sample_Z(len(x_usv_train), z_dim)})
+                                             feed_dict={x_oc: x_train,
+                                                        z: sample_Z(len(x_train), z_dim)})
 
         d_prob_fraud_ = sess.run(d_prob_real,
-                                 feed_dict={x_oc: x_test[-test_fraud:]})
+                                 feed_dict={x_oc: x_test[-n_test:]})
 
         d_ben_pro.append(np.mean(d_prob_real_[:, 0]))
         d_fake_pro.append(np.mean(d_prob_gen_[:, 0]))
