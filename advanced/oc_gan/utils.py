@@ -79,7 +79,7 @@ def draw_trend(D_real_prob, D_fake_prob, D_val_prob, fm_loss, f1):
 
 
 def preprocess_minus_1_and_pos_1(X):
-    return np.array(map(lambda x: bw_one_and_minus_one(x), X))
+    return np.array(list(map(lambda x: bw_one_and_minus_one(x), X)))
 
 
 def bw_one_and_minus_one(x):
