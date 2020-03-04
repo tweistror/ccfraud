@@ -4,7 +4,7 @@ from sklearn.metrics import classification_report, precision_recall_fscore_suppo
 
 
 def run_usv_classification(x_test, y_test, clf, mode):
-    n = int(len(y_test) / 2)
+    y_test = [1 if val == 0 else -1 for val in y_test]
 
     # TODO: Conditional statements for different modes (fraud and benign)
     # Label for inliers/outliers have to be 1/-1 in usv
@@ -22,12 +22,7 @@ def run_usv_classification(x_test, y_test, clf, mode):
 
 
 def run_sv_classification(x_test, y_test, clf, mode):
-    n = int(len(y_test) / 2)
-
-    # TODO: Conditional statements for different modes (fraud and benign)
-
-    y_test[:n] = 0  # Benign
-    y_test[n:] = 1  # Fraud
+    y_test = [0 if val == 0 else 1 for val in y_test]
 
     y_pred = clf.predict(x_test)
     acc = np.sum(y_pred == y_test) / float(y_pred.shape[0])
