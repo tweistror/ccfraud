@@ -3,6 +3,7 @@ from argparse import RawTextHelpFormatter
 import numpy as np
 from datetime import datetime
 
+from advanced.AE.autoencoder import Autoencoder
 from advanced.oc_gan.oc_gan import execute_oc_gan
 from baselines.calculate_sv_baselines import build_supervised_baselines
 from baselines.calculate_usv_baselines import build_unsupervised_baselines
@@ -16,7 +17,7 @@ datasets = ["paysim", "ccfraud", "ieee"]
 parser = argparse.ArgumentParser(description='Tool for testing various machine learning methods on different datasets',
                                  formatter_class=RawTextHelpFormatter)
 parser.add_argument("--dataset", required=True, choices=datasets, help="Dataset")
-parser.add_argument("--method", choices=["oc-gan"],
+parser.add_argument("--method", choices=["all", "oc-gan", "oc-gan-ae", "usv-ae"],
                     help="Machine learning method used for classification")
 parser.add_argument("--baselines", choices=["usv", "sv", "both"],
                     help="Execute baselines or not")
@@ -33,7 +34,7 @@ method = args.method
 baselines = args.baselines
 iteration_count = int(args.iterations)
 use_oversampling = True if args.oversampling == 'y' else False
-cross_validation_count = 0 if args.cv is None else int(args.cv)
+cross_validation_count = 1 if args.cv is None else int(args.cv)
 
 # Set parameters
 usv_train, sv_train, sv_train_fraud, test_fraud = get_parameters(dataset_string, cross_validation_count)
@@ -52,7 +53,7 @@ elif dataset_string == "ieee":
 prec_coll = list()
 reca_coll = list()
 f1_coll = list()
-acc_coll = list()
+auc_coll = list()
 method_list = list()
 
 method_special_list = list()
@@ -69,7 +70,7 @@ for i in range(iteration_count):
     prec_list = list()
     reca_list = list()
     f1_list = list()
-    acc_list = list()
+    auc_list = list()
 
     if dataset_string == "paysim":
         x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_paysim(x_ben, x_fraud, usv_train, sv_train,
@@ -104,30 +105,51 @@ for i in range(iteration_count):
     if verbosity > 1:
         print(f'Starting iteration #{i + 1}')
 
-    if method == 'oc-gan':
-        prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:-test_fraud],
+    if method == 'all' or method == 'oc-gan':
+        prec, reca, f1, auc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:-test_fraud],
+                                                          x_test[-test_fraud:], test_fraud, autoencoding=False)
+        prec_list = prec_list + [prec]
+        reca_list = reca_list + [reca]
+        f1_list = f1_list + [f1]
+        auc_list = auc_list + [auc]
+        if i == 0:
+            method_special_list = method_special_list + [method_name]
+
+    if method == 'all' or method == 'oc-gan-ae':
+        prec, reca, f1, auc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:-test_fraud],
                                                           x_test[-test_fraud:], test_fraud, autoencoding=True)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
-        acc_list = acc_list + [acc]
+        auc_list = auc_list + [auc]
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
-        # Some verbosity output
-        if verbosity > 1:
-            print(f'Special methods: Iteration #{i + 1} finished')
+    if method == 'all' or method == 'usv_ae':
+        ae_model = Autoencoder(dataset_string, x_usv_train, x_test, y_test)
+        prec, reca, f1, auc, method_name = ae_model.execute_autoencoder()
+
+        prec_list = prec_list + [prec]
+        reca_list = reca_list + [reca]
+        f1_list = f1_list + [f1]
+        auc_list = auc_list + [auc]
+        if i == 0:
+            method_special_list = method_special_list + [method_name]
+
+    # Some verbosity output
+    if verbosity > 1:
+        print(f'Special methods: Iteration #{i + 1} finished')
 
     if baselines == 'usv' or baselines == 'both':
         # Execute unsupervised learning baselines
-        prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
+        prec_usv_list, reca_usv_list, f1_usv_list, auc_usv_list, method_usv_list = \
             build_unsupervised_baselines(x_usv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_usv_list
         reca_list = reca_list + reca_usv_list
         f1_list = f1_list + f1_usv_list
-        acc_list = acc_list + acc_usv_list
+        auc_list = auc_list + auc_usv_list
 
         # Some verbosity output
         if verbosity > 1:
@@ -135,18 +157,18 @@ for i in range(iteration_count):
 
     if baselines == 'sv' or baselines == 'both':
         # Execute supervised learning baselines
-        if cross_validation_count > 0:
+        if cross_validation_count > 1:
             cv = Crossvalidator(cross_validation_count, 'StratifiedKFold', x_sv_train, y_sv_train)
-            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = cv.execute_cv()
+            prec_sv_list, reca_sv_list, f1_sv_list, auc_sv_list, method_sv_list = cv.execute_cv()
         else:
-            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
+            prec_sv_list, reca_sv_list, f1_sv_list, auc_sv_list, method_sv_list = \
                 build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_sv_list
         reca_list = reca_list + reca_sv_list
         f1_list = f1_list + f1_sv_list
-        acc_list = acc_list + acc_sv_list
+        auc_list = auc_list + auc_sv_list
 
         # Some verbosity output
         if verbosity > 1:
@@ -155,7 +177,7 @@ for i in range(iteration_count):
     prec_coll.append(prec_list)
     reca_coll.append(reca_list)
     f1_coll.append(f1_list)
-    acc_coll.append(acc_list)
+    auc_coll.append(auc_list)
 
     if i == 0:
         method_list = method_special_list + method_usv_list + method_sv_list
@@ -168,8 +190,8 @@ if verbosity > 1:
     time_required = str(datetime.now() - start_time_complete)
     print(f'All {iteration_count} iterations finished in {time_required}')
 
-prec_coll, reca_coll, f1_coll, acc_coll, method_list = \
-    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll), np.array(method_list)
+prec_coll, reca_coll, f1_coll, auc_coll, method_list = \
+    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(auc_coll), np.array(method_list)
 
 print_results(method_list, dataset_string, iteration_count,
-              len(method_special_list), len(method_usv_list), prec_coll, reca_coll, f1_coll, acc_coll)
+              len(method_special_list), len(method_usv_list), prec_coll, reca_coll, f1_coll, auc_coll)
