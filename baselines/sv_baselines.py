@@ -5,10 +5,10 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 
 import xgboost as xgb
+from sklearn.neural_network import MLPClassifier
 
 
 def svm_svc(x_train, y_train):
-    # TODO: Use different kernels?
     clf = svm.SVC(kernel='rbf')
     return clf.fit(x_train, y_train)
 
@@ -60,4 +60,9 @@ def gaussian_process(x_train, y_train):
 
 def adaboost(x_train, y_train):
     clf = AdaBoostClassifier()
+    return clf.fit(x_train, y_train)
+
+
+def mlp(x_train, y_train):
+    clf = MLPClassifier()
     return clf.fit(x_train, y_train)
