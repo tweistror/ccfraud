@@ -36,110 +36,110 @@ class Dense_Autoencoder(object):
 class Autoencoder(object):
     """docstring for Autoencoder"""
 
-    # def __init__(self, sampleWeights, sample_weight_mode):
+    # def __init__(self, sample_weights, sample_weight_mode):
     def __init__(self):
         # super(Autoencoder, self).__init__()
         # self.codeLayerType = 'dense'
-        self.nb_epoch = 20
+        self.nb_epoch = 50
         self.batch_size = 256
         self.shuffle = True
         self.validation_split = 0.05
         self.optimizer = 'adadelta'
         self.loss = 'mse'
 
-    # self.sampleWeights = sampleWeights
+    # self.sample_weights = sample_weights
     # self.sample_weight_mode = sample_weight_mode
 
-    def model(self, codeLayerType, inputDim, codeDim):
+    def model(self, code_layer_type, input_dim, code_dim):
 
-        self.codeLayerType = codeLayerType
-        assert len(codeDim) > 0
+        self.code_layer_type = code_layer_type
+        assert len(code_dim) > 0
 
-        if self.codeLayerType == 'lstm':
-            assert len(inputDim) == 2
-            inputData = Input(shape=(inputDim[0], inputDim[1]))
+        if self.code_layer_type == 'lstm':
+            assert len(input_dim) == 2
+            input_data = Input(shape=(input_dim[0], input_dim[1]))
 
-            if len(codeDim) == 1:
-                encoded = LSTM(codeDim[0])(inputData)
-                decoded = RepeatVector(inputDim[0])(encoded)
-            elif len(codeDim) > 1:
-                encoded = inputData
-                for i, units in enumerate(codeDim):
-                    if i == len(codeDim) - 1:
+            if len(code_dim) == 1:
+                encoded = LSTM(code_dim[0])(input_data)
+                decoded = RepeatVector(input_dim[0])(encoded)
+            elif len(code_dim) > 1:
+                encoded = input_data
+                for i, units in enumerate(code_dim):
+                    if i == len(code_dim) - 1:
                         encoded = LSTM(units)(encoded)
                         continue
                     encoded = LSTM(units, return_sequences=True)(encoded)
 
-                for i, units in enumerate(reversed(codeDim)):
+                for i, units in enumerate(reversed(code_dim)):
                     if i == 1:
-                        decoded = LSTM(units, return_sequences=True)(RepeatVector(inputDim[0])(encoded))
+                        decoded = LSTM(units, return_sequences=True)(RepeatVector(input_dim[0])(encoded))
                     elif i > 1:
                         decoded = LSTM(units, return_sequences=True)(decoded)
             else:
                 raise ValueError("The codDim must be over 0.")
 
-            decoded = LSTM(inputDim[-1], return_sequences=True)(decoded)
-            self.model = Model(inputData, decoded)
+            decoded = LSTM(input_dim[-1], return_sequences=True)(decoded)
+            self.model = Model(input_data, decoded)
 
-        elif self.codeLayerType == 'dense':
-            assert len(inputDim) == 1
-            inputData = Input(shape=(inputDim[0],))
-            encoded = inputData
-            for i, units in enumerate(codeDim):
+        elif self.code_layer_type == 'dense':
+            assert len(input_dim) == 1
+            input_data = Input(shape=(input_dim[0],))
+            encoded = input_data
+            for i, units in enumerate(code_dim):
                 encoded = Dense(units, activation='relu')(encoded)
-            decoded = Dense(inputDim[-1], activation='sigmoid')(encoded)
-            self.model = Model(inputData, decoded)
+            decoded = Dense(input_dim[-1], activation='sigmoid')(encoded)
+            self.model = Model(input_data, decoded)
 
-        elif self.codeLayerType == 'cov':
+        elif self.code_layer_type == 'cov':
             pass
 
-    def modelMasking(self, codeLayerType, inputDim, codeDim):
+    def modelMasking(self, code_layer_type, input_dim, code_dim):
 
-        self.codeLayerType = codeLayerType
-        assert len(codeDim) > 0
+        self.code_layer_type = code_layer_type
+        assert len(code_dim) > 0
 
-        if self.codeLayerType == 'lstm':
-            assert len(inputDim) == 2
-            inputData = Input(shape=(inputDim[0], inputDim[1]))
-            mask = Masking(mask_value=0.)(inputData)
-            if len(codeDim) == 1:
-                encoded = LSTM(codeDim[0])(mask)
-                decoded = RepeatVector(inputDim[0])(encoded)
-            elif len(codeDim) > 1:
+        if self.code_layer_type == 'lstm':
+            assert len(input_dim) == 2
+            input_data = Input(shape=(input_dim[0], input_dim[1]))
+            mask = Masking(mask_value=0.)(input_data)
+            if len(code_dim) == 1:
+                encoded = LSTM(code_dim[0])(mask)
+                decoded = RepeatVector(input_dim[0])(encoded)
+            elif len(code_dim) > 1:
                 encoded = mask
-                for i, units in enumerate(codeDim):
-                    if i == len(codeDim) - 1:
+                for i, units in enumerate(code_dim):
+                    if i == len(code_dim) - 1:
                         encoded = LSTM(units)(encoded)
                         continue
                     encoded = LSTM(units, return_sequences=True)(encoded)
 
-                for i, units in enumerate(reversed(codeDim)):
+                for i, units in enumerate(reversed(code_dim)):
                     if i == 1:
-                        decoded = LSTM(units, return_sequences=True)(RepeatVector(inputDim[0])(encoded))
+                        decoded = LSTM(units, return_sequences=True)(RepeatVector(input_dim[0])(encoded))
                     elif i > 1:
                         decoded = LSTM(units, return_sequences=True)(decoded)
             else:
                 raise ValueError("The codDim must be over 0.")
 
-            decoded = LSTM(inputDim[-1], return_sequences=True)(decoded)
-            self.model = Model(inputData, decoded)
+            decoded = LSTM(input_dim[-1], return_sequences=True)(decoded)
+            self.model = Model(input_data, decoded)
 
-        elif self.codeLayerType == 'cov':
+        elif self.code_layer_type == 'cov':
             pass
-        elif self.codeLayerType == 'dense':
-            assert len(inputDim) == 1
-            inputData = Input(shape=(inputDim[0],))
-            # encoded = inputData
+        elif self.code_layer_type == 'dense':
+            assert len(input_dim) == 1
+            input_data = Input(shape=(input_dim[0],))
+            # encoded = input_data
             # for i, units in enumerate(codeDim):
             # 	encoded = Dense(units, activation='relu')(encoded)
             # decoded = Dense(inputDim[-1], activation='sigmoid')(encoded)
-            # self.model = Model(inputData, decoded)
-            encoder = Dense(codeDim[0], activation="tanh",
-                            activity_regularizer=regularizers.l1(10e-5))(inputData)
-            encoder = Dense(int(codeDim[0] / 2), activation="relu")(encoder)
-            decoder = Dense(int(codeDim[0] / 2), activation='tanh')(encoder)
-            decoder = Dense(inputDim[0], activation='relu')(decoder)
-            self.model = Model(inputData, decoder)
+            # self.model = Model(input_data, decoded)
+            encoder = Dense(code_dim[0], activation="tanh",
+                            activity_regularizer=regularizers.l1(10e-5))(input_data)
+            encoder = Dense(int(code_dim[0] / 2), activation="relu")(encoder)
+            decoder = Dense(int(code_dim[0] / 2), activation='tanh')(encoder)
+            decoder = Dense(input_dim[0], activation='relu')(decoder)
+            self.model = Model(input_data, decoder)
 
     def compile(self, *args):
 
@@ -152,7 +152,7 @@ class Autoencoder(object):
             elif args[0] == 'customFunction':
                 self.model.compile(optimizer=self.optimizer, loss=self.weighted_vector_mse)
             else:
-                raise ValueError("Invalid maskType, please input 'sampleWeights' or 'customFunction'")
+                raise ValueError("Invalid maskType, please input 'sample_weights' or 'customFunction'")
         else:
             raise ValueError("argument # must be 0 or 1.")
 
@@ -180,7 +180,7 @@ class Autoencoder(object):
                 raise ValueError("decoding sequence type: 'normal' or 'reverse'.")
 
         elif len(args) == 3:
-            self.sampleWeights = args[2]
+            self.sample_weights = args[2]
             if args[1] == 'nor':
                 self.model.fit(args[0],
                                args[0],
@@ -188,7 +188,7 @@ class Autoencoder(object):
                                batch_size=self.batch_size,
                                shuffle=self.shuffle,
                                validation_split=self.validation_split,
-                               sample_weight=self.sampleWeights)
+                               sample_weight=self.sample_weights)
             # callbacks=[early_stopping])
             elif args[1] == 'rev':
                 self.model.fit(args[0],
@@ -197,7 +197,7 @@ class Autoencoder(object):
                                batch_size=self.batch_size,
                                shuffle=self.shuffle,
                                validation_split=self.validation_split,
-                               sample_weight=self.sampleWeights)
+                               sample_weight=self.sample_weights)
             # callbacks=[early_stopping])
             else:
                 raise ValueError("Please input, 'data', 'nor' or 'rev', 'sample_weights'")

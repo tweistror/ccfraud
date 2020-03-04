@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-from sklearn.metrics import classification_report, precision_recall_fscore_support
+from sklearn.metrics import classification_report, precision_recall_fscore_support, roc_auc_score
 
 from advanced.oc_gan.autoencoding import Dense_Autoencoder
 from advanced.oc_gan.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend, \
@@ -12,44 +12,55 @@ tf.compat.v1.disable_eager_execution()
 
 def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_test, autoencoding=False, verbosity=0):
     # Set parameters
+    dim_input = x_usv_train.shape[1]
     if dataset_string == "paysim":
-        mb_size = 25
-        dim_input = 11
-        d_dim = [dim_input, 30, 15, 2]
-        g_dim = [15, 30, dim_input]
-        z_dim = g_dim[0]
-    elif dataset_string == "ccfraud":
         mb_size = 70
-        dim_input = 28
         d_dim = [dim_input, 100, 50, 2]
         g_dim = [50, 100, dim_input]
         z_dim = g_dim[0]
+        hid_dim = [100]
+    elif dataset_string == "ccfraud":
+        mb_size = 70
+        d_dim = [dim_input, 100, 50, 2]
+        g_dim = [50, 100, dim_input]
+        z_dim = g_dim[0]
+        hid_dim = [100]
     elif dataset_string == "ieee":
         mb_size = 70
+        d_dim = [dim_input, 256, 64, 2]
+        g_dim = [64, 256, dim_input]
+        z_dim = g_dim[0]
+        hid_dim = [400]
 
-    # Set additional parameters for autoencoding
     if autoencoding is True:
+        x_ben = np.concatenate((x_usv_train, x_test_benign))
+        x_fraud = x_test_fraud
+        dense_ae = Dense_Autoencoder(dim_input, hid_dim)
+        dense_ae.compile()
+        dense_ae.fit(x_usv_train)
+        dense_ae.get_hidden_layer()
+        ben_hid_repre, van_hid_repre = list(map(lambda x: dense_ae.get_hidden_representation(x), [
+            x_ben, x_fraud]))
+        ben_hid_repre, van_hid_repre = list(map(lambda x: preprocess_minus_1_and_pos_1(x),
+                                                [ben_hid_repre, van_hid_repre]))
+        # Set additional parameters for autoencoding
         if dataset_string == "paysim":
-            hid_dim = [200]
-        elif dataset_string == "ccfraud":
-            hid_dim = [100]
-            x_ben = np.concatenate((x_usv_train, x_test_benign))
-            x_fraud = x_test_fraud
-            dense_ae = Dense_Autoencoder(dim_input, hid_dim)
-            dense_ae.compile()
-            dense_ae.fit(x_usv_train)
-            dense_ae.get_hidden_layer()
-            ben_hid_repre, van_hid_repre = list(map(lambda x: dense_ae.get_hidden_representation(x), [
-                x_ben, x_fraud]))
-            ben_hid_repre, van_hid_repre = list(map(lambda x: preprocess_minus_1_and_pos_1(x),
-                                                    [ben_hid_repre, van_hid_repre]))
             dim_input = 50
             d_dim = [dim_input, 100, 50, 2]
             g_dim = [50, 100, dim_input]
             z_dim = g_dim[0]
-
+        elif dataset_string == "ccfraud":
+            dim_input = 50
+            d_dim = [dim_input, 100, 50, 2]
+            g_dim = [50, 100, dim_input]
+            z_dim = g_dim[0]
         elif dataset_string == "ieee":
-            hid_dim = [50]
+            dim_input = 200
+            d_dim = [dim_input, 256, 64, 2]
+            g_dim = [64, 256, dim_input]
+            z_dim = g_dim[0]
+
+
 
     # Set dimensions for discriminator, generator and
 
@@ -240,12 +251,11 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
 
     # TODO: Maybe add automatic stop when losing f1score
 
-    acc = np.sum(y_pred == y_test) / float(y_pred.shape[0])
+    auc_score = roc_auc_score(y_test, y_pred)
     precision, recall, f1, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
-    if verbosity == 1:
-        print(conf_mat)
-        draw_trend(d_ben_pro, d_fake_pro, d_val_pro, fm_loss_coll, f1_score)
+    # print(conf_mat)
+    # draw_trend(d_ben_pro, d_fake_pro, d_val_pro, fm_loss_coll, f1_score)
 
-    return precision[1], recall[1], f1[1], acc, 'OC-GAN'
+    return precision[1], recall[1], f1[1], auc_score, f'OC-GAN{" with AE" if autoencoding is True else ""}'
 
