@@ -120,20 +120,22 @@ def load_data(path, verbosity=0):
 
 
 def get_parameters(dataset_string, cross_validation_count=0):
+    factor = 0 if cross_validation_count < 2 else cross_validation_count - 1
+
     if dataset_string == 'paysim':
         usv_train = 2000
         sv_train = 2000
         sv_train_fraud = 20
-        test_fraud = 5000 - cross_validation_count * sv_train_fraud
+        test_fraud = 5000 - factor * sv_train_fraud
     elif dataset_string == 'ccfraud':
         usv_train = 2000
         sv_train = 1000
-        sv_train_fraud = 10
-        test_fraud = 480 - cross_validation_count * sv_train_fraud
-    elif dataset_string == 'ieee':
-        usv_train = 1000
-        sv_train = 2000
         sv_train_fraud = 20
-        test_fraud = 5000 - cross_validation_count * sv_train_fraud
+        test_fraud = 450 - factor * sv_train_fraud
+    elif dataset_string == 'ieee':
+        usv_train = 10000
+        sv_train = 5000
+        sv_train_fraud = 1000
+        test_fraud = 5000 - factor * sv_train_fraud
 
     return usv_train, sv_train, sv_train_fraud, test_fraud
