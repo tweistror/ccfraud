@@ -14,13 +14,21 @@ def sample_paysim(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_frau
         else data_sampling_cv(x_ben, x_fraud, usv_train, sv_train_ben, sv_train_fraud, test_fraud, cross_validation_k)
 
     pca = PCA(n_components=x_usv_train.shape[1])
-    x_sv_train = pca.fit_transform(X=x_sv_train)
-    x_usv_train = pca.transform(X=x_usv_train)
+    if len(x_sv_train) > len(x_usv_train):
+        x_sv_train = pca.fit_transform(X=x_sv_train)
+        x_usv_train = pca.transform(X=x_usv_train)
+    else:
+        x_usv_train = pca.fit_transform(x_usv_train)
+        x_sv_train = pca.transform(x_sv_train)
     x_test = pca.transform(X=x_test)
 
     sc = StandardScaler()
-    x_sv_train = sc.fit_transform(x_sv_train)
-    x_usv_train = sc.transform(x_usv_train)
+    if len(x_sv_train) > len(x_usv_train):
+        x_sv_train = sc.fit_transform(x_sv_train)
+        x_usv_train = sc.transform(x_usv_train)
+    else:
+        x_usv_train = sc.fit_transform(x_usv_train)
+        x_sv_train = sc.transform(x_sv_train)
     x_test = sc.transform(x_test)
 
     return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
@@ -36,8 +44,13 @@ def sample_ccfraud(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fra
     # TODO: MinMaxScaler provides strong results for one-class gan (75% f1), but is slightly worse for many usv/sv
     # TODO: baselines - StandardScaler provides poor results for ocgan and slightly better results for many usv/sv
     sc = MinMaxScaler()
-    x_sv_train = sc.fit_transform(x_sv_train)
-    x_usv_train = sc.transform(x_usv_train)
+    if len(x_sv_train) > len(x_usv_train):
+        x_sv_train = sc.fit_transform(x_sv_train)
+        x_usv_train = sc.transform(x_usv_train)
+    else:
+        x_usv_train = sc.fit_transform(x_usv_train)
+        x_sv_train = sc.transform(x_sv_train)
+
     x_test = sc.transform(x_test)
 
     return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
@@ -54,6 +67,24 @@ def sample_ieee(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud,
     x_usv_train = clean_inf_nan(x_usv_train)
     x_sv_train = clean_inf_nan(x_sv_train)
     x_test = clean_inf_nan(x_test)
+
+    pca = PCA(n_components=x_usv_train.shape[1])
+    if len(x_sv_train) > len(x_usv_train):
+        x_sv_train = pca.fit_transform(X=x_sv_train)
+        x_usv_train = pca.transform(X=x_usv_train)
+    else:
+        x_usv_train = pca.fit_transform(x_usv_train)
+        x_sv_train = pca.transform(x_sv_train)
+    x_test = pca.transform(X=x_test)
+
+    sc = StandardScaler()
+    if len(x_sv_train) > len(x_usv_train):
+        x_sv_train = sc.fit_transform(x_sv_train)
+        x_usv_train = sc.transform(x_usv_train)
+    else:
+        x_usv_train = sc.fit_transform(x_usv_train)
+        x_sv_train = sc.transform(x_sv_train)
+    x_test = sc.transform(x_test)
 
     return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
