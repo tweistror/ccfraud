@@ -124,7 +124,7 @@ for i in range(iteration_count):
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
-    if method == 'all' or method == 'usv_ae':
+    if method == 'all' or method == 'usv-ae':
         ae_model = Autoencoder(dataset_string, x_usv_train, x_test, y_test)
         prec, reca, f1, auc, method_name = ae_model.execute_autoencoder()
 
