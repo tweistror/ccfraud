@@ -9,7 +9,7 @@ def print_results(method_list, dataset_string, iteration_count, special_count, u
     print(f'{dataset_string}:  Average metrics over {iteration_count} iterations')
 
     for index, method in enumerate(method_list):
-        if index == special_count - 1:
+        if index == 0:
             results.append(['Special Methods'])
         if index == special_count:
             results.append(['Unsupervised Learning Methods'])
