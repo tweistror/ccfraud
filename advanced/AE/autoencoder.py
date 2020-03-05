@@ -26,7 +26,6 @@ class Autoencoder(object):
     def build_network(self):
         input_dim = self.x_train.shape[1]
         learning_rate = 1e-3
-        print(input_dim)
 
         # TODO: FUnction building the layers based on lists
         if self.dataset_string == "paysim":
