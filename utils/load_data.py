@@ -10,6 +10,9 @@ root_path = './data/'
 def get_data_paysim(path, verbosity=0):
     data = load_data(path, verbosity)
 
+    # TODO: Selbst generieren (dadurch dann neuer U)
+    # TODO: Unauthorized Overdraft
+    # TODO: Dann nochmal nameORig nameDest Beziehung testen
     # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
     # Feature is not important
     # data['nameOrig'] = data['nameOrig'].apply(lambda x: x[:1])
@@ -52,6 +55,7 @@ def get_data_ccfraud(path, verbosity=0):
 
 
 def get_data_ieee(transaction_path, identity_path, verbosity=0, skip=False):
+    # TODO: Do not forget to remove skip
     if skip is True:
         start_time = datetime.now()
         x_ben = pd.read_csv('./debug/ieee/x_ben.csv')
