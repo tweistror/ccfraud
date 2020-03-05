@@ -25,7 +25,6 @@ parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Specify ver
 parser.add_argument("--iterations", default="10", help="Specify number of iterations each method is executed")
 parser.add_argument("--cv", help="Specify number of cross validation splits")
 parser.add_argument("--oversampling", choices=['y', 'n'], default='n', help="Use oversampling (SMOTE) or not")
-# TODO: Requirement: Oversampling only possible for oversampling `y`
 
 args = parser.parse_args()
 dataset_string = args.dataset
