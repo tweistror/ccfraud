@@ -3,7 +3,6 @@
 
 import tensorflow.compat.v1 as tf
 import numpy as np
-import os
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
