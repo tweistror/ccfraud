@@ -1,3 +1,5 @@
+# https://link.springer.com/content/pdf/10.1007%2F978-1-4842-5177-5.pdf
+
 import tensorflow.compat.v1 as tf
 import numpy as np
 import os
@@ -15,17 +17,13 @@ class RBM(object):
     The interface of the class is sklearn-like.
     """
 
-    def __init__(self, num_visible, num_hidden, visible_unit_type='bin', main_dir='/home/weimin/rbm/model',
-                 model_name='rbm_model',
-                 gibbs_sampling_steps=1, learning_rate=0.01, momentum=0.9, l2=0.001, batch_size=10, num_epochs=10,
-                 stddev=0.1, verbose=0, plot_training_loss=False):
+    def __init__(self, num_visible, num_hidden, visible_unit_type='bin', gibbs_sampling_steps=1, learning_rate=0.01,
+                 momentum=0.9, l2=0.001, batch_size=10, num_epochs=10, stddev=0.1, verbose=0, plot_training_loss=False):
 
         """
         :param num_visible: number of visible units
         :param num_hidden: number of hidden units
         :param visible_unit_type: type of the visible units (binary or gaussian)
-        :param main_dir: main directory to put the models, data and summary directories
-        :param model_name: name of the model, used to save data
         :param gibbs_sampling_steps: optional, default 1
         :param learning_rate: optional, default 0.01
         :param momentum: momentum for gradient descent, default 0.9
@@ -40,8 +38,6 @@ class RBM(object):
         self.num_visible = num_visible
         self.num_hidden = num_hidden
         self.visible_unit_type = visible_unit_type
-        self.main_dir = main_dir
-        self.model_name = model_name
         self.gibbs_sampling_steps = gibbs_sampling_steps
         self.learning_rate = learning_rate
         self.momentum = momentum
@@ -51,8 +47,6 @@ class RBM(object):
         self.stddev = stddev
         self.verbose = verbose
 
-        self._create_model_directory()
-        self.model_path = os.path.join(self.main_dir, self.model_name)
         self.plot_training_loss = plot_training_loss
 
         self.W = None
@@ -80,20 +74,18 @@ class RBM(object):
         self.validation_size = None
 
         self.tf_session = None
-        self.tf_saver = None
 
-    def fit(self, train_set, validation_split=0.2, restore_previous_model=False):
+    def execute(self, x_train, x_test, y_test, validation_split=0.2):
 
-        """ Fit the model to the training data.
-        :param train_set: training set
+        """ Execute the model with given training and test data.
+        :param x_train: training set
+        :param x_test: testing set
+        :param y_test: testing labels
         :param validation_split: validation set split percentage
-        :param restore_previous_model:
-                    if true, a previous trained model
-                    with the same name of this model is restored from disk to continue training.
         :return: self
         """
 
-        x_train, x_valid = train_test_split(train_set, test_size=validation_split)
+        x_train_split, x_valid_split = train_test_split(x_train, test_size=validation_split)
 
         tf.reset_default_graph()
 
@@ -101,9 +93,8 @@ class RBM(object):
 
         with tf.Session() as self.tf_session:
 
-            self._initialize_tf_utilities_and_ops(restore_previous_model)
-            self._train_model(x_train, x_valid)
-            self.tf_saver.save(self.tf_session, self.model_path)
+            self._initialize_tf_utilities_and_ops()
+            self._train_model(x_train_split, x_valid_split)
 
             if self.plot_training_loss:
                 plt.plot(self.training_losses)
@@ -112,19 +103,16 @@ class RBM(object):
                 plt.ylabel("Reconstruction error")
                 plt.show()
 
-    def _initialize_tf_utilities_and_ops(self, restore_previous_model):
+            return self.predict(x_train, x_test, y_test)
+
+    def _initialize_tf_utilities_and_ops(self):
 
         """ Initialize TensorFlow operations: summaries, init operations, saver, summary_writer.
-        Restore a previously trained model if the flag restore_previous_model is true.
         """
 
         init_op = tf.global_variables_initializer()
-        self.tf_saver = tf.train.Saver()
 
         self.tf_session.run(init_op)
-
-        if restore_previous_model:
-            self.tf_saver.restore(self.tf_session, self.model_path)
 
     def _train_model(self, train_set, validation_set):
 
@@ -377,16 +365,6 @@ class RBM(object):
 
         return positive
 
-    def _create_model_directory(self):
-
-        """ Create the directory for storing the model
-        :return: self
-        """
-
-        if not os.path.isdir(self.main_dir):
-            print("Created dir: ", self.main_dir)
-            os.mkdir(self.main_dir)
-
     def getRecontructError(self, data):
 
         """ return Reconstruction Error (loss) from data in batch.
@@ -394,12 +372,8 @@ class RBM(object):
         :return: Reconstruction cost for each sample in the batch
         """
 
-        with tf.Session() as self.tf_session:
-            self.tf_saver.restore(self.tf_session, self.model_path)
-
-            batch_loss = self.tf_session.run(self.batch_cost,
-                                             feed_dict=self._create_feed_dict(data))
-            return batch_loss
+        batch_loss = self.tf_session.run(self.batch_cost, feed_dict=self._create_feed_dict(data))
+        return batch_loss
 
     def getFreeEnergy(self, data):
 
@@ -409,8 +383,6 @@ class RBM(object):
         """
 
         with tf.Session() as self.tf_session:
-            self.tf_saver.restore(self.tf_session, self.model_path)
-
             batch_FE = self.tf_session.run(self.batch_free_energy,
                                            feed_dict=self._create_feed_dict(data))
 
@@ -419,37 +391,10 @@ class RBM(object):
     def getRecontruction(self, data):
 
         with tf.Session() as self.tf_session:
-            self.tf_saver.restore(self.tf_session, self.model_path)
-
             batch_reconstruct = self.tf_session.run(self.recontruct,
                                                     feed_dict=self._create_feed_dict(data))
 
             return batch_reconstruct
-
-    def load_model(self, shape, gibbs_sampling_steps, model_path):
-
-        """ Load a trained model from disk. The shape of the model
-        (num_visible, num_hidden) and the number of gibbs sampling steps
-        must be known in order to restore the model.
-        :param shape: tuple(num_visible, num_hidden)
-        :param gibbs_sampling_steps:
-        :param model_path:
-        :return: self
-        """
-
-        self.num_visible, self.num_hidden = shape[0], shape[1]
-        self.gibbs_sampling_steps = gibbs_sampling_steps
-
-        tf.reset_default_graph()
-
-        self._build_model()
-
-        init_op = tf.global_variables_initializer()
-        self.tf_saver = tf.train.Saver()
-
-        with tf.Session() as self.tf_session:
-            self.tf_session.run(init_op)
-            self.tf_saver.restore(self.tf_session, model_path)
 
     def get_model_parameters(self):
 
@@ -458,8 +403,6 @@ class RBM(object):
         """
 
         with tf.Session() as self.tf_session:
-            self.tf_saver.restore(self.tf_session, self.model_path)
-
             return {
                 'W': self.W.eval(),
                 'bh_': self.bh_.eval(),

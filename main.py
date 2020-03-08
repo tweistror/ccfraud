@@ -137,11 +137,10 @@ for i in range(iteration_count):
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'rbm':
-        rbm_model = RBM(x_usv_train.shape[1], 10, visible_unit_type='gauss',  main_dir='/Users/thomas/VirtualBox VMs/', gibbs_sampling_steps=4,
+        rbm_model = RBM(x_usv_train.shape[1], 10, visible_unit_type='gauss', gibbs_sampling_steps=4,
                         learning_rate=0.001, momentum=0.95, batch_size=512, num_epochs=10, verbose=1)
-        rbm_model.fit(x_usv_train)
-        # test_cost = rbm_model.getFreeEnergy(x_test).reshape(-1)
-        prec, reca, f1, auc, method_name  = rbm_model.predict(x_usv_train, x_test, y_test)
+        prec, reca, f1, auc, method_name = rbm_model.execute(x_usv_train, x_test, y_test)
+
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
