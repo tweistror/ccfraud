@@ -5,6 +5,7 @@ from datetime import datetime
 
 from advanced.AE.autoencoder import Autoencoder
 from advanced.RBM.rbm import RBM
+from advanced.VAE.vae import execute_vae
 from advanced.oc_gan.oc_gan import execute_oc_gan
 from baselines.calculate_sv_baselines import build_supervised_baselines
 from baselines.calculate_usv_baselines import build_unsupervised_baselines
@@ -18,7 +19,7 @@ datasets = ["paysim", "ccfraud", "ieee"]
 parser = argparse.ArgumentParser(description='Tool for testing various machine learning methods on different datasets',
                                  formatter_class=RawTextHelpFormatter)
 parser.add_argument("--dataset", required=True, choices=datasets, help="Dataset")
-parser.add_argument("--method", choices=["all", "oc-gan", "oc-gan-ae", "usv-ae", "rbm"],
+parser.add_argument("--method", choices=["all", "oc-gan", "oc-gan-ae", "usv-ae", "rbm", "vae"],
                     help="Machine learning method used for classification")
 parser.add_argument("--baselines", choices=["usv", "sv", "both"],
                     help="Execute baselines or not")
