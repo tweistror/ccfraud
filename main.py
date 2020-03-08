@@ -148,6 +148,16 @@ for i in range(iteration_count):
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
+    if method == 'all' or method == 'vae':
+        prec, reca, f1, auc, method_name = execute_vae(x_usv_train, x_test, y_test)
+
+        prec_list = prec_list + [prec]
+        reca_list = reca_list + [reca]
+        f1_list = f1_list + [f1]
+        auc_list = auc_list + [auc]
+        if i == 0:
+            method_special_list = method_special_list + [method_name]
+
     # Some verbosity output
     if verbosity > 1:
         print(f'Special methods: Iteration #{i + 1} finished')
