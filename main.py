@@ -139,7 +139,7 @@ for i in range(iteration_count):
 
     if method == 'all' or method == 'rbm':
         rbm_model = RBM(x_usv_train.shape[1], 10, visible_unit_type='gauss', gibbs_sampling_steps=4,
-                        learning_rate=0.001, momentum=0.95, batch_size=512, num_epochs=10, verbose=1)
+                        learning_rate=0.001, momentum=0.95, batch_size=512, num_epochs=10, verbose=0)
         prec, reca, f1, auc, method_name = rbm_model.execute(x_usv_train, x_test, y_test)
 
         prec_list = prec_list + [prec]
