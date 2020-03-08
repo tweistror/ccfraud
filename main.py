@@ -4,6 +4,7 @@ import numpy as np
 from datetime import datetime
 
 from advanced.AE.autoencoder import Autoencoder
+from advanced.RBM.rbm import RBM
 from advanced.oc_gan.oc_gan import execute_oc_gan
 from baselines.calculate_sv_baselines import build_supervised_baselines
 from baselines.calculate_usv_baselines import build_unsupervised_baselines
@@ -17,7 +18,7 @@ datasets = ["paysim", "ccfraud", "ieee"]
 parser = argparse.ArgumentParser(description='Tool for testing various machine learning methods on different datasets',
                                  formatter_class=RawTextHelpFormatter)
 parser.add_argument("--dataset", required=True, choices=datasets, help="Dataset")
-parser.add_argument("--method", choices=["all", "oc-gan", "oc-gan-ae", "usv-ae"],
+parser.add_argument("--method", choices=["all", "oc-gan", "oc-gan-ae", "usv-ae", "rbm"],
                     help="Machine learning method used for classification")
 parser.add_argument("--baselines", choices=["usv", "sv", "both"],
                     help="Execute baselines or not")
@@ -128,6 +129,19 @@ for i in range(iteration_count):
         ae_model = Autoencoder(dataset_string, x_usv_train, x_test, y_test)
         prec, reca, f1, auc, method_name = ae_model.execute_autoencoder()
 
+        prec_list = prec_list + [prec]
+        reca_list = reca_list + [reca]
+        f1_list = f1_list + [f1]
+        auc_list = auc_list + [auc]
+        if i == 0:
+            method_special_list = method_special_list + [method_name]
+
+    if method == 'all' or method == 'rbm':
+        rbm_model = RBM(x_usv_train.shape[1], 10, visible_unit_type='gauss',  main_dir='/Users/thomas/VirtualBox VMs/', gibbs_sampling_steps=4,
+                        learning_rate=0.001, momentum=0.95, batch_size=512, num_epochs=10, verbose=1)
+        rbm_model.fit(x_usv_train)
+        # test_cost = rbm_model.getFreeEnergy(x_test).reshape(-1)
+        prec, reca, f1, auc, method_name  = rbm_model.predict(x_usv_train, x_test, y_test)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
