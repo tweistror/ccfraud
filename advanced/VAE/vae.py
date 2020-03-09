@@ -85,7 +85,7 @@ class VAE(object):
 
         x_train_split, x_valid_split = train_test_split(self.x_train, test_size=0.2)
 
-        vae.fit(x_train_split, x_train_split, batch_size=self.batch_size, epochs=self.epochs, verbose=1, shuffle=True,
+        vae.fit(x_train_split, x_train_split, batch_size=self.batch_size, epochs=self.epochs, verbose=0, shuffle=True,
                 validation_data=(x_valid_split, x_valid_split))
 
         x_train_pred = vae.predict(self.x_train)
