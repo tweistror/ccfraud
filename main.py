@@ -19,7 +19,7 @@ datasets = ["paysim", "ccfraud", "ieee"]
 parser = argparse.ArgumentParser(description='Tool for testing various machine learning methods on different datasets',
                                  formatter_class=RawTextHelpFormatter)
 parser.add_argument("--dataset", required=True, choices=datasets, help="Dataset")
-parser.add_argument("--method", choices=["all", "oc-gan", "oc-gan-ae", "usv-ae", "rbm", "vae"],
+parser.add_argument("--method", choices=["all", "oc-gan", "oc-gan-ae", "ae", "rbm", "vae"],
                     help="Machine learning method used for classification")
 parser.add_argument("--baselines", choices=["usv", "sv", "both"],
                     help="Execute baselines or not")
@@ -126,9 +126,11 @@ for i in range(iteration_count):
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
-    if method == 'all' or method == 'usv-ae':
-        ae_model = Autoencoder(dataset_string, x_usv_train, x_test, y_test)
-        prec, reca, f1, auc, method_name = ae_model.execute_autoencoder()
+    if method == 'all' or method == 'ae':
+        ae_model = Autoencoder(x_usv_train, dataset_string)
+        ae_model.set_parameters()
+        ae_model.build()
+        prec, reca, f1, auc, method_name = ae_model.predict(x_test, y_test)
 
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]

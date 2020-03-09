@@ -11,106 +11,64 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 
 # https://towardsdatascience.com/extreme-rare-event-classification-using-autoencoders-in-keras-a565b386f098
+from advanced.AE.utils import build_ae_model
 
 rcParams['figure.figsize'] = 8, 6
 LABELS = ["Normal", "Break"]
 
 
 class Autoencoder(object):
-    def __init__(self, dataset_string, x_train, x_test, y_test):
+    def __init__(self, x_train, dataset_string):
         self.x_train = x_train
-        self.x_test = x_test
-        self.y_test = y_test
         self.dataset_string = dataset_string
 
-    def build_network(self):
-        input_dim = self.x_train.shape[1]
-        learning_rate = 1e-3
+        self.input_dim = None
+        self.nb_epoch = None
+        self.batch_size = None
+        self.split_pct = None
+        self.learning_rate = None
+        self.dims = None
 
-        # TODO: FUnction building the layers based on lists
+        self.threshold = None
+        self.autoencoder = None
+
+    def set_parameters(self):
+        self.input_dim = self.x_train.shape[1]
+        self.nb_epoch = 50
+        self.batch_size = 128
+        self.split_pct = 0.2
+        self.learning_rate = 1e-3
+
         if self.dataset_string == "paysim":
-            # input_dim is 11
-            encoding_dim = 16
-            hidden_dim_1 = 8
-            hidden_dim_2 = 4
-            input_layer = Input(shape=(input_dim,))
-            encoder = Dense(encoding_dim, activation="relu", activity_regularizer=regularizers.l1(learning_rate))(
-                input_layer)
-            encoder = Dense(hidden_dim_1, activation="relu")(encoder)
-            encoder = Dense(hidden_dim_2, activation="relu")(encoder)
-            decoder = Dense(hidden_dim_2, activation="relu")(encoder)
-            decoder = Dense(hidden_dim_1, activation="relu")(decoder)
-            decoder = Dense(encoding_dim, activation="relu")(decoder)
-            decoder = Dense(input_dim, activation="linear")(decoder)
-            autoencoder = Model(inputs=input_layer, outputs=decoder)
+            self.dims = [self.x_train.shape[1], 16, 8, 4]
         elif self.dataset_string == "ccfraud":
-            # input_dim is 28
-            encoding_dim = 32
-            hidden_dim_1 = 16
-            hidden_dim_2 = 8
-            hidden_dim_3 = 4
-            input_layer = Input(shape=(input_dim,))
-            encoder = Dense(encoding_dim, activation="relu", activity_regularizer=regularizers.l1(learning_rate))(
-                input_layer)
-            encoder = Dense(hidden_dim_1, activation="relu")(encoder)
-            encoder = Dense(hidden_dim_2, activation="relu")(encoder)
-            encoder = Dense(hidden_dim_3, activation="relu")(encoder)
-            decoder = Dense(hidden_dim_3, activation="relu")(encoder)
-            decoder = Dense(hidden_dim_2, activation="relu")(decoder)
-            decoder = Dense(hidden_dim_1, activation="relu")(decoder)
-            decoder = Dense(encoding_dim, activation="relu")(decoder)
-            decoder = Dense(input_dim, activation="linear")(decoder)
-            autoencoder = Model(inputs=input_layer, outputs=decoder)
+            self.dims = [self.x_train.shape[1], 32, 16, 8, 4]
         elif self.dataset_string == "ieee":
-            # input_dim is 432
-            encoding_dim = 512
-            hidden_dim_1 = 256
-            hidden_dim_2 = 128
-            hidden_dim_3 = 64
-            # hidden_dim_4 = 32
-            input_layer = Input(shape=(input_dim,))
-            encoder = Dense(encoding_dim, activation="relu", activity_regularizer=regularizers.l1(learning_rate))(
-                input_layer)
-            encoder = Dense(hidden_dim_1, activation="relu")(encoder)
-            encoder = Dense(hidden_dim_2, activation="relu")(encoder)
-            encoder = Dense(hidden_dim_3, activation="relu")(encoder)
-            # encoder = Dense(hidden_dim_4, activation="relu")(encoder)
+            self.dims = [self.x_train.shape[1], 512, 256, 64, 4]
 
-            # decoder = Dense(hidden_dim_4, activation="relu")(encoder)
-            decoder = Dense(hidden_dim_3, activation="relu")(encoder)
-            decoder = Dense(hidden_dim_2, activation="relu")(decoder)
-            decoder = Dense(hidden_dim_1, activation="relu")(decoder)
-            decoder = Dense(encoding_dim, activation="relu")(decoder)
-            decoder = Dense(input_dim, activation="linear")(decoder)
-            autoencoder = Model(inputs=input_layer, outputs=decoder)
-
-        return autoencoder
-
-    def execute_autoencoder(self):
-        nb_epoch = 50
-        batch_size = 128
-        split_pct = 0.2
-        autoencoder = self.build_network()
+    def build(self):
+        autoencoder = build_ae_model(self.dims, self.learning_rate)
 
         autoencoder.compile(metrics=['accuracy'],
                             loss='mean_squared_error',
                             optimizer='adam')
 
-        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=split_pct)
+        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=self.split_pct)
 
         autoencoder.fit(x_train_split, x_train_split,
-                        epochs=nb_epoch,
-                        batch_size=batch_size,
+                        epochs=self.nb_epoch,
+                        batch_size=self.batch_size,
                         shuffle=True,
                         validation_data=(x_valid_split, x_valid_split),
                         verbose=0)
 
-        # TODO: How to set threshold? Clustering?
-        # Predict the training set for setting the mse threshold
         x_train_pred = autoencoder.predict(self.x_train)
         mse = np.mean(np.power(self.x_train - x_train_pred, 2), axis=1)
-        threshold = np.quantile(mse, 0.9)
 
+        self.threshold = np.quantile(mse, 0.9)
+        self.autoencoder = autoencoder
+
+    def predict(self, x_test, y_test):
         # error_df = pd.DataFrame({'Reconstruction_error': mse,
         #                          'True_class': np.zeros(self.x_train.shape[0])})
         # error_df = error_df.reset_index()
@@ -128,12 +86,12 @@ class Autoencoder(object):
         # plt.show()
 
         # Predict the test set
-        y_pred = autoencoder.predict(self.x_test)
-        mse = np.mean(np.power(self.x_test - y_pred, 2), axis=1)
-        y_pred = [1 if val > threshold else 0 for val in mse]
-        auc_score = roc_auc_score(self.y_test, y_pred)
+        y_pred = self.autoencoder.predict(x_test)
+        mse = np.mean(np.power(x_test - y_pred, 2), axis=1)
+        y_pred = [1 if val > self.threshold else 0 for val in mse]
+        auc_score = roc_auc_score(y_test, y_pred)
 
-        precision, recall, fscore, support = precision_recall_fscore_support(self.y_test, y_pred, zero_division=0)
+        precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
         # class_report = classification_report(self.y_test, y_pred, target_names=['benign', 'fraud'], digits=4)
 
         # error_df_test = pd.DataFrame({'Reconstruction_error': mse,
