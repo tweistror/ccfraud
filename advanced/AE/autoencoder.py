@@ -132,4 +132,3 @@ class Autoencoder(object):
         # plt.show()
 
         return precision[1], recall[1], fscore[1], auc_score, 'USV-Autoencoder'
-
