@@ -60,10 +60,6 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
             g_dim = [64, 256, dim_input]
             z_dim = g_dim[0]
 
-
-
-    # Set dimensions for discriminator, generator and
-
     # Define placeholders for labeled-data, unlabeled-data, noise-data and target-data.
     x_oc = tf.compat.v1.placeholder(tf.float32, shape=[None, dim_input])
     z = tf.compat.v1.placeholder(tf.float32, shape=[None, z_dim])
