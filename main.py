@@ -5,7 +5,7 @@ from datetime import datetime
 
 from advanced.AE.autoencoder import Autoencoder
 from advanced.RBM.rbm import RBM
-from advanced.VAE.vae import execute_vae
+from advanced.VAE.vae import VAE
 from advanced.oc_gan.oc_gan import execute_oc_gan
 from baselines.calculate_sv_baselines import build_supervised_baselines
 from baselines.calculate_usv_baselines import build_unsupervised_baselines
@@ -150,7 +150,10 @@ for i in range(iteration_count):
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'vae':
-        prec, reca, f1, auc, method_name = execute_vae(x_usv_train, x_test, y_test)
+        vae_model = VAE(x_usv_train, dataset_string)
+        vae_model.set_parameters()
+        vae_model.build()
+        prec, reca, f1, auc, method_name = vae_model.predict(x_test, y_test)
 
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
