@@ -2,7 +2,7 @@ import numpy as np
 
 from sklearn.model_selection import KFold, StratifiedKFold
 
-from baselines.calculate_sv_baselines import build_supervised_baselines
+from baseline_methods.evaluate_sv_baselines import build_supervised_baselines
 
 
 class Crossvalidator:

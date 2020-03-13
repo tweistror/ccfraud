@@ -4,14 +4,11 @@ import pandas as pd
 import numpy as np
 
 from pylab import rcParams
-from keras.models import Model
-from keras.layers import Input, Dense
-from keras import regularizers
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
 
 # https://towardsdatascience.com/extreme-rare-event-classification-using-autoencoders-in-keras-a565b386f098
-from advanced.AE.utils import build_ae_model
+from advanced_methods.AE.utils import build_ae_model
 
 rcParams['figure.figsize'] = 8, 6
 LABELS = ["Normal", "Break"]
@@ -131,4 +128,4 @@ class Autoencoder(object):
         # plt.xlabel('False Positive Rate')
         # plt.show()
 
-        return precision[1], recall[1], fscore[1], auc_score, 'USV-Autoencoder'
+        return precision[1], recall[1], fscore[1], auc_score, 'Autoencoder'

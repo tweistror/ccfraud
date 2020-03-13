@@ -6,7 +6,25 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from utils.list_operations import sample_shuffle, clean_inf_nan
 
 
-def sample_paysim(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, cross_validation_k):
+def split_and_preprocess_data(dataset_string, x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud,
+                              cross_validation_k):
+    if dataset_string == "paysim":
+        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = with_paysim(x_ben, x_fraud, usv_train, sv_train,
+                                                                          sv_train_fraud, test_fraud,
+                                                                          cross_validation_k)
+    elif dataset_string == "ccfraud":
+        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = with_ccfraud(x_ben, x_fraud, usv_train, sv_train,
+                                                                           sv_train_fraud, test_fraud,
+                                                                           cross_validation_k)
+    elif dataset_string == "ieee":
+        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = with_ieee(x_ben, x_fraud, usv_train, sv_train,
+                                                                        sv_train_fraud, test_fraud,
+                                                                        cross_validation_k)
+
+    return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
+
+
+def with_paysim(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, cross_validation_k):
     sv_train_ben = sv_train - sv_train_fraud
 
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
@@ -33,14 +51,14 @@ def sample_paysim(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_frau
     return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
 
-def sample_ccfraud(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, cross_validation_k):
+def with_ccfraud(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, cross_validation_k):
     sv_train_ben = sv_train - sv_train_fraud
 
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
         data_sampling(x_ben, x_fraud, usv_train, sv_train_ben, sv_train_fraud, test_fraud, cross_validation_k)
 
     # TODO: MinMaxScaler provides strong results for one-class gan (75% f1), but is slightly worse for many usv/sv
-    # TODO: baselines - StandardScaler provides poor results for ocgan and slightly better results for many usv/sv
+    # TODO: baseline_methods - StandardScaler provides poor results for ocgan and slightly better results for many usv/sv
     sc = MinMaxScaler()
     if len(x_sv_train) > len(x_usv_train):
         x_sv_train = sc.fit_transform(x_sv_train)
@@ -54,7 +72,7 @@ def sample_ccfraud(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fra
     return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
 
-def sample_ieee(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, cross_validation_k):
+def with_ieee(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, cross_validation_k):
     sv_train_ben = sv_train - sv_train_fraud
 
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \

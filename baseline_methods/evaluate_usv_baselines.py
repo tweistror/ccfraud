@@ -1,5 +1,5 @@
-from baselines.usv_baselines import svm_oneclass, elliptic_envelope, iso_forest, local_outlier_factor
-from utils.run_models import run_usv_classification
+from baseline_methods.usv_baselines import svm_oneclass, elliptic_envelope, iso_forest, local_outlier_factor
+from baseline_methods.run_models import run_usv_classification
 
 
 def build_unsupervised_baselines(x_train, x_test, y_test):

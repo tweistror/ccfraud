@@ -3,8 +3,8 @@ import numpy as np
 
 from sklearn.metrics import classification_report, precision_recall_fscore_support, roc_auc_score
 
-from advanced.oc_gan.autoencoding import Dense_Autoencoder
-from advanced.oc_gan.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend, \
+from advanced_methods.OC_GAN.autoencoder import Dense_Autoencoder
+from advanced_methods.OC_GAN.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend, \
     preprocess_minus_1_and_pos_1
 
 tf.compat.v1.disable_eager_execution()
@@ -15,10 +15,10 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
     dim_input = x_usv_train.shape[1]
     if dataset_string == "paysim":
         mb_size = 70
-        d_dim = [dim_input, 100, 50, 2]
-        g_dim = [50, 100, dim_input]
+        d_dim = [dim_input, 30, 15, 2]
+        g_dim = [15, 30, dim_input]
         z_dim = g_dim[0]
-        hid_dim = [100]
+        hid_dim = [30]
     elif dataset_string == "ccfraud":
         mb_size = 70
         d_dim = [dim_input, 100, 50, 2]

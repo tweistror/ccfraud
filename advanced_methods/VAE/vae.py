@@ -11,7 +11,7 @@ import numpy as np
 from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 
-from advanced.VAE.utils import sampling
+from advanced_methods.VAE.utils import sampling
 
 
 class VAE(object):

@@ -3,16 +3,17 @@ from argparse import RawTextHelpFormatter
 import numpy as np
 from datetime import datetime
 
-from advanced.AE.autoencoder import Autoencoder
-from advanced.RBM.rbm import RBM
-from advanced.VAE.vae import VAE
-from advanced.oc_gan.oc_gan import execute_oc_gan
-from baselines.calculate_sv_baselines import build_supervised_baselines
-from baselines.calculate_usv_baselines import build_unsupervised_baselines
-from utils.crossvalidation import Crossvalidator
+from advanced_methods.AE.autoencoder import Autoencoder
+from advanced_methods.GAN import GAN
+from advanced_methods.RBM.rbm import RBM
+from advanced_methods.VAE.vae import VAE
+from advanced_methods.OC_GAN.oc_gan import execute_oc_gan
+from baseline_methods.evaluate_sv_baselines import build_supervised_baselines
+from baseline_methods.evaluate_usv_baselines import build_unsupervised_baselines
+from utils.crossvalidator import Crossvalidator
 from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee, get_parameters
 from utils.printing import print_results
-from utils.sample_data import sample_paysim, sample_ccfraud, sample_ieee, execute_nearmiss, execute_smote
+from utils.split_preprocess_data import execute_smote, split_and_preprocess_data
 
 datasets = ["paysim", "ccfraud", "ieee"]
 
@@ -22,7 +23,7 @@ parser.add_argument("--dataset", required=True, choices=datasets, help="Dataset"
 parser.add_argument("--method", choices=["all", "oc-gan", "oc-gan-ae", "ae", "rbm", "vae"],
                     help="Machine learning method used for classification")
 parser.add_argument("--baselines", choices=["usv", "sv", "both"],
-                    help="Execute baselines or not")
+                    help="Execute baseline methods or not")
 parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Specify verbosity")
 parser.add_argument("--iterations", default="10", help="Specify number of iterations each method is executed")
 parser.add_argument("--cv", help="Specify number of cross validation splits")
@@ -73,23 +74,9 @@ for i in range(iteration_count):
     f1_list = list()
     auc_list = list()
 
-    if dataset_string == "paysim":
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_paysim(x_ben, x_fraud, usv_train, sv_train,
-                                                                            sv_train_fraud, test_fraud,
-                                                                            cross_validation_count)
-    elif dataset_string == "ccfraud":
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ccfraud(x_ben, x_fraud, usv_train, sv_train,
-                                                                             sv_train_fraud, test_fraud,
-                                                                             cross_validation_count)
-    elif dataset_string == "ieee":
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ieee(x_ben, x_fraud, usv_train, sv_train,
-                                                                          sv_train_fraud, test_fraud,
-                                                                          cross_validation_count)
-    # Use ccfraud as fallback
-    else:
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = sample_ccfraud(x_ben, x_fraud, usv_train, sv_train,
-                                                                             sv_train_fraud, test_fraud,
-                                                                             cross_validation_count)
+    x_usv_train, x_sv_train, y_sv_train, x_test, y_test = split_and_preprocess_data(dataset_string, x_ben, x_fraud,
+                                                                                    usv_train, sv_train, sv_train_fraud,
+                                                                                    test_fraud, cross_validation_count)
 
     # Over/undersampling
     if use_oversampling is True:
@@ -169,7 +156,7 @@ for i in range(iteration_count):
         print(f'Special methods: Iteration #{i + 1} finished')
 
     if baselines == 'usv' or baselines == 'both':
-        # Execute unsupervised learning baselines
+        # Execute unsupervised learning baseline methods
         prec_usv_list, reca_usv_list, f1_usv_list, auc_usv_list, method_usv_list = \
             build_unsupervised_baselines(x_usv_train, x_test, y_test)
 
@@ -184,7 +171,7 @@ for i in range(iteration_count):
             print(f'Unsupervised: Iteration #{i + 1} finished')
 
     if baselines == 'sv' or baselines == 'both':
-        # Execute supervised learning baselines
+        # Execute supervised learning baseline methods
         if cross_validation_count > 1:
             cv = Crossvalidator(cross_validation_count, 'StratifiedKFold', x_sv_train, y_sv_train)
             prec_sv_list, reca_sv_list, f1_sv_list, auc_sv_list, method_sv_list = cv.execute_cv()

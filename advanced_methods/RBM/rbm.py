@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 
-from advanced.RBM import utils
+from advanced_methods.RBM import utils
 
 tf.disable_v2_behavior()
 

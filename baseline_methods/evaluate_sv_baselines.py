@@ -1,6 +1,6 @@
-from baselines.sv_baselines import svm_svc, knn, random_forest, decision_tree, svm_linearsvc, gnb, xgboost, \
+from baseline_methods.sv_baselines import svm_svc, knn, random_forest, decision_tree, svm_linearsvc, gnb, xgboost, \
     logistic_regression, sgd, gaussian_process, adaboost, mlp
-from utils.run_models import run_sv_classification
+from baseline_methods.run_models import run_sv_classification
 
 
 def build_supervised_baselines(x_train, y_train, x_test, y_test):
