@@ -4,25 +4,26 @@ import numpy as np
 from datetime import datetime
 
 from advanced_methods.AE.autoencoder import Autoencoder
-from advanced_methods.GAN import GAN
 from advanced_methods.RBM.rbm import RBM
 from advanced_methods.VAE.vae import VAE
 from advanced_methods.OC_GAN.oc_gan import execute_oc_gan
 from baseline_methods.evaluate_sv_baselines import build_supervised_baselines
 from baseline_methods.evaluate_usv_baselines import build_unsupervised_baselines
 from utils.crossvalidator import Crossvalidator
-from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee, get_parameters
+from utils.load_data import get_data_paysim, get_data_ccfraud, get_data_ieee, get_parameters, get_data_paysim_custom
 from utils.printing import print_results
 from utils.split_preprocess_data import execute_smote, split_and_preprocess_data
 
-datasets = ["paysim", "ccfraud", "ieee"]
+datasets = ["paysim", "paysim_custom", "ccfraud", "ieee"]
+methods = ["all", "oc-gan", "oc-gan-ae", "ae", "rbm", "vae"]
+baselines = ["both", "usv", "sv"]
 
 parser = argparse.ArgumentParser(description='Tool for testing various machine learning methods on different datasets',
                                  formatter_class=RawTextHelpFormatter)
 parser.add_argument("--dataset", required=True, choices=datasets, help="Dataset")
-parser.add_argument("--method", choices=["all", "oc-gan", "oc-gan-ae", "ae", "rbm", "vae"],
+parser.add_argument("--method", choices=methods,
                     help="Machine learning method used for classification")
-parser.add_argument("--baselines", choices=["usv", "sv", "both"],
+parser.add_argument("--baselines", choices=baselines,
                     help="Execute baseline methods or not")
 parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Specify verbosity")
 parser.add_argument("--iterations", default="10", help="Specify number of iterations each method is executed")
@@ -33,18 +34,20 @@ args = parser.parse_args()
 dataset_string = args.dataset
 verbosity = int(args.v)
 method = args.method
-baselines = args.baselines
+baseline = args.baselines
 iteration_count = int(args.iterations)
 use_oversampling = True if args.oversampling == 'y' else False
 cross_validation_count = 1 if args.cv is None else int(args.cv)
 
 # Set parameters
-usv_train, sv_train, sv_train_fraud, test_fraud = get_parameters(dataset_string, cross_validation_count)
+usv_train, sv_train, sv_train_fraud, test_fraud, test_benign = get_parameters(dataset_string, cross_validation_count)
 
 skip_ieee_processing = True
 
 if dataset_string == "paysim":
     x_ben, x_fraud = get_data_paysim("paysim.csv", verbosity=verbosity)
+if dataset_string == "paysim_custom":
+    x_ben, x_fraud = get_data_paysim_custom("paysim_custom.csv", verbosity=verbosity)
 elif dataset_string == "ccfraud":
     x_ben, x_fraud = get_data_ccfraud("ccfraud.csv", verbosity=verbosity)
 elif dataset_string == "ieee":
@@ -76,26 +79,19 @@ for i in range(iteration_count):
 
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = split_and_preprocess_data(dataset_string, x_ben, x_fraud,
                                                                                     usv_train, sv_train, sv_train_fraud,
-                                                                                    test_fraud, cross_validation_count)
+                                                                                    test_fraud, test_benign,
+                                                                                    cross_validation_count)
 
     # Over/undersampling
     if use_oversampling is True:
         x_sv_train, y_sv_train = execute_smote(x_sv_train, y_sv_train)
 
-    # x_sv_train, y_sv_train = execute_nearmiss(x_sv_train, y_sv_train)
-
-    # tsne_plot(x_sv_train, y_sv_train, "original.png")
-    # ex_ae(x_usv_train, x_ben, x_fraud, x_test, y_test)
-
-    # gan = GAN()
-    # gan.train(epochs=30000, batch_size=32, sample_interval=200)
-
     if verbosity > 1:
         print(f'Starting iteration #{i + 1}')
 
     if method == 'all' or method == 'oc-gan':
-        prec, reca, f1, auc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:-test_fraud],
-                                                          x_test[-test_fraud:], test_fraud, autoencoding=False)
+        prec, reca, f1, auc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
+                                                          x_test[test_benign:], test_benign, autoencoding=False)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
@@ -104,8 +100,8 @@ for i in range(iteration_count):
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'oc-gan-ae':
-        prec, reca, f1, auc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:-test_fraud],
-                                                          x_test[-test_fraud:], test_fraud, autoencoding=True)
+        prec, reca, f1, auc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
+                                                          x_test[test_benign:], test_benign, autoencoding=True)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
@@ -155,7 +151,7 @@ for i in range(iteration_count):
     if verbosity > 1:
         print(f'Special methods: Iteration #{i + 1} finished')
 
-    if baselines == 'usv' or baselines == 'both':
+    if baseline == 'usv' or baseline == 'both':
         # Execute unsupervised learning baseline methods
         prec_usv_list, reca_usv_list, f1_usv_list, auc_usv_list, method_usv_list = \
             build_unsupervised_baselines(x_usv_train, x_test, y_test)
@@ -170,7 +166,7 @@ for i in range(iteration_count):
         if verbosity > 1:
             print(f'Unsupervised: Iteration #{i + 1} finished')
 
-    if baselines == 'sv' or baselines == 'both':
+    if baseline == 'sv' or baseline == 'both':
         # Execute supervised learning baseline methods
         if cross_validation_count > 1:
             cv = Crossvalidator(cross_validation_count, 'StratifiedKFold', x_sv_train, y_sv_train)

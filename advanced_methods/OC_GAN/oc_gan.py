@@ -10,10 +10,11 @@ from advanced_methods.OC_GAN.utils import xavier_init, pull_away_loss, sample_sh
 tf.compat.v1.disable_eager_execution()
 
 
-def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_test, autoencoding=False, verbosity=0):
+def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_test_benign, autoencoding=False,
+                   verbosity=0):
     # Set parameters
     dim_input = x_usv_train.shape[1]
-    if dataset_string == "paysim":
+    if dataset_string == "paysim" or dataset_string == "paysim_custom":
         mb_size = 70
         d_dim = [dim_input, 30, 15, 2]
         g_dim = [15, 30, dim_input]
@@ -43,11 +44,12 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
             x_ben, x_fraud]))
         ben_hid_repre, van_hid_repre = list(map(lambda x: preprocess_minus_1_and_pos_1(x),
                                                 [ben_hid_repre, van_hid_repre]))
+
         # Set additional parameters for autoencoding
-        if dataset_string == "paysim":
-            dim_input = 50
-            d_dim = [dim_input, 100, 50, 2]
-            g_dim = [50, 100, dim_input]
+        if dataset_string == "paysim" or dataset_string == "paysim_custom":
+            dim_input = 15
+            d_dim = [dim_input, 30, 15, 2]
+            g_dim = [15, 30, dim_input]
             z_dim = g_dim[0]
         elif dataset_string == "ccfraud":
             dim_input = 50
@@ -177,7 +179,7 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
     t_solver = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(t_loss, var_list=theta_t)
 
     # Process data
-    x_pre = x_usv_train if autoencoding is False else ben_hid_repre[:-n_test]
+    x_pre = x_usv_train if autoencoding is False else ben_hid_repre[:-n_test_benign]
     x_fraud = x_test_fraud if autoencoding is False else van_hid_repre
 
     y_pre = np.zeros(len(x_pre))
@@ -189,10 +191,10 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
     y_fake_mb = one_hot(np.ones(mb_size), 2)
 
     x_test = np.concatenate((x_test_benign, x_fraud)) if autoencoding is False else \
-        np.concatenate((ben_hid_repre[-n_test:], x_fraud))
+        np.concatenate((ben_hid_repre[-n_test_benign:], x_fraud))
 
     y_test = np.zeros(len(x_test))
-    y_test[n_test:] = 1
+    y_test[n_test_benign:] = 1
 
     sess = tf.compat.v1.Session()
     sess.run(tf.compat.v1.global_variables_initializer())
@@ -233,7 +235,7 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
                                                         z: sample_Z(len(x_train), z_dim)})
 
         d_prob_fraud_ = sess.run(d_prob_real,
-                                 feed_dict={x_oc: x_test[-n_test:]})
+                                 feed_dict={x_oc: x_test[-n_test_benign:]})
 
         d_ben_pro.append(np.mean(d_prob_real_[:, 0]))
         d_fake_pro.append(np.mean(d_prob_gen_[:, 0]))

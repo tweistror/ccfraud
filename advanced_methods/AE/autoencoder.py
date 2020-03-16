@@ -36,7 +36,7 @@ class Autoencoder(object):
         self.split_pct = 0.2
         self.learning_rate = 1e-3
 
-        if self.dataset_string == "paysim":
+        if self.dataset_string == "paysim" or self.dataset_string == "paysim_custom":
             self.dims = [self.x_train.shape[1], 16, 8, 4]
         elif self.dataset_string == "ccfraud":
             self.dims = [self.x_train.shape[1], 32, 16, 8, 4]

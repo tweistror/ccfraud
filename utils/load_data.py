@@ -10,9 +10,6 @@ root_path = './data/'
 def get_data_paysim(path, verbosity=0):
     data = load_data(path, verbosity)
 
-    # TODO: Selbst generieren (dadurch dann neuer U)
-    # TODO: Unauthorized Overdraft
-    # TODO: Dann nochmal nameORig nameDest Beziehung testen
     # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
     # Feature is not important
     # data['nameOrig'] = data['nameOrig'].apply(lambda x: x[:1])
@@ -27,6 +24,41 @@ def get_data_paysim(path, verbosity=0):
     # One-hot encode type
     data = pd.concat([data, pd.get_dummies(data['type'], prefix='type')], axis=1)
     data.drop(['type'], axis=1, inplace=True)
+
+    # Extract fraud and benign transactions and randomize order
+    x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
+    x_ben = data.loc[data['isFraud'] == 0].sample(frac=1)
+
+    x_fraud.drop(['isFraud'], axis=1, inplace=True)
+    x_ben.drop(['isFraud'], axis=1, inplace=True)
+
+    return x_ben, x_fraud
+
+
+# TODO: Custom and Kaggle dataset
+# TODO: Feature correlation new balance und label
+# TODO: Trainiere auf einem Datensatz, teste auf neuen
+# TODO: Samples
+def get_data_paysim_custom(path, verbosity=0):
+    data = load_data(path, verbosity)
+
+    # TODO: Selbst generieren (dadurch dann neuer U)
+    # TODO: Unauthorized Overdraft
+    # TODO: Dann nochmal nameORig nameDest Beziehung testen
+    # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
+    # Feature is not important
+    data['nameOrig'] = data['nameOrig'].apply(lambda x: x[:1])
+    data['nameDest'] = data['nameDest'].apply(lambda x: x[:1])
+    data['from_to'] = data['nameOrig'] + data['nameDest']
+    data = pd.concat([data, pd.get_dummies(data['from_to'], prefix='from_to')], axis=1)
+    data.drop(columns=['from_to'], inplace=True)
+
+    # Drop `isFlaggedFraud` column
+    data.drop(columns=['nameOrig', 'nameDest', 'isFlaggedFraud'], inplace=True)
+
+    # One-hot encode type
+    data = pd.concat([data, pd.get_dummies(data['action'], prefix='action')], axis=1)
+    data.drop(['action'], axis=1, inplace=True)
 
     # Extract fraud and benign transactions and randomize order
     x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
@@ -126,20 +158,23 @@ def load_data(path, verbosity=0):
 def get_parameters(dataset_string, cross_validation_count=0):
     factor = 0 if cross_validation_count < 2 else cross_validation_count - 1
 
-    if dataset_string == 'paysim':
+    if dataset_string == 'paysim' or dataset_string == 'paysim_custom':
         usv_train = 2000
         sv_train = 2000
         sv_train_fraud = 20
-        test_fraud = 5000 - factor * sv_train_fraud
+        test_benign = 1000 - factor * sv_train_fraud
+        test_fraud = 1000 - factor * sv_train_fraud
     elif dataset_string == 'ccfraud':
         usv_train = 2000
-        sv_train = 1000
+        sv_train = 2000
         sv_train_fraud = 20
+        test_benign = 450 - factor * sv_train_fraud
         test_fraud = 450 - factor * sv_train_fraud
     elif dataset_string == 'ieee':
-        usv_train = 10000
-        sv_train = 5000
-        sv_train_fraud = 1000
+        usv_train = 2000
+        sv_train = 2000
+        sv_train_fraud = 50
+        test_benign = 5000 - factor * sv_train_fraud
         test_fraud = 5000 - factor * sv_train_fraud
 
-    return usv_train, sv_train, sv_train_fraud, test_fraud
+    return usv_train, sv_train, sv_train_fraud, test_fraud, test_benign
