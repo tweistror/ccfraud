@@ -1,0 +1,31 @@
+<component name="ProjectDictionaryState">
+  <dictionary name="thomas">
+    <words>
+      <w>accs</w>
+      <w>adaboost</w>
+      <w>adadelta</w>
+      <w>autoencoder</w>
+      <w>autoencoding</w>
+      <w>ccfraud</w>
+      <w>crossvalidator</w>
+      <w>datasets</w>
+      <w>fscore</w>
+      <w>linearsvc</w>
+      <w>logit</w>
+      <w>nearmiss</w>
+      <w>paysim</w>
+      <w>perceptron</w>
+      <w>prec</w>
+      <w>precs</w>
+      <w>reca</w>
+      <w>recas</w>
+      <w>relu</w>
+      <w>repre</w>
+      <w>scaler</w>
+      <w>thrld</w>
+      <w>tsne</w>
+      <w>undersampling</w>
+      <w>xgboost</w>
+    </words>
+  </dictionary>
+</component>
