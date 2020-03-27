@@ -35,22 +35,16 @@ def get_data_paysim(path, verbosity=0):
     return x_ben, x_fraud
 
 
-# TODO: Custom and Kaggle dataset
-# TODO: Feature correlation new balance und label
-# TODO: Trainiere auf einem Datensatz, teste auf neuen
-# TODO: Samples
 def get_data_paysim_custom(path, verbosity=0):
     data = load_data(path, verbosity)
 
-    # TODO: Selbst generieren (dadurch dann neuer U)
-    # TODO: Dann nochmal nameORig nameDest Beziehung testen
     # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
-    # Feature is not important
-    data['nameOrig'] = data['nameOrig'].apply(lambda x: x[:1])
-    data['nameDest'] = data['nameDest'].apply(lambda x: x[:1])
-    data['from_to'] = data['nameOrig'] + data['nameDest']
-    data = pd.concat([data, pd.get_dummies(data['from_to'], prefix='from_to')], axis=1)
-    data.drop(columns=['from_to'], inplace=True)
+    # => Feature is not important
+    # data['nameOrig'] = data['nameOrig'].apply(lambda x: x[:1])
+    # data['nameDest'] = data['nameDest'].apply(lambda x: x[:1])
+    # data['from_to'] = data['nameOrig'] + data['nameDest']
+    # data = pd.concat([data, pd.get_dummies(data['from_to'], prefix='from_to')], axis=1)
+    # data.drop(columns=['from_to'], inplace=True)
 
     # Drop `isFlaggedFraud` column
     data.drop(columns=['nameOrig', 'nameDest', 'isFlaggedFraud'], inplace=True)
@@ -103,13 +97,13 @@ def get_data_ieee(transaction_path, identity_path, verbosity=0, skip=False):
     del transaction_data, identity_data
 
     # Remove columns with: Only 1 value, many null values and big top values
-    one_value_cols = [col for col in data.columns if data[col].nunique() <= 1]
-    many_null_cols = [col for col in data.columns if data[col].isnull().sum() / data.shape[0] > 0.9]
-    big_top_value_cols = [col for col in data.columns if
-                          data[col].value_counts(dropna=False, normalize=True).values[0] > 0.9]
-    cols_to_drop = list(set(many_null_cols + big_top_value_cols + one_value_cols))
-    cols_to_drop.remove('isFraud')
-    data = data.drop(cols_to_drop, axis=1)
+    # one_value_cols = [col for col in data.columns if data[col].nunique() <= 1]
+    # many_null_cols = [col for col in data.columns if data[col].isnull().sum() / data.shape[0] > 0.9]
+    # big_top_value_cols = [col for col in data.columns if
+    #                       data[col].value_counts(dropna=False, normalize=True).values[0] > 0.9]
+    # cols_to_drop = list(set(many_null_cols + big_top_value_cols + one_value_cols))
+    # cols_to_drop.remove('isFraud')
+    # data = data.drop(cols_to_drop, axis=1)
 
     cat_cols = ['ProductCD', 'card1', 'card2', 'card3', 'card4', 'card5', 'card6', 'addr1', 'addr2',
                 'P_emaildomain', 'R_emaildomain', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9',
@@ -118,11 +112,11 @@ def get_data_ieee(transaction_path, identity_path, verbosity=0, skip=False):
                 'id_31', 'id_32', 'id_33', 'id_34', 'id_35', 'id_36', 'id_37', 'id_38', 'DeviceType', 'DeviceInfo']
 
     # Remove dropped cols from cat_cols
-    for i in cols_to_drop:
-        try:
-            cat_cols.remove(i)
-        except ValueError:
-            pass
+    # for i in cols_to_drop:
+    #     try:
+    #         cat_cols.remove(i)
+    #     except ValueError:
+    #         pass
 
     # Label-Encode categorical values
     for col in cat_cols:

@@ -33,15 +33,15 @@ def with_paysim(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud,
                       cross_validation_k)
 
     # TODO: Leave PCA out completely or not
-    if is_custom is False:
-        pca = PCA(n_components=x_usv_train.shape[1])
-        if len(x_sv_train) > len(x_usv_train):
-            x_sv_train = pca.fit_transform(X=x_sv_train)
-            x_usv_train = pca.transform(X=x_usv_train)
-        else:
-            x_usv_train = pca.fit_transform(x_usv_train)
-            x_sv_train = pca.transform(x_sv_train)
-        x_test = pca.transform(X=x_test)
+    # if is_custom is False:
+    #     pca = PCA(n_components=x_usv_train.shape[1])
+    #     if len(x_sv_train) > len(x_usv_train):
+    #         x_sv_train = pca.fit_transform(X=x_sv_train)
+    #         x_usv_train = pca.transform(X=x_usv_train)
+    #     else:
+    #         x_usv_train = pca.fit_transform(x_usv_train)
+    #         x_sv_train = pca.transform(x_sv_train)
+    #     x_test = pca.transform(X=x_test)
 
     sc = StandardScaler()
     if len(x_sv_train) > len(x_usv_train):
@@ -64,6 +64,7 @@ def with_ccfraud(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud
 
     # TODO: MinMaxScaler provides strong results for one-class gan (75% f1), but is slightly worse for many usv/sv
     # TODO: baseline_methods - StandardScaler provides poor results for ocgan and slightly better results for many usv/sv
+    # TODO: => Decide and put into paper
     sc = MinMaxScaler()
     if len(x_sv_train) > len(x_usv_train):
         x_sv_train = sc.fit_transform(x_sv_train)
