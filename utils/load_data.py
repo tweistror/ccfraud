@@ -11,7 +11,7 @@ def get_data_paysim(path, verbosity=0):
     data = load_data(path, verbosity)
 
     # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
-    # Feature is not important
+    #  => Feature is not important
     # data['nameOrig'] = data['nameOrig'].apply(lambda x: x[:1])
     # data['nameDest'] = data['nameDest'].apply(lambda x: x[:1])
     # data['from_to'] = data['nameOrig'] + data['nameDest']
@@ -43,7 +43,6 @@ def get_data_paysim_custom(path, verbosity=0):
     data = load_data(path, verbosity)
 
     # TODO: Selbst generieren (dadurch dann neuer U)
-    # TODO: Unauthorized Overdraft
     # TODO: Dann nochmal nameORig nameDest Beziehung testen
     # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
     # Feature is not important
@@ -137,6 +136,12 @@ def get_data_ieee(transaction_path, identity_path, verbosity=0, skip=False):
     # Extract `positive_samples` of benign transactions and all fraud transactions
     x_ben = data.loc[data['isFraud'] == 0].sample(frac=1)
     x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
+
+    x_fraud.drop(['isFraud'], axis=1, inplace=True)
+    x_ben.drop(['isFraud'], axis=1, inplace=True)
+
+    # x_ben.to_csv(r'x_ben.csv')
+    # x_fraud.to_csv(r'x_fraud.csv')
 
     return x_ben, x_fraud
 
