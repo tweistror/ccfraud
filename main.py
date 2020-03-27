@@ -20,14 +20,17 @@ baselines = ["both", "usv", "sv"]
 
 parser = argparse.ArgumentParser(description='Tool for testing various machine learning methods on different datasets',
                                  formatter_class=RawTextHelpFormatter)
-parser.add_argument("--dataset", required=True, choices=datasets, help="Dataset")
+parser.add_argument("--dataset", required=True, choices=datasets, help="Desired dataset for evaluation")
 parser.add_argument("--method", choices=methods,
-                    help="Machine learning method used for classification")
-parser.add_argument("--baselines", choices=baselines,
-                    help="Execute baseline methods or not")
-parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Specify verbosity")
-parser.add_argument("--iterations", default="10", help="Specify number of iterations each method is executed")
-parser.add_argument("--cv", help="Specify number of cross validation splits")
+                    help="Method for evaluation (no specification will result in no evaluation of any advanced method, "
+                         "all with execute all advanced methods)")
+parser.add_argument("--baselines", choices=baselines, default="both",
+                    help="Baselines for evaluation (default is both)")
+parser.add_argument("--v", choices=['0', '1', '2'], default=0, help="Verbosity level (0 = just end results, 1 = "
+                                                                    "some timing information, "
+                                                                    "2 = more timing information)")
+parser.add_argument("--iterations", default="10", help="Desired count the specified methods are executed and evaluated")
+parser.add_argument("--cv", help="Activate crossvalidation with the desired count of train/test-splits")
 parser.add_argument("--oversampling", choices=['y', 'n'], default='n', help="Use oversampling (SMOTE) or not")
 
 args = parser.parse_args()

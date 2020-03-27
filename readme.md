@@ -21,6 +21,6 @@ Parameter name  | Required | Default | Choices | Description
 --v | no | 0 | 0, 1, 2 | Verbosity level (0 = just end results, 1 = some timing information, 2 = more timing information)
 --iterations    | no | 10 | number (not too high) | Desired count the specified methods are executed and evaluated
 --cv    | no | -- | number (not too high) | Activate crossvalidation with the desired count of train/test-splits
---oversampling  | no | -- | y, n | Flag for activation of oversampling
+--oversampling  | no | n | y, n | Flag for activation of oversampling (default is no)
 
 Further, `--help` is available to show console-based help.
