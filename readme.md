@@ -2,7 +2,7 @@
 
 ## Preparation
 * Clone/Download this repository
-* Download the datasets from `link` and unpack the file into the `data` Folder
+* Download the desired datasets from https://drive.google.com/drive/folders/1ioHeGFWo-4lQZcTf6p4tknG56Z2TQGWE and move the files into the `data` Folder
 
 ## How to start the program?
 
