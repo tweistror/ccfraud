@@ -1,3 +1,5 @@
+# Taken from https://github.com/PanpanZheng/OCAN with some modifications
+
 import numpy as np
 import theano.tensor as T
 

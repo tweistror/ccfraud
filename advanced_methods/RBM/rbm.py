@@ -1,5 +1,5 @@
-# https://link.springer.com/content/pdf/10.1007%2F978-1-4842-5177-5.pdf
-# https://github.com/aaxwaz/Fraud-detection-using-deep-learning
+# Taken from https://link.springer.com/content/pdf/10.1007%2F978-1-4842-5177-5.pdf and
+# https://github.com/aaxwaz/Fraud-detection-using-deep-learning with some modifications
 
 import tensorflow.compat.v1 as tf
 import numpy as np

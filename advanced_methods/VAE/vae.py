@@ -1,5 +1,5 @@
-# https://keras.io/examples/variational_autoencoder/
-# https://link.springer.com/content/pdf/10.1007%2F978-1-4842-5177-5.pdf
+# Taken from https://keras.io/examples/variational_autoencoder/ and
+# https://link.springer.com/content/pdf/10.1007%2F978-1-4842-5177-5.pdf with some modifications
 
 from keras.layers import Lambda, Input, Dense
 from keras.models import Model

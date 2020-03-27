@@ -1,3 +1,5 @@
+# Taken from https://github.com/PanpanZheng/OCAN with some modifications
+
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt

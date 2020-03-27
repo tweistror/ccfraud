@@ -1,3 +1,5 @@
+# Taken from https://github.com/PanpanZheng/OCAN with some modifications
+
 import tensorflow as tf
 import numpy as np
 
@@ -246,8 +248,6 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
         y_pred = np.argmax(prob, axis=1)
         conf_mat = classification_report(y_test, y_pred, target_names=['benign', 'fraud'], digits=4, zero_division=0)
         f1_score.append(float(list(filter(None, conf_mat.strip().split(" ")))[12]))
-
-    # TODO: Maybe add early stopping
 
     auc_score = roc_auc_score(y_test, y_pred)
     precision, recall, f1, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
