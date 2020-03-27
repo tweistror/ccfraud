@@ -169,7 +169,7 @@ for i in range(iteration_count):
     if baseline == 'sv' or baseline == 'both':
         # Execute supervised learning baseline methods
         if cross_validation_count > 1:
-            cv = Crossvalidator(cross_validation_count, 'StratifiedKFold', x_sv_train, y_sv_train)
+            cv = Crossvalidator(cross_validation_count, x_sv_train, y_sv_train)
             prec_sv_list, reca_sv_list, f1_sv_list, auc_sv_list, method_sv_list = cv.execute_cv()
         else:
             prec_sv_list, reca_sv_list, f1_sv_list, auc_sv_list, method_sv_list = \
