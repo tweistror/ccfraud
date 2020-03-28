@@ -42,7 +42,7 @@ def with_paysim(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud,
             x_sv_train = pca.transform(x_sv_train)
         x_test = pca.transform(X=x_test)
 
-    sc = StandardScaler()
+    sc = MinMaxScaler()
     if len(x_sv_train) > len(x_usv_train):
         x_sv_train = sc.fit_transform(x_sv_train)
         x_usv_train = sc.transform(x_usv_train)
