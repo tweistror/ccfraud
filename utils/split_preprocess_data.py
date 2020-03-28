@@ -62,9 +62,6 @@ def with_ccfraud(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud
         data_sampling(x_ben, x_fraud, usv_train, sv_train_ben, sv_train_fraud, test_fraud, test_benign,
                       cross_validation_k)
 
-    # TODO: MinMaxScaler provides strong results for one-class gan (75% f1), but is slightly worse for many usv/sv
-    # TODO: baseline_methods - StandardScaler provides poor results for ocgan and slightly better results for many usv/sv
-    # TODO: => Decide and put into paper
     sc = MinMaxScaler()
     if len(x_sv_train) > len(x_usv_train):
         x_sv_train = sc.fit_transform(x_sv_train)
