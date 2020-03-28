@@ -32,15 +32,14 @@ def with_paysim(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud,
         data_sampling(x_ben, x_fraud, usv_train, sv_train_ben, sv_train_fraud, test_fraud, test_benign,
                       cross_validation_k)
 
-    if is_custom is False:
-        pca = PCA(n_components=x_usv_train.shape[1])
-        if len(x_sv_train) > len(x_usv_train):
-            x_sv_train = pca.fit_transform(X=x_sv_train)
-            x_usv_train = pca.transform(X=x_usv_train)
-        else:
-            x_usv_train = pca.fit_transform(x_usv_train)
-            x_sv_train = pca.transform(x_sv_train)
-        x_test = pca.transform(X=x_test)
+    pca = PCA(n_components=x_usv_train.shape[1])
+    if len(x_sv_train) > len(x_usv_train):
+        x_sv_train = pca.fit_transform(X=x_sv_train)
+        x_usv_train = pca.transform(X=x_usv_train)
+    else:
+        x_usv_train = pca.fit_transform(x_usv_train)
+        x_sv_train = pca.transform(x_sv_train)
+    x_test = pca.transform(X=x_test)
 
     sc = MinMaxScaler()
     if len(x_sv_train) > len(x_usv_train):
