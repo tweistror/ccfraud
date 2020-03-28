@@ -38,7 +38,7 @@ class VAE(object):
             self.intermediate_dim = 12
             self.latent_dim = 2
 
-        elif self.dataset_string == 'paysim':
+        elif self.dataset_string == 'paysim' or self.dataset_string == 'paysim_custom':
             self.intermediate_dim = 5
             self.latent_dim = 2
 
