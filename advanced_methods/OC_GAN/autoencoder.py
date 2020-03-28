@@ -42,7 +42,7 @@ class Autoencoder(object):
     def __init__(self):
         # super(Autoencoder, self).__init__()
         # self.codeLayerType = 'dense'
-        self.nb_epoch = 50
+        self.epochs = 50
         self.batch_size = 256
         self.shuffle = True
         self.validation_split = 0.05
@@ -165,18 +165,20 @@ class Autoencoder(object):
             if args[1] == 'nor':
                 self.model.fit(args[0],
                                args[0],
-                               nb_epoch=self.nb_epoch,
+                               epochs=self.epochs,
                                batch_size=self.batch_size,
                                shuffle=self.shuffle,
-                               validation_split=self.validation_split)
+                               validation_split=self.validation_split,
+                               verbose=0)
             # callbacks = [early_stopping])
             elif args[1] == 'rev':
                 self.model.fit(args[0],
                                np.flip(args[0], 1),
-                               nb_epoch=self.nb_epoch,
+                               epochs=self.epochs,
                                batch_size=self.batch_size,
                                shuffle=self.shuffle,
-                               validation_split=self.validation_split)
+                               validation_split=self.validation_split,
+                               verbose=0)
             # callbacks=[early_stopping])
             else:
                 raise ValueError("decoding sequence type: 'normal' or 'reverse'.")
@@ -186,20 +188,22 @@ class Autoencoder(object):
             if args[1] == 'nor':
                 self.model.fit(args[0],
                                args[0],
-                               nb_epoch=self.nb_epoch,
+                               epochs=self.epochs,
                                batch_size=self.batch_size,
                                shuffle=self.shuffle,
                                validation_split=self.validation_split,
-                               sample_weight=self.sample_weights)
+                               sample_weight=self.sample_weights,
+                               verbose=0)
             # callbacks=[early_stopping])
             elif args[1] == 'rev':
                 self.model.fit(args[0],
                                np.flip(args[0], 1),
-                               nb_epoch=self.nb_epoch,
+                               epochs=self.epochs,
                                batch_size=self.batch_size,
                                shuffle=self.shuffle,
                                validation_split=self.validation_split,
-                               sample_weight=self.sample_weights)
+                               sample_weight=self.sample_weights,
+                               verbose=0)
             # callbacks=[early_stopping])
             else:
                 raise ValueError("Please input, 'data', 'nor' or 'rev', 'sample_weights'")

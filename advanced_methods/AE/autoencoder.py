@@ -5,7 +5,7 @@ import numpy as np
 
 from pylab import rcParams
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_recall_fscore_support, roc_auc_score
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 
 from advanced_methods.AE.utils import build_ae_model
 
@@ -70,9 +70,9 @@ class Autoencoder(object):
         y_pred = self.autoencoder.predict(x_test)
         mse = np.mean(np.power(x_test - y_pred, 2), axis=1)
         y_pred = [1 if val > self.threshold else 0 for val in mse]
-        auc_score = roc_auc_score(y_test, y_pred)
+        acc_score = accuracy_score(y_test, y_pred)
 
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
         # class_report = classification_report(self.y_test, y_pred, target_names=['benign', 'fraud'], digits=4)
 
-        return precision[1], recall[1], fscore[1], auc_score, 'Autoencoder'
+        return precision[1], recall[1], fscore[1], acc_score, 'Autoencoder'

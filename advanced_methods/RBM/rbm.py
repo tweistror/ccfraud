@@ -4,7 +4,7 @@
 import tensorflow.compat.v1 as tf
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 
 from advanced_methods.RBM import utils
@@ -416,7 +416,7 @@ class RBM(object):
 
         test_reconstruction_errors = self.getRecontructError(x_test)
         y_pred = [1 if val > threshold else 0 for val in test_reconstruction_errors]
-        auc_score = roc_auc_score(y_test, y_pred)
+        acc_score = accuracy_score(y_test, y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
-        return precision[1], recall[1], fscore[1], auc_score, 'RBM'
+        return precision[1], recall[1], fscore[1], acc_score, 'RBM'

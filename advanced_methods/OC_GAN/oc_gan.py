@@ -3,7 +3,7 @@
 import tensorflow as tf
 import numpy as np
 
-from sklearn.metrics import classification_report, precision_recall_fscore_support, roc_auc_score
+from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score
 
 from advanced_methods.OC_GAN.autoencoder import Dense_Autoencoder
 from advanced_methods.OC_GAN.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend, \
@@ -249,11 +249,11 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
         conf_mat = classification_report(y_test, y_pred, target_names=['benign', 'fraud'], digits=4, zero_division=0)
         f1_score.append(float(list(filter(None, conf_mat.strip().split(" ")))[12]))
 
-    auc_score = roc_auc_score(y_test, y_pred)
+    acc = accuracy_score(y_test, y_pred)
     precision, recall, f1, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
     # print(conf_mat)
     # draw_trend(d_ben_pro, d_fake_pro, d_val_pro, fm_loss_coll, f1_score)
 
-    return precision[1], recall[1], f1[1], auc_score, f'OC-GAN{" with AE" if autoencoding is True else ""}'
+    return precision[1], recall[1], f1[1], acc, f'OC-GAN{" with AE" if autoencoding is True else ""}'
 

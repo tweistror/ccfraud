@@ -8,7 +8,7 @@ from keras import backend as K
 
 import numpy as np
 
-from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 
 from advanced_methods.VAE.utils import sampling
@@ -97,8 +97,8 @@ class VAE(object):
         y_pred = self.vae.predict(x_test)
         test_mse = np.mean(np.power(x_test - y_pred, 2), axis=1)
         y_pred = [1 if val > self.threshold else 0 for val in test_mse]
-        auc_score = roc_auc_score(y_test, y_pred)
+        acc_score = accuracy_score(y_test, y_pred)
 
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
-        return precision[1], recall[1], fscore[1], auc_score, 'VAE'
+        return precision[1], recall[1], fscore[1], acc_score, 'VAE'

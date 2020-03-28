@@ -61,7 +61,7 @@ elif dataset_string == "ieee":
 prec_coll = list()
 reca_coll = list()
 f1_coll = list()
-auc_coll = list()
+acc_coll = list()
 method_list = list()
 
 method_special_list = list()
@@ -78,7 +78,7 @@ for i in range(iteration_count):
     prec_list = list()
     reca_list = list()
     f1_list = list()
-    auc_list = list()
+    acc_list = list()
 
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = split_and_preprocess_data(dataset_string, x_ben, x_fraud,
                                                                                     usv_train, sv_train, sv_train_fraud,
@@ -93,22 +93,22 @@ for i in range(iteration_count):
         print(f'Starting iteration #{i + 1}')
 
     if method == 'all' or method == 'oc-gan':
-        prec, reca, f1, auc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
+        prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
                                                           x_test[test_benign:], test_benign, autoencoding=False)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
-        auc_list = auc_list + [auc]
+        acc_list = acc_list + [acc]
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'oc-gan-ae':
-        prec, reca, f1, auc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
+        prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
                                                           x_test[test_benign:], test_benign, autoencoding=True)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
-        auc_list = auc_list + [auc]
+        acc_list = acc_list + [acc]
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
@@ -116,24 +116,24 @@ for i in range(iteration_count):
         ae_model = Autoencoder(x_usv_train, dataset_string)
         ae_model.set_parameters()
         ae_model.build()
-        prec, reca, f1, auc, method_name = ae_model.predict(x_test, y_test)
+        prec, reca, f1, acc, method_name = ae_model.predict(x_test, y_test)
 
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
-        auc_list = auc_list + [auc]
+        acc_list = acc_list + [acc]
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'rbm':
         rbm_model = RBM(x_usv_train.shape[1], 10, visible_unit_type='gauss', gibbs_sampling_steps=4,
                         learning_rate=0.001, momentum=0.95, batch_size=512, num_epochs=10, verbose=0)
-        prec, reca, f1, auc, method_name = rbm_model.execute(x_usv_train, x_test, y_test)
+        prec, reca, f1, acc, method_name = rbm_model.execute(x_usv_train, x_test, y_test)
 
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
-        auc_list = auc_list + [auc]
+        acc_list = acc_list + [acc]
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
@@ -141,12 +141,12 @@ for i in range(iteration_count):
         vae_model = VAE(x_usv_train, dataset_string)
         vae_model.set_parameters()
         vae_model.build()
-        prec, reca, f1, auc, method_name = vae_model.predict(x_test, y_test)
+        prec, reca, f1, acc, method_name = vae_model.predict(x_test, y_test)
 
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
-        auc_list = auc_list + [auc]
+        acc_list = acc_list + [acc]
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
@@ -156,14 +156,14 @@ for i in range(iteration_count):
 
     if baseline == 'usv' or baseline == 'both':
         # Execute unsupervised learning baseline methods
-        prec_usv_list, reca_usv_list, f1_usv_list, auc_usv_list, method_usv_list = \
+        prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
             build_unsupervised_baselines(x_usv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_usv_list
         reca_list = reca_list + reca_usv_list
         f1_list = f1_list + f1_usv_list
-        auc_list = auc_list + auc_usv_list
+        acc_list = acc_list + acc_usv_list
 
         # Some verbosity output
         if verbosity > 1:
@@ -173,16 +173,16 @@ for i in range(iteration_count):
         # Execute supervised learning baseline methods
         if cross_validation_count > 1:
             cv = Crossvalidator(cross_validation_count, x_sv_train, y_sv_train)
-            prec_sv_list, reca_sv_list, f1_sv_list, auc_sv_list, method_sv_list = cv.execute_cv()
+            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = cv.execute_cv()
         else:
-            prec_sv_list, reca_sv_list, f1_sv_list, auc_sv_list, method_sv_list = \
+            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
                 build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
 
         # Add metrics to collections
         prec_list = prec_list + prec_sv_list
         reca_list = reca_list + reca_sv_list
         f1_list = f1_list + f1_sv_list
-        auc_list = auc_list + auc_sv_list
+        acc_list = acc_list + acc_sv_list
 
         # Some verbosity output
         if verbosity > 1:
@@ -191,7 +191,7 @@ for i in range(iteration_count):
     prec_coll.append(prec_list)
     reca_coll.append(reca_list)
     f1_coll.append(f1_list)
-    auc_coll.append(auc_list)
+    acc_coll.append(acc_list)
 
     if i == 0:
         method_list = method_special_list + method_usv_list + method_sv_list
@@ -204,8 +204,9 @@ if verbosity > 1:
     time_required = str(datetime.now() - start_time_complete)
     print(f'All {iteration_count} iterations finished in {time_required}')
 
-prec_coll, reca_coll, f1_coll, auc_coll, method_list = \
-    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(auc_coll), np.array(method_list)
+prec_coll, reca_coll, f1_coll, acc_coll, method_list = \
+    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll), np.array(method_list)
 
 print_results(method_list, dataset_string, iteration_count,
-              len(method_special_list), len(method_usv_list), prec_coll, reca_coll, f1_coll, auc_coll)
+              len(method_special_list), len(method_usv_list), prec_coll, reca_coll, f1_coll, acc_coll, usv_train,
+              sv_train, sv_train_fraud)

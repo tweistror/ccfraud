@@ -6,11 +6,11 @@ from baseline_methods.run_models import run_sv_classification
 def build_supervised_baselines(x_train, y_train, x_test, y_test):
 
     def evaluate_model(clf, lists, label):
-        prec, reca, f1, auc = run_sv_classification(x_test, y_test, clf, 'fraud-prediction')
+        prec, reca, f1, acc = run_sv_classification(x_test, y_test, clf, 'fraud-prediction')
         lists['prec_list'].append(prec)
         lists['reca_list'].append(reca)
         lists['f1_list'].append(f1)
-        lists['auc_list'].append(auc)
+        lists['acc_list'].append(acc)
         lists['method_list'].append(label)
 
         return lists
@@ -19,7 +19,7 @@ def build_supervised_baselines(x_train, y_train, x_test, y_test):
         'prec_list': list(),
         'reca_list': list(),
         'f1_list': list(),
-        'auc_list': list(),
+        'acc_list': list(),
         'method_list': list()
     }
 
@@ -59,4 +59,4 @@ def build_supervised_baselines(x_train, y_train, x_test, y_test):
     # Multi-Layer Perceptron
     results = evaluate_model(mlp(x_train, y_train), results, 'MLP')
 
-    return results['prec_list'], results['reca_list'], results['f1_list'], results['auc_list'], results['method_list']
+    return results['prec_list'], results['reca_list'], results['f1_list'], results['acc_list'], results['method_list']
