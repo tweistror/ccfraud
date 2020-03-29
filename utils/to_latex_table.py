@@ -2,7 +2,7 @@ def to_latex_table(dataset, results, headers, usv_train, sv_train, sv_train_frau
     latex_code = f'\\begin{{table}}\n' \
                  f'\\centering\n' \
                  f'\\caption{{Anomaly detection results (mean $\\pm$ std) for dataset \\textbf{{{dataset}}} with training sizes: ' \
-                 f'usv\_train={usv_train}, sv\_train: {sv_train - sv_train_fraud} benign, {sv_train_fraud} fraud}}\n' \
+                 f'usv\_train: {usv_train}, sv\_train: {sv_train - sv_train_fraud} benign, {sv_train_fraud} fraud}}\n' \
                  f'\\begin{{tabular}}{{p{{4.5cm}}p{{2.5cm}}p{{2.5cm}}p{{2.5cm}}p{{2.5cm}}}}\\toprule\n' \
                  f'Method & Precision & Recall & F1-score & Accuracy\\\\\\midrule\n'
 
