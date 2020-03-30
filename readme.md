@@ -16,7 +16,7 @@ This table presents all available startparameters
 Parameter name  | Required | Default | Choices | Description
 ------------- | ------------- | ------------ | ------------ | ------------
 --dataset  | yes | -- | paysim, paysim_custom, ccfraud, ieee | Desired dataset for evaluation
---method  | no | -- | all, oc-gan, oc-gan-ae, ae, rbm, vaue | Method for evaluation (no specification will result in no evaluation of any advanced method, `all` with execute all advanced methods)
+--method  | no | -- | all, oc-gan, oc-gan-ae, ae, rbm, vae | Method for evaluation (no specification will result in no evaluation of any advanced method, `all` with execute all advanced methods)
 --baselines | no | both | both, sv, usv | Baselines for evaluation (default is both)
 --v | no | 0 | 0, 1, 2 | Verbosity level (0 = just end results, 1 = some timing information, 2 = more timing information)
 --iterations    | no | 10 | number (not too high) | Desired count the specified methods are executed and evaluated
