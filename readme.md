@@ -2,7 +2,7 @@
 
 ## Preparation
 * Clone/Download this repository
-* Download the desired datasets from https://drive.google.com/drive/folders/1ioHeGFWo-4lQZcTf6p4tknG56Z2TQGWE and move the files into the `data` Folder
+* Download the desired datasets from https://drive.google.com/drive/folders/1ioHeGFWo-4lQZcTf6p4tknG56Z2TQGWE and move the files into the `data` Folder. For IEEE-CIS both datasets have to be downloaded (they will be merged for evaluation by the tool)
 
 ## How to start the program?
 
@@ -11,7 +11,7 @@ The cmd-based tool is started with a simple cmd-command with specific start para
 A basic example:
 `python main.py --dataset=ccfraud --v=1 --iterations=10 --baselines=both --method=all`
 
-This table presents all available startparameters
+This table presents all available start-parameters
 
 Parameter name  | Required | Default | Choices | Description
 ------------- | ------------- | ------------ | ------------ | ------------
