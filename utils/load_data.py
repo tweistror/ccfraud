@@ -92,14 +92,14 @@ def get_data_ccfraud(path, verbosity=0):
 
 def get_data_ieee(transaction_path, identity_path, verbosity=0, skip=False):
     # TODO: Do not forget to remove skip
-    if skip is True:
-        start_time = datetime.now()
-        x_ben = pd.read_csv('./debug/ieee/x_ben.csv')
-        x_fraud = pd.read_csv('./debug/ieee/x_fraud.csv')
-        if verbosity > 0:
-            print(f'IEEE: Preprocessed dataset loaded in {str(datetime.now() - start_time)}')
-
-        return x_ben, x_fraud
+    # if skip is True:
+    #     start_time = datetime.now()
+    #     x_ben = pd.read_csv('./debug/ieee/x_ben.csv')
+    #     x_fraud = pd.read_csv('./debug/ieee/x_fraud.csv')
+    #     if verbosity > 0:
+    #         print(f'IEEE: Preprocessed dataset loaded in {str(datetime.now() - start_time)}')
+    #
+    #     return x_ben, x_fraud
 
     transaction_data = load_data(transaction_path, verbosity)
     identity_data = load_data(identity_path, verbosity)
