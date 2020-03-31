@@ -91,7 +91,6 @@ def get_data_ccfraud(path, verbosity=0):
 
 
 def get_data_ieee(transaction_path, identity_path, verbosity=0, skip=False):
-    # TODO: Do not forget to remove skip
     # if skip is True:
     #     start_time = datetime.now()
     #     x_ben = pd.read_csv('./debug/ieee/x_ben.csv')

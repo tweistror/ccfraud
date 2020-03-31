@@ -34,8 +34,9 @@ def print_results(method_list, dataset_string, iteration_count, special_count, u
         results.append([method, prec, reca, f1, acc])
         l_results.append([method, l_prec, l_reca, l_f1, l_acc])
 
-    to_latex_table(dataset_string, l_results, ['Method', 'Precision', 'Recall', 'F1 score', 'ACC'],
-                   usv_train, sv_train, sv_train_fraud)
+    # Script for creating latex tables
+    # to_latex_table(dataset_string, l_results, ['Method', 'Precision', 'Recall', 'F1 score', 'ACC'],
+    #                usv_train, sv_train, sv_train_fraud)
 
     print(f'{dataset_string}:  Average metrics over {iteration_count} iterations')
 
