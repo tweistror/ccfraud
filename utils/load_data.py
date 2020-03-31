@@ -1,10 +1,21 @@
 from datetime import datetime
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 import pandas as pd
+import numpy as np
 
 from sklearn.preprocessing import LabelEncoder
 
 root_path = './data/'
+
+# Copy in desired `get`-method for heatmap of feature corr
+# # Using Pearson Correlation
+# plt.figure(figsize=(12, 10))
+# cor = data.corr()
+# sns.heatmap(cor, annot=True, cmap=plt.cm.Reds, mask=cor < 0.1)
+# plt.show()
+# exit(0)
 
 
 def get_data_paysim(path, verbosity=0):
