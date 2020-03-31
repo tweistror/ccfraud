@@ -45,7 +45,7 @@ class RBM(object):
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.stddev = stddev
-        self.verbosity = verbosity
+        self.verbosity = 1 if verbosity == 2 else 0
 
         self.plot_training_loss = plot_training_loss
 
