@@ -24,3 +24,5 @@ Parameter name  | Required | Default | Choices | Description
 --oversampling  | no | n | y, n | Flag for activation of oversampling (default is no)
 
 Further, `--help` is available to show console-based help.
+
+The `config.ini`-file is used for setting training sizes for all different datasets.
