@@ -12,10 +12,10 @@ from keras import regularizers
 class Dense_Autoencoder(object):
     """docstring for LSTM_Autoencoder"""
 
-    def __init__(self, input_dim, hidden_dim):
+    def __init__(self, input_dim, hidden_dim, verbosity=0):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
-        self.autoencoder = Autoencoder()
+        self.autoencoder = Autoencoder(1 if verbosity == 2 else 0)
         self.autoencoder.modelMasking('dense', [self.input_dim], self.hidden_dim)
 
     def compile(self):
@@ -39,7 +39,7 @@ class Autoencoder(object):
     """docstring for Autoencoder"""
 
     # def __init__(self, sample_weights, sample_weight_mode):
-    def __init__(self):
+    def __init__(self, verbosity):
         # super(Autoencoder, self).__init__()
         # self.codeLayerType = 'dense'
         self.epochs = 50
@@ -48,6 +48,7 @@ class Autoencoder(object):
         self.validation_split = 0.05
         self.optimizer = 'adadelta'
         self.loss = 'mse'
+        self.verbosity = verbosity
 
     # self.sample_weights = sample_weights
     # self.sample_weight_mode = sample_weight_mode
@@ -169,7 +170,7 @@ class Autoencoder(object):
                                batch_size=self.batch_size,
                                shuffle=self.shuffle,
                                validation_split=self.validation_split,
-                               verbose=0)
+                               verbose=self.verbosity)
             # callbacks = [early_stopping])
             elif args[1] == 'rev':
                 self.model.fit(args[0],
@@ -178,7 +179,7 @@ class Autoencoder(object):
                                batch_size=self.batch_size,
                                shuffle=self.shuffle,
                                validation_split=self.validation_split,
-                               verbose=0)
+                               verbose=self.verbosity)
             # callbacks=[early_stopping])
             else:
                 raise ValueError("decoding sequence type: 'normal' or 'reverse'.")
@@ -193,7 +194,7 @@ class Autoencoder(object):
                                shuffle=self.shuffle,
                                validation_split=self.validation_split,
                                sample_weight=self.sample_weights,
-                               verbose=0)
+                               verbose=self.verbosity)
             # callbacks=[early_stopping])
             elif args[1] == 'rev':
                 self.model.fit(args[0],
@@ -203,7 +204,7 @@ class Autoencoder(object):
                                shuffle=self.shuffle,
                                validation_split=self.validation_split,
                                sample_weight=self.sample_weights,
-                               verbose=0)
+                               verbose=self.verbosity)
             # callbacks=[early_stopping])
             else:
                 raise ValueError("Please input, 'data', 'nor' or 'rev', 'sample_weights'")

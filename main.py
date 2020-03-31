@@ -96,7 +96,8 @@ for i in range(iteration_count):
 
     if method == 'all' or method == 'oc-gan':
         prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
-                                                          x_test[test_benign:], test_benign, autoencoding=False)
+                                                          x_test[test_benign:], test_benign, autoencoding=False,
+                                                          verbosity=verbosity)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
@@ -106,7 +107,8 @@ for i in range(iteration_count):
 
     if method == 'all' or method == 'oc-gan-ae':
         prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
-                                                          x_test[test_benign:], test_benign, autoencoding=True)
+                                                          x_test[test_benign:], test_benign, autoencoding=True,
+                                                          verbosity=verbosity)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
@@ -115,7 +117,7 @@ for i in range(iteration_count):
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'ae':
-        ae_model = Autoencoder(x_usv_train, dataset_string)
+        ae_model = Autoencoder(x_usv_train, dataset_string, verbosity=verbosity)
         ae_model.set_parameters()
         ae_model.build()
         prec, reca, f1, acc, method_name = ae_model.predict(x_test, y_test)
@@ -129,7 +131,7 @@ for i in range(iteration_count):
 
     if method == 'all' or method == 'rbm':
         rbm_model = RBM(x_usv_train.shape[1], 10, visible_unit_type='gauss', gibbs_sampling_steps=4,
-                        learning_rate=0.001, momentum=0.95, batch_size=512, num_epochs=10, verbose=0)
+                        learning_rate=0.001, momentum=0.95, batch_size=512, num_epochs=10, verbosity=verbosity)
         prec, reca, f1, acc, method_name = rbm_model.execute(x_usv_train, x_test, y_test)
 
         prec_list = prec_list + [prec]
@@ -140,7 +142,7 @@ for i in range(iteration_count):
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'vae':
-        vae_model = VAE(x_usv_train, dataset_string)
+        vae_model = VAE(x_usv_train, dataset_string, verbosity=verbosity)
         vae_model.set_parameters()
         vae_model.build()
         prec, reca, f1, acc, method_name = vae_model.predict(x_test, y_test)

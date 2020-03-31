@@ -38,7 +38,7 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
     if autoencoding is True:
         x_ben = np.concatenate((x_usv_train, x_test_benign))
         x_fraud = x_test_fraud
-        dense_ae = Dense_Autoencoder(dim_input, hid_dim)
+        dense_ae = Dense_Autoencoder(dim_input, hid_dim, verbosity)
         dense_ae.compile()
         dense_ae.fit(x_usv_train)
         dense_ae.get_hidden_layer()

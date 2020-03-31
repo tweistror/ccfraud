@@ -18,7 +18,7 @@ class RBM(object):
     """
 
     def __init__(self, num_visible, num_hidden, visible_unit_type='bin', gibbs_sampling_steps=1, learning_rate=0.01,
-                 momentum=0.9, l2=0.001, batch_size=10, num_epochs=10, stddev=0.1, verbose=0, plot_training_loss=False):
+                 momentum=0.9, l2=0.001, batch_size=10, num_epochs=10, stddev=0.1, verbosity=0, plot_training_loss=False):
 
         """
         :param num_visible: number of visible units
@@ -31,7 +31,7 @@ class RBM(object):
         :param batch_size: optional, default 10
         :param num_epochs: optional, default 10
         :param stddev: optional, default 0.1. Ignored if visible_unit_type is not 'gauss'
-        :param verbose: level of verbosity. optional, default 0
+        :param verbosity: level of verbosity. optional, default 0
         :param plot_training_loss: whether or not to plot training loss, default True
         """
 
@@ -45,7 +45,7 @@ class RBM(object):
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.stddev = stddev
-        self.verbose = verbose
+        self.verbosity = verbosity
 
         self.plot_training_loss = plot_training_loss
 
@@ -160,7 +160,7 @@ class RBM(object):
         loss = self.tf_session.run(self.loss_function,
                                    feed_dict=self._create_feed_dict(validation_set))
 
-        if self.verbose == 1:
+        if self.verbosity == 1:
             print("Validation cost at step %s: %s" % (epoch, loss))
 
     def _create_feed_dict(self, data):

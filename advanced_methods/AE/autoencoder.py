@@ -14,9 +14,10 @@ LABELS = ["Normal", "Break"]
 
 
 class Autoencoder(object):
-    def __init__(self, x_train, dataset_string):
+    def __init__(self, x_train, dataset_string, verbosity=0):
         self.x_train = x_train
         self.dataset_string = dataset_string
+        self.verbosity = 1 if verbosity == 2 else 0
 
         self.input_dim = None
         self.nb_epoch = None
@@ -56,7 +57,7 @@ class Autoencoder(object):
                         batch_size=self.batch_size,
                         shuffle=True,
                         validation_data=(x_valid_split, x_valid_split),
-                        verbose=0)
+                        verbose=self.verbosity)
 
         x_train_pred = autoencoder.predict(self.x_train)
         mse = np.mean(np.power(self.x_train - x_train_pred, 2), axis=1)
