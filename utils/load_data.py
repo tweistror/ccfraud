@@ -165,26 +165,27 @@ def load_data(path, verbosity=0):
     return data
 
 
-def get_parameters(dataset_string, cross_validation_count=0):
+def get_parameters(dataset_string, config, cross_validation_count=0):
     factor = 0 if cross_validation_count < 2 else cross_validation_count - 1
+    cfg = config['DEFAULT']
 
     if dataset_string == 'paysim' or dataset_string == 'paysim_custom':
-        usv_train = 2000
-        sv_train = 2000
-        sv_train_fraud = 20
-        test_benign = 1000 - factor * sv_train_fraud
-        test_fraud = 1000 - factor * sv_train_fraud
+        usv_train = int(cfg['paysim_usv_train'])
+        sv_train = int(cfg['paysim_sv_train'])
+        sv_train_fraud = int(cfg['paysim_sv_train_fraud'])
+        test_benign = 1000 - factor * int(cfg['paysim_sv_train_fraud'])
+        test_fraud = 1000 - factor * int(cfg['paysim_sv_train_fraud'])
     elif dataset_string == 'ccfraud':
-        usv_train = 2000
-        sv_train = 2000
-        sv_train_fraud = 20
-        test_benign = 450 - factor * sv_train_fraud
-        test_fraud = 450 - factor * sv_train_fraud
+        usv_train = int(cfg['ccfraud_usv_train'])
+        sv_train = int(cfg['ccfraud_sv_train'])
+        sv_train_fraud = int(cfg['ccfraud_sv_train_fraud'])
+        test_benign = 450 - factor * int(cfg['ccfraud_sv_train_fraud'])
+        test_fraud = 450 - factor * int(cfg['ccfraud_sv_train_fraud'])
     elif dataset_string == 'ieee':
-        usv_train = 2000
-        sv_train = 2000
-        sv_train_fraud = 50
-        test_benign = 5000 - factor * sv_train_fraud
-        test_fraud = 5000 - factor * sv_train_fraud
+        usv_train = int(cfg['ieee_usv_train'])
+        sv_train = int(cfg['ieee_sv_train'])
+        sv_train_fraud = int(cfg['ieee_sv_train_fraud'])
+        test_benign = 5000 - factor * int(cfg['ieee_sv_train_fraud'])
+        test_fraud = 5000 - factor * int(cfg['ieee_sv_train_fraud'])
 
     return usv_train, sv_train, sv_train_fraud, test_fraud, test_benign

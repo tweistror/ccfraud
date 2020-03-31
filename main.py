@@ -2,6 +2,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 import numpy as np
 from datetime import datetime
+import configparser
 
 from advanced_methods.AE.autoencoder import Autoencoder
 from advanced_methods.RBM.rbm import RBM
@@ -43,9 +44,11 @@ use_oversampling = True if args.oversampling == 'y' else False
 cross_validation_count = 1 if args.cv is None else int(args.cv)
 
 # Set parameters
-usv_train, sv_train, sv_train_fraud, test_fraud, test_benign = get_parameters(dataset_string, cross_validation_count)
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-skip_ieee_processing = True
+usv_train, sv_train, sv_train_fraud, test_fraud, test_benign = get_parameters(dataset_string, config,
+                                                                              cross_validation_count)
 
 if dataset_string == "paysim":
     x_ben, x_fraud = get_data_paysim("paysim.csv", verbosity=verbosity)
@@ -54,8 +57,7 @@ if dataset_string == "paysim_custom":
 elif dataset_string == "ccfraud":
     x_ben, x_fraud = get_data_ccfraud("ccfraud.csv", verbosity=verbosity)
 elif dataset_string == "ieee":
-    x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", verbosity=verbosity,
-                                   skip=skip_ieee_processing)
+    x_ben, x_fraud = get_data_ieee("ieee_transaction.csv", "ieee_identity.csv", verbosity=verbosity)
 
 # Initialize collections for evaluation results
 prec_coll = list()
