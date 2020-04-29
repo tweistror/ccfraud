@@ -31,21 +31,12 @@ class VAE(object):
         self.threshold = None
         self.vae = None
 
-    def set_parameters(self):
+    def set_parameters(self, parameters):
         self.original_dim = self.x_train.shape[1]
         self.input_shape = (self.original_dim,)
 
-        if self.dataset_string == 'ccfraud':
-            self.intermediate_dim = 12
-            self.latent_dim = 2
-
-        elif self.dataset_string == 'paysim' or self.dataset_string == 'paysim_custom':
-            self.intermediate_dim = 5
-            self.latent_dim = 2
-
-        elif self.dataset_string == 'ieee':
-            self.intermediate_dim = 200
-            self.latent_dim = 2
+        self.intermediate_dim = parameters['intermediate_dim']
+        self.latent_dim = parameters['latent_dim']
 
     def build(self):
         inputs = Input(shape=self.input_shape, name='encoder_input')

@@ -12,28 +12,20 @@ from advanced_methods.OC_GAN.utils import xavier_init, pull_away_loss, sample_sh
 tf.compat.v1.disable_eager_execution()
 
 
-def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_test_benign, autoencoding=False,
-                   verbosity=0):
-    # Set parameters
+def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters,
+                   autoencoding=False, verbosity=0):
+
+    # Set parameters using YAML-config
+    normal_parameters = parameters['normal']
+
     dim_input = x_usv_train.shape[1]
-    if dataset_string == "paysim" or dataset_string == "paysim_custom":
-        mb_size = 70
-        d_dim = [dim_input, 30, 15, 2]
-        g_dim = [15, 30, dim_input]
-        z_dim = g_dim[0]
-        hid_dim = [30]
-    elif dataset_string == "ccfraud":
-        mb_size = 70
-        d_dim = [dim_input, 100, 50, 2]
-        g_dim = [50, 100, dim_input]
-        z_dim = g_dim[0]
-        hid_dim = [100]
-    elif dataset_string == "ieee":
-        mb_size = 70
-        d_dim = [dim_input, 256, 64, 2]
-        g_dim = [64, 256, dim_input]
-        z_dim = g_dim[0]
-        hid_dim = [400]
+    mb_size = normal_parameters['mb_size']
+    d_dim = normal_parameters['d_dim']
+    d_dim[0] = dim_input
+    g_dim = normal_parameters['g_dim']
+    g_dim[len(g_dim) - 1] = dim_input
+    z_dim = g_dim[0]
+    hid_dim = normal_parameters['hid_dim']
 
     if autoencoding is True:
         x_ben = np.concatenate((x_usv_train, x_test_benign))
@@ -47,22 +39,13 @@ def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_t
         ben_hid_repre, van_hid_repre = list(map(lambda x: preprocess_minus_1_and_pos_1(x),
                                                 [ben_hid_repre, van_hid_repre]))
 
-        # Set additional parameters for autoencoding
-        if dataset_string == "paysim" or dataset_string == "paysim_custom":
-            dim_input = 15
-            d_dim = [dim_input, 30, 15, 2]
-            g_dim = [15, 30, dim_input]
-            z_dim = g_dim[0]
-        elif dataset_string == "ccfraud":
-            dim_input = 50
-            d_dim = [dim_input, 100, 50, 2]
-            g_dim = [50, 100, dim_input]
-            z_dim = g_dim[0]
-        elif dataset_string == "ieee":
-            dim_input = 200
-            d_dim = [dim_input, 256, 64, 2]
-            g_dim = [64, 256, dim_input]
-            z_dim = g_dim[0]
+        ae_parameters = parameters['ae']
+        dim_input = ae_parameters['dim_input']
+        d_dim = ae_parameters['d_dim']
+        d_dim[0] = dim_input
+        g_dim = ae_parameters['g_dim']
+        g_dim[len(g_dim) - 1] = dim_input
+        z_dim = g_dim[0]
 
     # Define placeholders for labeled-data, unlabeled-data, noise-data and target-data.
     x_oc = tf.compat.v1.placeholder(tf.float32, shape=[None, dim_input])

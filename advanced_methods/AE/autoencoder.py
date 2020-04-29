@@ -29,19 +29,16 @@ class Autoencoder(object):
         self.threshold = None
         self.autoencoder = None
 
-    def set_parameters(self):
+    def set_parameters(self, parameters):
         self.input_dim = self.x_train.shape[1]
         self.nb_epoch = 50
         self.batch_size = 128
         self.split_pct = 0.2
         self.learning_rate = 1e-3
 
-        if self.dataset_string == "paysim" or self.dataset_string == "paysim_custom":
-            self.dims = [self.x_train.shape[1], 16, 8, 4]
-        elif self.dataset_string == "ccfraud":
-            self.dims = [self.x_train.shape[1], 32, 16, 8, 4]
-        elif self.dataset_string == "ieee":
-            self.dims = [self.x_train.shape[1], 512, 256, 64, 4]
+        dim_input = self.x_train.shape[1]
+        self.dims = parameters['dims']
+        self.dims[0] = dim_input
 
     def build(self):
         autoencoder = build_ae_model(self.dims, self.learning_rate)

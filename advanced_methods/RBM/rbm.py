@@ -17,34 +17,16 @@ class RBM(object):
     The interface of the class is sklearn-like.
     """
 
-    def __init__(self, num_visible, num_hidden, visible_unit_type='bin', gibbs_sampling_steps=1, learning_rate=0.01,
-                 momentum=0.9, l2=0.001, batch_size=10, num_epochs=10, stddev=0.1, verbosity=0, plot_training_loss=False):
+    def __init__(self, verbosity=0, plot_training_loss=False):
 
-        """
-        :param num_visible: number of visible units
-        :param num_hidden: number of hidden units
-        :param visible_unit_type: type of the visible units (binary or gaussian)
-        :param gibbs_sampling_steps: optional, default 1
-        :param learning_rate: optional, default 0.01
-        :param momentum: momentum for gradient descent, default 0.9
-        :param l2: l2 weight decay, default 0.001
-        :param batch_size: optional, default 10
-        :param num_epochs: optional, default 10
-        :param stddev: optional, default 0.1. Ignored if visible_unit_type is not 'gauss'
-        :param verbosity: level of verbosity. optional, default 0
-        :param plot_training_loss: whether or not to plot training loss, default True
-        """
-
-        self.num_visible = num_visible
-        self.num_hidden = num_hidden
-        self.visible_unit_type = visible_unit_type
-        self.gibbs_sampling_steps = gibbs_sampling_steps
-        self.learning_rate = learning_rate
-        self.momentum = momentum
-        self.l2 = l2
-        self.batch_size = batch_size
-        self.num_epochs = num_epochs
-        self.stddev = stddev
+        self.visible_unit_type = 'bin'
+        self.gibbs_sampling_steps = 1
+        self.learning_rate = 0.01
+        self.momentum = 0.9
+        self.l2 = 0.001
+        self.batch_size = 10
+        self.num_epochs = 10
+        self.stddev = 0.1
         self.verbosity = 1 if verbosity == 2 else 0
 
         self.plot_training_loss = plot_training_loss
@@ -74,6 +56,13 @@ class RBM(object):
         self.validation_size = None
 
         self.tf_session = None
+
+        self.num_visible = None
+        self.num_hidden = None
+
+    def set_parameters(self, num_visible, parameters):
+        self.num_visible = num_visible
+        self.num_hidden = parameters['num_hidden']
 
     def execute(self, x_train, x_test, y_test, validation_split=0.2):
 
