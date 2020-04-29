@@ -15,9 +15,9 @@ This table presents all available start-parameters
 
 Parameter name  | Required | Default | Choices | Description
 ------------- | ------------- | ------------ | ------------ | ------------
---dataset  | yes | -- | paysim, paysim_custom, ccfraud, ieee | Desired dataset for evaluation
+--dataset  | yes | -- | paysim, paysim-custom, ccfraud, ieee | Desired dataset for evaluation
 --method  | no | -- | all, oc-gan, oc-gan-ae, ae, rbm, vae | Method for evaluation (no specification will result in no evaluation of any advanced method, `all` with execute all advanced methods)
---baselines | no | both | both, sv, usv | Baselines for evaluation (default is both)
+--baselines | no | both | both, sv, usv, none | Baselines for evaluation (default is both)
 --v | no | 0 | 0, 1, 2 | Verbosity level (0 = just print end results, 1 = some timing information, 2 = more timing information & training information)
 --iterations    | no | 10 | number (not too high) | Desired count the specified methods are executed and evaluated
 --cv    | no | -- | number (not too high) | Activate crossvalidation with the desired count of train/test-splits
