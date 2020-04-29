@@ -25,7 +25,7 @@ class SplitPreprocessData(object):
             x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_ieee(parameter_dict)
         elif self.dataset_string == "nslkdd":
             x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_nslkdd(parameter_dict)
-        elif self.dataset_string == "saperp":
+        elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
             x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_saperp(parameter_dict)
 
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test

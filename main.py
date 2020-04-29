@@ -15,7 +15,7 @@ from utils.printing import print_results
 from utils.smote import execute_smote
 from utils.split_preprocess_data import SplitPreprocessData
 
-datasets = ["paysim", "paysim-custom", "ccfraud", "ieee", "nslkdd", "saperp"]
+datasets = ["paysim", "paysim-custom", "ccfraud", "ieee", "nslkdd", "saperp-ek", "saperp-vk"]
 methods = ["all", "oc-gan", "oc-gan-ae", "ae", "rbm", "vae"]
 baselines = ["both", "usv", "sv", "none"]
 

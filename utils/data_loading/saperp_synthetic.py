@@ -4,15 +4,19 @@ import datetime
 from sklearn.preprocessing import MinMaxScaler
 
 
-def get_data_saperp():
-    x_ben, x_fraud = load_EK()
-    # x_ben, x_fraud = load_VK()
+def get_data_saperp(dataset_string, path):
+    path = path['one']
+
+    if dataset_string == "saperp-ek":
+        x_ben, x_fraud = load_EK(path)
+    else:
+        x_ben, x_fraud = load_VK(path)
 
     return x_ben, x_fraud
 
 
-def load_EK():
-    df = load_data_EK_gen(shuffle=True)
+def load_EK(path):
+    df = load_data_EK_gen(path, shuffle=True)
     df = prepare_data_EK_gen(df)
 
     x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1)
@@ -24,15 +28,16 @@ def load_EK():
     return x_ben, x_fraud
 
 
-def load_VK():
-    df = load_data_VK_gen(shuffle=True)
+def load_VK(path):
+    df = load_data_VK_gen(path, shuffle=True)
     df = prepare_data_VK_gen(df)
 
-    x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1)
-    x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))].sample(frac=1)
+    # TODO: Dataset needs more than 1 fraud to use this -> anomalies are used for now
+    # x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1)
+    # x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))].sample(frac=1)
 
-    # x_ben = df.loc[df['Label'] == 'regular'].sample(frac=1)
-    # x_fraud = df.loc[df['Label'] != 'regular'].sample(frac=1)
+    x_ben = df.loc[df['Label'] == 'regular'].sample(frac=1)
+    x_fraud = df.loc[df['Label'] != 'regular'].sample(frac=1)
 
     x_ben.drop(['Label'], axis=1, inplace=True)
     x_fraud.drop(['Label'], axis=1, inplace=True)
@@ -40,21 +45,21 @@ def load_VK():
     return x_ben, x_fraud
 
 
-def load_data_EK_gen(shuffle=False):
+def load_data_EK_gen(path, shuffle=False):
     # read relevant features from csv df_EK = pd.read_excel(io='./data/generated/generated_purchasing_data.xlsx',
     # sheet_name='EKPO_Data', usecols=['Angelegt von', 'Lieferant', 'Material', 'Werk', 'Bestellmenge',
     # 'Bestellnettopreis', 'Angelegt am', 'Uhrzeit', 'Label'])
-    df_EK = pd.read_csv(filepath_or_buffer='./data/saperp/generated_purchasing_data.csv', sep=';', encoding='utf-8',
+    df_EK = pd.read_csv(filepath_or_buffer=f'{path}/generated_purchasing_data.csv', sep=';', encoding='utf-8',
                         usecols=['Einkaufsbeleg', 'Angelegt von', 'Lieferant', 'Position', 'Material', 'Werk',
                                  'Bestellmenge', 'Bestellnettopreis', 'Angelegt am', 'Uhrzeit'],
                         converters={'Angelegt am': lambda x: datetime.datetime.strptime(x, '%Y-%m-%d'),
                                     'Uhrzeit': lambda x: datetime.datetime.strptime(x, '%H:%M:%S').time()})
 
-    df_EK_invoice = pd.read_csv(filepath_or_buffer='./data/saperp/generated_purchasing_invoices.csv', sep=';',
+    df_EK_invoice = pd.read_csv(filepath_or_buffer=f'{path}/generated_purchasing_invoices.csv', sep=';',
                                 encoding='utf-8',
                                 usecols=['Referenz', 'ReferenzPosition', 'RechnungsBelegnummer', 'RechnungsPosition'])
 
-    df_EK_payments = pd.read_csv(filepath_or_buffer='./data/saperp/generated_payments.csv', sep=';',
+    df_EK_payments = pd.read_csv(filepath_or_buffer=f'{path}/generated_payments.csv', sep=';',
                                  encoding='utf-8',
                                  usecols=['Referenz', 'ReferenzPosition', 'Kontonummer', 'Soll/Haben-Kennz.', 'Label'])
     df_EK_payments = df_EK_payments[df_EK_payments['Soll/Haben-Kennz.'] == 'S']
@@ -76,15 +81,15 @@ def load_data_EK_gen(shuffle=False):
     return df_EK
 
 
-def load_data_VK_gen(shuffle=True):
-    df_VK = pd.read_csv(filepath_or_buffer='./data/saperp/generated_sales_data.csv', sep=';', encoding='utf-8',
+def load_data_VK_gen(path, shuffle=True):
+    df_VK = pd.read_csv(filepath_or_buffer=f'{path}/generated_sales_data.csv', sep=';', encoding='utf-8',
                         usecols=['Verkaufsbeleg', 'Angelegt von', 'Auftraggeber', 'Position', 'Material', 'Werk',
                                  'Auftragsmenge', 'Nettopreis', 'Angelegt am', 'Uhrzeit'],
                         converters={'Angelegt am': lambda x: datetime.datetime.strptime(x, '%Y-%m-%d'),
                                     'Uhrzeit': lambda x: datetime.datetime.strptime(x, '%H:%M:%S').time()})
     df_VK['Auftraggeber'] = df_VK['Auftraggeber'].astype(str)
 
-    df_VK_deliveries = pd.read_csv(filepath_or_buffer='./data/saperp/generated_sales_deliveries.csv', sep=';',
+    df_VK_deliveries = pd.read_csv(filepath_or_buffer=f'{path}/generated_sales_deliveries.csv', sep=';',
                                    encoding='utf-8',
                                    usecols=['Referenz', 'ReferenzPosition', 'Übergabeort', 'Label'])
 

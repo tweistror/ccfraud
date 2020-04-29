@@ -24,8 +24,8 @@ class LoadData(object):
             x_ben, x_fraud = self.get_data_ieee()
         elif self.dataset_string == "nslkdd":
             x_ben, x_fraud = self.get_data_nslkdd()
-        elif self.dataset_string == "saperp":
-            x_ben, x_fraud = get_data_saperp()
+        elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
+            x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path)
 
         return x_ben, x_fraud
 
