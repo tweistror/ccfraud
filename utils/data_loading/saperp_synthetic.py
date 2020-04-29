@@ -15,8 +15,8 @@ def load_EK():
     df = load_data_EK_gen(shuffle=True)
     df = prepare_data_EK_gen(df)
 
-    x_ben = df.loc[df['Label'] == 'regular'].sample(frac=1)
-    x_fraud = df.loc[df['Label'] != 'regular'].sample(frac=1)
+    x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1)
+    x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))].sample(frac=1)
 
     x_ben.drop(['Label'], axis=1, inplace=True)
     x_fraud.drop(['Label'], axis=1, inplace=True)
@@ -28,8 +28,11 @@ def load_VK():
     df = load_data_VK_gen(shuffle=True)
     df = prepare_data_VK_gen(df)
 
-    x_ben = df.loc[df['Label'] == 'regular'].sample(frac=1)
-    x_fraud = df.loc[df['Label'] != 'regular'].sample(frac=1)
+    x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1)
+    x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))].sample(frac=1)
+
+    # x_ben = df.loc[df['Label'] == 'regular'].sample(frac=1)
+    # x_fraud = df.loc[df['Label'] != 'regular'].sample(frac=1)
 
     x_ben.drop(['Label'], axis=1, inplace=True)
     x_fraud.drop(['Label'], axis=1, inplace=True)
