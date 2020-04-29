@@ -1,0 +1,29 @@
+parameters:
+  usv_train_size: 2000
+  sv_train_size: 2000
+  sv_train_fraud_percentage: 0.01
+  test_benign_count: 492
+  test_fraud_count: 492
+  oc_gan:
+    mb_size: 70
+    d_dim: [dim_input, 100, 50, 2]
+    g_dim: [50, 100, dim_input]
+    hid_dim: [100]
+  oc_gan_ae:
+    dim_input: 50
+    d_dim: [dim_input, 100, 50, 2]
+    g_dim: [50, 100, dim_input]
+  autoencoder:
+    dims: [dim_input, 32, 16, 8, 4]
+  vae:
+    intermediate_dim: 12
+    latent_dim: 2
+  rbm:
+    num_hidden: 10
+path:
+  one: './data/ccfraud/ccfraud.csv'
+metadata:
+  source: https://www.kaggle.com/mlg-ulb/creditcardfraud
+  entries: 284407
+  frauds: 492
+  benign: 283915

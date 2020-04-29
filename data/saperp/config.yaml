@@ -1,0 +1,36 @@
+parameters:
+  usv_train_size: 2000
+  sv_train_size: 2000
+  sv_train_fraud_percentage: 0
+  test_benign_count: 20
+  test_fraud_count: 20
+  oc_gan:
+    mb_size: 70
+    d_dim: [dim_input, 128, 64, 2]
+    g_dim: [64, 128, dim_input]
+    hid_dim: [100]
+  oc_gan_ae:
+#    TODO: Warum hid_dim / 2
+    dim_input: 50
+    d_dim: [dim_input, 128, 64, 2]
+    g_dim: [64, 128, dim_input]
+  autoencoder:
+    dims: [dim_input, 128, 64, 32, 16, 8, 3]
+  vae:
+    intermediate_dim: 100
+    latent_dim: 2
+  rbm:
+    num_hidden: 48
+path:
+  one: './data/saperp/'
+metadata:
+  source: --
+  entries: 12407
+  anomalies: 97
+  frauds: 97
+  benign: 12310
+  features: 147
+  entries_vk: 18111
+  frauds_vk: 37
+  benign_vk: 18074
+  features_vk: 471

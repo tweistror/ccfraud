@@ -1,0 +1,28 @@
+parameters:
+  usv_train_size: 2000
+  sv_train_size: 2000
+  sv_train_fraud_percentage: 0.01
+  test_benign_count: 1000
+  test_fraud_count: 1000
+  oc_gan:
+    mb_size: 70
+    d_dim: [dim_input, 30, 15, 2]
+    g_dim: [15, 30, dim_input]
+    hid_dim: [30]
+  oc_gan_ae:
+    dim_input: 15
+    d_dim: [dim_input, 30, 15, 2]
+    g_dim: [15, 30, dim_input]
+  autoencoder:
+    dims: [dim_input, 16, 8, 4]
+  vae:
+    intermediate_dim: 5
+    latent_dim: 2
+  rbm:
+    num_hidden: 4
+path:
+  one: './data/paysim-custom/paysim_custom.csv'
+metadata:
+  entries: 3308183
+  frauds: 1476
+  benign: 3306707

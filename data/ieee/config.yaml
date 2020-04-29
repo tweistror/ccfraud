@@ -1,0 +1,30 @@
+parameters:
+  usv_train_size: 5000
+  sv_train_size: 5000
+  sv_train_fraud_percentage: 0.04
+  test_benign_count: 2000
+  test_fraud_count: 2000
+  oc_gan:
+    mb_size: 70
+    d_dim: [dim_input, 256, 64, 2]
+    g_dim: [64, 256, dim_input]
+    hid_dim: [400]
+  oc_gan_ae:
+    dim_input: 200
+    d_dim: [dim_input, 256, 64, 2]
+    g_dim: [64, 256, dim_input]
+  autoencoder:
+    dims: [dim_input, 512, 256, 64, 4]
+  vae:
+    intermediate_dim: 200
+    latent_dim: 2
+  rbm:
+    num_hidden: 180
+path:
+  one: './data/ieee/ieee_transaction.csv'
+  two: './data/ieee/ieee_identity.csv'
+metadata:
+  source: https://www.kaggle.com/c/ieee-fraud-detection/data
+  entries: 590540
+  frauds: 569877
+  benign: 20663
