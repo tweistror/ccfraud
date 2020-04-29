@@ -32,9 +32,9 @@ class Autoencoder(object):
     def set_parameters(self, parameters):
         self.input_dim = self.x_train.shape[1]
         self.nb_epoch = 50
-        self.batch_size = 128
+        self.batch_size = 64
         self.split_pct = 0.2
-        self.learning_rate = 1e-3
+        self.learning_rate = 1e-4
 
         dim_input = self.x_train.shape[1]
         self.dims = parameters['dims']
