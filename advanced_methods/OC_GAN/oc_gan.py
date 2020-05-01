@@ -12,7 +12,7 @@ from advanced_methods.OC_GAN.utils import xavier_init, pull_away_loss, sample_sh
 tf.compat.v1.disable_eager_execution()
 
 
-def execute_oc_gan(dataset_string, x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters,
+def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters,
                    autoencoding=False, verbosity=0):
 
     # Set parameters using YAML-config
