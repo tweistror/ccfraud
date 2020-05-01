@@ -29,22 +29,7 @@ def pull_away_loss(g):
     return pt_loss
 
 
-def sample_shuffle_uspv(X):
-    n_samples = len(X)
-    s = np.arange(n_samples)
-    np.random.shuffle(s)
-    return np.array(X[s])
-
-
-def one_hot(x, depth):
-    x_one_hot = np.zeros((len(x), depth), dtype=np.int32)
-    x = x.astype(int)
-    for i in range(x_one_hot.shape[0]):
-        x_one_hot[i, x[i]] = 1
-    return x_one_hot
-
-
-def sample_Z(m, n):   # generating the input for G.
+def sample_Z(m, n, seed):   # generating the input for G.
     return np.random.uniform(-1., 1., size=[m, n])
 
 

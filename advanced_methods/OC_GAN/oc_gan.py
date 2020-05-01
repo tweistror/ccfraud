@@ -6,14 +6,16 @@ import numpy as np
 from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score
 
 from advanced_methods.OC_GAN.autoencoder import Dense_Autoencoder
-from advanced_methods.OC_GAN.utils import xavier_init, pull_away_loss, sample_shuffle_uspv, one_hot, sample_Z, draw_trend, \
+from advanced_methods.OC_GAN.utils import xavier_init, pull_away_loss, sample_Z, draw_trend, \
     preprocess_minus_1_and_pos_1
+from utils.list_operations import one_hot, sample_shuffle
 
 tf.compat.v1.disable_eager_execution()
 
 
-def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters,
+def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters, seed,
                    autoencoding=False, verbosity=0):
+    tf.random.set_seed(seed)
 
     # Set parameters using YAML-config
     normal_parameters = parameters['normal']
@@ -199,25 +201,25 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     n_round = 200
 
     for n_epoch in range(n_round):
-        x_mb_oc = sample_shuffle_uspv(x_train)
+        x_mb_oc = sample_shuffle(x_train, seed)
 
         for n_batch in range(int(q)):
             _, d_loss_curr, ent_real_curr = sess.run([d_solver, d_loss, ent_real_loss],
                                                      feed_dict={
                                                          x_oc: x_mb_oc[n_batch * mb_size:(n_batch + 1) * mb_size],
-                                                         z: sample_Z(mb_size, z_dim),
+                                                         z: sample_Z(mb_size, z_dim, seed),
                                                          y_real: y_real_mb,
                                                          y_gen: y_fake_mb
                                                      })
 
             _, g_loss_curr, fm_loss_curr = sess.run([g_solver, g_loss, fm_loss],
-                                                    feed_dict={z: sample_Z(mb_size, z_dim),
+                                                    feed_dict={z: sample_Z(mb_size, z_dim, seed),
                                                                x_oc: x_mb_oc[n_batch * mb_size:(n_batch + 1) * mb_size],
                                                                })
 
         d_prob_real_, d_prob_gen_ = sess.run([d_prob_real, d_prob_gen],
                                              feed_dict={x_oc: x_train,
-                                                        z: sample_Z(len(x_train), z_dim)})
+                                                        z: sample_Z(len(x_train), z_dim, seed)})
 
         d_prob_fraud_ = sess.run(d_prob_real,
                                  feed_dict={x_oc: x_test[-n_test_benign:]})
