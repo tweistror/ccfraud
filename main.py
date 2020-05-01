@@ -49,6 +49,7 @@ if verbosity > 0:
     print(f'Start {iteration_count} iterations')
 
 for i in range(iteration_count):
+    iterated_seed = seed + i
     start_time = datetime.now()
 
     prec_list = list()
@@ -56,14 +57,14 @@ for i in range(iteration_count):
     f1_list = list()
     acc_list = list()
 
-    split_preprocess_class = SplitPreprocessData(dataset_string, seed, cross_validation_count, verbosity)
+    split_preprocess_class = SplitPreprocessData(dataset_string, iterated_seed, cross_validation_count, verbosity)
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
         split_preprocess_class.execute_split_preprocess(x_ben, x_fraud, usv_train, sv_train,
                                                         sv_train_fraud, test_fraud, test_benign)
 
     # Over/undersampling
     if use_oversampling is True:
-        x_sv_train, y_sv_train = execute_smote(x_sv_train, y_sv_train, seed)
+        x_sv_train, y_sv_train = execute_smote(x_sv_train, y_sv_train, iterated_seed)
 
     if verbosity > 1:
         print(f'Starting iteration #{i + 1}')
@@ -71,7 +72,7 @@ for i in range(iteration_count):
     if method == 'all' or method == 'oc-gan':
         prec, reca, f1, acc, method_name = execute_oc_gan(x_usv_train, x_test[:test_benign],
                                                           x_test[test_benign:], test_benign,
-                                                          parameter_class.get_oc_gan_parameters(),
+                                                          parameter_class.get_oc_gan_parameters(), iterated_seed,
                                                           autoencoding=False, verbosity=verbosity)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
@@ -81,9 +82,9 @@ for i in range(iteration_count):
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'oc-gan-ae':
-        prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
+        prec, reca, f1, acc, method_name = execute_oc_gan(x_usv_train, x_test[:test_benign],
                                                           x_test[test_benign:], test_benign,
-                                                          parameter_class.get_oc_gan_parameters(),
+                                                          parameter_class.get_oc_gan_parameters(), iterated_seed,
                                                           autoencoding=True, verbosity=verbosity)
         prec_list = prec_list + [prec]
         reca_list = reca_list + [reca]
