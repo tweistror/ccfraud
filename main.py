@@ -21,7 +21,7 @@ baselines = ["both", "usv", "sv", "none"]
 
 parser = Parser(datasets, methods, baselines)
 
-dataset_string, verbosity, method, baseline, iteration_count, use_oversampling, cross_validation_count = \
+dataset_string, verbosity, seed, method, baseline, iteration_count, use_oversampling, cross_validation_count = \
     parser.get_args()
 
 # Set parameters
@@ -30,7 +30,7 @@ parameter_class = Parameters(dataset_string)
 usv_train, sv_train, sv_train_fraud, test_benign, test_fraud = \
     parameter_class.get_main_parameters(cross_validation_count)
 
-x_ben, x_fraud = LoadData(dataset_string, parameter_class.get_path()).get_data()
+x_ben, x_fraud = LoadData(dataset_string, parameter_class.get_path(), seed, verbosity).get_data()
 
 # Initialize collections for evaluation results
 prec_coll = list()
@@ -56,13 +56,14 @@ for i in range(iteration_count):
     f1_list = list()
     acc_list = list()
 
-    split_preprocess_class = SplitPreprocessData(dataset_string, cross_validation_count, verbosity)
+    split_preprocess_class = SplitPreprocessData(dataset_string, seed, cross_validation_count, verbosity)
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-        split_preprocess_class.execute_split_preprocess(x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, test_benign)
+        split_preprocess_class.execute_split_preprocess(x_ben, x_fraud, usv_train, sv_train,
+                                                        sv_train_fraud, test_fraud, test_benign)
 
     # Over/undersampling
     if use_oversampling is True:
-        x_sv_train, y_sv_train = execute_smote(x_sv_train, y_sv_train)
+        x_sv_train, y_sv_train = execute_smote(x_sv_train, y_sv_train, seed)
 
     if verbosity > 1:
         print(f'Starting iteration #{i + 1}')
