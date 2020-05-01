@@ -69,7 +69,7 @@ for i in range(iteration_count):
         print(f'Starting iteration #{i + 1}')
 
     if method == 'all' or method == 'oc-gan':
-        prec, reca, f1, acc, method_name = execute_oc_gan(dataset_string, x_usv_train, x_test[:test_benign],
+        prec, reca, f1, acc, method_name = execute_oc_gan(x_usv_train, x_test[:test_benign],
                                                           x_test[test_benign:], test_benign,
                                                           parameter_class.get_oc_gan_parameters(),
                                                           autoencoding=False, verbosity=verbosity)
