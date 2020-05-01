@@ -5,10 +5,11 @@ from utils.list_operations import sample_shuffle, clean_inf_nan
 
 
 class SplitPreprocessData(object):
-    def __init__(self, dataset_string, cross_validation_k=0, verbosity=0):
+    def __init__(self, dataset_string, seed, cross_validation_k=0, verbosity=0):
         self.dataset_string = dataset_string
         self.cross_validation_k = cross_validation_k
         self.verbosity = verbosity
+        self.seed = seed
 
     def execute_split_preprocess(self, x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, test_benign):
         parameters = [x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, test_benign]
@@ -132,8 +133,8 @@ class SplitPreprocessData(object):
         x_fraud = parameters['x_fraud']
 
         # Take random sample of sufficient space (including some offset)
-        x_ben = x_ben.sample(n=k * (usv_train + sv_train_ben + sv_train_fraud + test_benign + test_fraud)).values
-        x_fraud = x_fraud.sample(frac=1).values
+        x_ben = x_ben[:k * (usv_train + sv_train_ben + sv_train_fraud + test_benign + test_fraud)].values
+        x_fraud = x_fraud.values
 
         x_usv_train = x_ben[0:k * usv_train]
         x_sv_train_ben = x_ben[0:k * sv_train_ben]
@@ -141,7 +142,7 @@ class SplitPreprocessData(object):
         x_y_sv_train_ben = np.append(x_sv_train_ben, np.zeros((k * sv_train_ben, 1)), axis=1)
         x_y_sv_train_fraud = np.append(x_sv_train_fraud, np.ones((k * sv_train_fraud, 1)), axis=1)
         x_y_sv_train = np.concatenate((x_y_sv_train_ben, x_y_sv_train_fraud))
-        x_y_sv_train = sample_shuffle(x_y_sv_train)
+        x_y_sv_train = sample_shuffle(x_y_sv_train, self.seed)
         x_sv_train = x_y_sv_train[:, :-1]
         y_sv_train = x_y_sv_train[:, -1]
 

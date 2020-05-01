@@ -8,10 +8,11 @@ from utils.data_loading.saperp_synthetic import get_data_saperp
 
 
 class LoadData(object):
-    def __init__(self, dataset_string, path, verbosity=0):
+    def __init__(self, dataset_string, path, seed, verbosity=0):
         self.dataset_string = dataset_string
         self.verbosity = verbosity
         self.path = path
+        self.seed = seed
 
     def get_data(self):
         if self.dataset_string == "paysim":
@@ -25,7 +26,7 @@ class LoadData(object):
         elif self.dataset_string == "nslkdd":
             x_ben, x_fraud = self.get_data_nslkdd()
         elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
-            x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path)
+            x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path, self.seed)
 
         return x_ben, x_fraud
 
@@ -48,8 +49,8 @@ class LoadData(object):
         data.drop(['type'], axis=1, inplace=True)
 
         # Extract fraud and benign transactions and randomize order
-        x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
-        x_ben = data.loc[data['isFraud'] == 0].sample(frac=1)
+        x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1, random_state=self.seed)
+        x_ben = data.loc[data['isFraud'] == 0].sample(frac=1, random_state=self.seed)
 
         x_fraud.drop(['isFraud'], axis=1, inplace=True)
         x_ben.drop(['isFraud'], axis=1, inplace=True)
@@ -63,8 +64,8 @@ class LoadData(object):
         data.drop(['Time', 'Amount'], axis=1, inplace=True)
 
         # Extract fraud and benign transactions and randomize order
-        x_fraud = data.loc[data['Class'] == 1].sample(frac=1)
-        x_ben = data.loc[data['Class'] == 0].sample(frac=1)
+        x_fraud = data.loc[data['Class'] == 1].sample(frac=1, random_state=self.seed)
+        x_ben = data.loc[data['Class'] == 0].sample(frac=1, random_state=self.seed)
 
         x_fraud.drop(['Class'], axis=1, inplace=True)
         x_ben.drop(['Class'], axis=1, inplace=True)
@@ -90,8 +91,8 @@ class LoadData(object):
         data.drop(['action'], axis=1, inplace=True)
 
         # Extract fraud and benign transactions and randomize order
-        x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
-        x_ben = data.loc[data['isFraud'] == 0].sample(frac=1)
+        x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1, random_state=self.seed)
+        x_ben = data.loc[data['isFraud'] == 0].sample(frac=1, random_state=self.seed)
 
         x_fraud.drop(['isFraud'], axis=1, inplace=True)
         x_ben.drop(['isFraud'], axis=1, inplace=True)
@@ -146,8 +147,8 @@ class LoadData(object):
         data.drop(['TransactionDT', 'TransactionID'], axis=1, inplace=True)
 
         # Extract `positive_samples` of benign transactions and all fraud transactions
-        x_ben = data.loc[data['isFraud'] == 0].sample(frac=1)
-        x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1)
+        x_ben = data.loc[data['isFraud'] == 0].sample(frac=1, random_state=self.seed)
+        x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1, random_state=self.seed)
 
         x_fraud.drop(['isFraud'], axis=1, inplace=True)
         x_ben.drop(['isFraud'], axis=1, inplace=True)
@@ -235,8 +236,8 @@ class LoadData(object):
                 le.fit(list(data[col].astype(str).values))
                 data[col] = le.transform(list(data[col].astype(str).values))
 
-        x_ben = data.loc[data['label'] == 'normal'].sample(frac=1)
-        x_fraud = data.loc[data['label'] != 'normal'].sample(frac=1)
+        x_ben = data.loc[data['label'] == 'normal'].sample(frac=1, random_state=self.seed)
+        x_fraud = data.loc[data['label'] != 'normal'].sample(frac=1, random_state=self.seed)
 
         x_ben.drop(['label'], axis=1, inplace=True)
         x_fraud.drop(['label'], axis=1, inplace=True)

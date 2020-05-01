@@ -4,23 +4,23 @@ import datetime
 from sklearn.preprocessing import MinMaxScaler
 
 
-def get_data_saperp(dataset_string, path):
+def get_data_saperp(dataset_string, path, seed):
     path = path['one']
 
     if dataset_string == "saperp-ek":
-        x_ben, x_fraud = load_EK(path)
+        x_ben, x_fraud = load_EK(path, seed)
     else:
-        x_ben, x_fraud = load_VK(path)
+        x_ben, x_fraud = load_VK(path, seed)
 
     return x_ben, x_fraud
 
 
-def load_EK(path):
-    df = load_data_EK_gen(path, shuffle=True)
+def load_EK(path, seed):
+    df = load_data_EK_gen(path)
     df = prepare_data_EK_gen(df)
 
-    x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1)
-    x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))].sample(frac=1)
+    x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1, random_state=seed)
+    x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))].sample(frac=1, random_state=seed)
 
     x_ben.drop(['Label'], axis=1, inplace=True)
     x_fraud.drop(['Label'], axis=1, inplace=True)
@@ -28,16 +28,16 @@ def load_EK(path):
     return x_ben, x_fraud
 
 
-def load_VK(path):
-    df = load_data_VK_gen(path, shuffle=True)
+def load_VK(path, seed):
+    df = load_data_VK_gen(path)
     df = prepare_data_VK_gen(df)
 
     # TODO: Dataset needs more than 1 fraud to use this -> anomalies are used for now
     # x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1)
     # x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))].sample(frac=1)
 
-    x_ben = df.loc[df['Label'] == 'regular'].sample(frac=1)
-    x_fraud = df.loc[df['Label'] != 'regular'].sample(frac=1)
+    x_ben = df.loc[df['Label'] == 'regular'].sample(frac=1, random_state=seed)
+    x_fraud = df.loc[df['Label'] != 'regular'].sample(frac=1, random_state=seed)
 
     x_ben.drop(['Label'], axis=1, inplace=True)
     x_fraud.drop(['Label'], axis=1, inplace=True)
@@ -45,7 +45,7 @@ def load_VK(path):
     return x_ben, x_fraud
 
 
-def load_data_EK_gen(path, shuffle=False):
+def load_data_EK_gen(path):
     # read relevant features from csv df_EK = pd.read_excel(io='./data/generated/generated_purchasing_data.xlsx',
     # sheet_name='EKPO_Data', usecols=['Angelegt von', 'Lieferant', 'Material', 'Werk', 'Bestellmenge',
     # 'Bestellnettopreis', 'Angelegt am', 'Uhrzeit', 'Label'])
@@ -75,13 +75,10 @@ def load_data_EK_gen(path, shuffle=False):
     df_EK = df_EK[['Lieferant', 'Material', 'Werk', 'Angelegt von', 'Kontonummer', 'Bestellmenge', 'Bestellnettopreis',
                    'Angelegt am', 'Uhrzeit', 'Label']]
 
-    if shuffle:
-        df_EK = df_EK.sample(frac=1)  # shuffle dataset
-
     return df_EK
 
 
-def load_data_VK_gen(path, shuffle=True):
+def load_data_VK_gen(path):
     df_VK = pd.read_csv(filepath_or_buffer=f'{path}/generated_sales_data.csv', sep=';', encoding='utf-8',
                         usecols=['Verkaufsbeleg', 'Angelegt von', 'Auftraggeber', 'Position', 'Material', 'Werk',
                                  'Auftragsmenge', 'Nettopreis', 'Angelegt am', 'Uhrzeit'],
@@ -95,9 +92,6 @@ def load_data_VK_gen(path, shuffle=True):
 
     df_VK = df_VK.merge(df_VK_deliveries, left_on=['Verkaufsbeleg', 'Position'],
                         right_on=['Referenz', 'ReferenzPosition'])
-
-    if shuffle:
-        df_VK = df_VK.sample(frac=1)  # shuffle dataset
 
     return df_VK
 
@@ -154,8 +148,7 @@ def prepare_data_VK_gen(df_VK, use_numeric=True, log_scale=False):
         if row['Angelegt am'].isoweekday() in range(1, 6):
             on_weekday = 1
         if on_weekday == 1 \
-                and row['Uhrzeit'] > datetime.time(8, 00) \
-                and row['Uhrzeit'] < datetime.time(18, 00):
+                and datetime.time(8, 00) < row['Uhrzeit'] < datetime.time(18, 00):
             in_core_time = 1
         df_VK_core_time.loc[index] = in_core_time
 
