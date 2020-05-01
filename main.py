@@ -24,8 +24,6 @@ parser = Parser(datasets, methods, baselines)
 dataset_string, verbosity, seed, method, baseline, iteration_count, use_oversampling, cross_validation_count = \
     parser.get_args()
 
-np.random.seed(seed)
-
 # Set parameters
 parameter_class = Parameters(dataset_string)
 
@@ -51,8 +49,7 @@ if verbosity > 0:
     print(f'Start {iteration_count} iterations')
 
 for i in range(iteration_count):
-    iterated_seed = seed + i
-    np.random.seed(iterated_seed)
+    iterated_seed = seed + 1
 
     start_time = datetime.now()
 
@@ -111,7 +108,7 @@ for i in range(iteration_count):
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'rbm':
-        rbm_model = RBM(verbosity=verbosity)
+        rbm_model = RBM(iterated_seed, verbosity=verbosity)
         rbm_model.set_parameters(x_usv_train.shape[1], parameter_class.get_rbm_parameters())
         prec, reca, f1, acc, method_name = rbm_model.execute(x_usv_train, x_test, y_test)
 
@@ -123,7 +120,7 @@ for i in range(iteration_count):
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'vae':
-        vae_model = VAE(x_usv_train, dataset_string, verbosity=verbosity)
+        vae_model = VAE(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
         vae_model.set_parameters(parameter_class.get_vae_parameters())
         vae_model.build()
         prec, reca, f1, acc, method_name = vae_model.predict(x_test, y_test)

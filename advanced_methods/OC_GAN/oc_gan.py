@@ -15,7 +15,6 @@ tf.compat.v1.disable_eager_execution()
 
 def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters, seed,
                    autoencoding=False, verbosity=0):
-    tf.random.set_seed(seed)
 
     # Set parameters using YAML-config
     normal_parameters = parameters['normal']
@@ -55,34 +54,34 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     x_tar = tf.compat.v1.placeholder(tf.float32, shape=[None, dim_input])
 
     # Declare weights and biases of discriminator.
-    d_w1 = tf.Variable(xavier_init([d_dim[0], d_dim[1]]))
+    d_w1 = tf.Variable(xavier_init([d_dim[0], d_dim[1]], seed))
     d_b1 = tf.Variable(tf.zeros(shape=[d_dim[1]]))
 
-    d_w2 = tf.Variable(xavier_init([d_dim[1], d_dim[2]]))
+    d_w2 = tf.Variable(xavier_init([d_dim[1], d_dim[2]], seed))
     d_b2 = tf.Variable(tf.zeros(shape=[d_dim[2]]))
 
-    d_w3 = tf.Variable(xavier_init([d_dim[2], d_dim[3]]))
+    d_w3 = tf.Variable(xavier_init([d_dim[2], d_dim[3]], seed))
     d_b3 = tf.Variable(tf.zeros(shape=[d_dim[3]]))
 
     theta_d = [d_w1, d_w2, d_w3, d_b1, d_b2, d_b3]
 
     # Declare weights and biases of generator.
-    g_w1 = tf.Variable(xavier_init([g_dim[0], g_dim[1]]))
+    g_w1 = tf.Variable(xavier_init([g_dim[0], g_dim[1]], seed))
     g_b1 = tf.Variable(tf.zeros(shape=[g_dim[1]]))
 
-    g_w2 = tf.Variable(xavier_init([g_dim[1], g_dim[2]]))
+    g_w2 = tf.Variable(xavier_init([g_dim[1], g_dim[2]], seed))
     g_b2 = tf.Variable(tf.zeros(shape=[g_dim[2]]))
 
     theta_g = [g_w1, g_w2, g_b1, g_b2]
 
     # Declare weights and biases of pre-train net for density estimation.
-    t_w1 = tf.Variable(xavier_init([d_dim[0], d_dim[1]]))
+    t_w1 = tf.Variable(xavier_init([d_dim[0], d_dim[1]], seed))
     t_b1 = tf.Variable(tf.zeros(shape=[d_dim[1]]))
 
-    t_w2 = tf.Variable(xavier_init([d_dim[1], d_dim[2]]))
+    t_w2 = tf.Variable(xavier_init([d_dim[1], d_dim[2]], seed))
     t_b2 = tf.Variable(tf.zeros(shape=[d_dim[2]]))
 
-    t_w3 = tf.Variable(xavier_init([d_dim[2], d_dim[3]]))
+    t_w3 = tf.Variable(xavier_init([d_dim[2], d_dim[3]], seed))
     t_b3 = tf.Variable(tf.zeros(shape=[d_dim[3]]))
 
     theta_t = [t_w1, t_w2, t_w3, t_b1, t_b2, t_b3]

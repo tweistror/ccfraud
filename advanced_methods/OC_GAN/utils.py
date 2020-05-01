@@ -5,9 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def xavier_init(size):
+def xavier_init(size, seed):
     in_dim = size[0]
     xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
+    tf.random.set_seed(seed)
     return tf.random.normal(shape=size, stddev=xavier_stddev)
 
 
@@ -30,6 +31,7 @@ def pull_away_loss(g):
 
 
 def sample_Z(m, n, seed):   # generating the input for G.
+    np.random.seed(seed)
     return np.random.uniform(-1., 1., size=[m, n])
 
 

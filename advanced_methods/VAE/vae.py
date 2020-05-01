@@ -15,9 +15,10 @@ from advanced_methods.VAE.utils import sampling
 
 
 class VAE(object):
-    def __init__(self, x_train, dataset_string, epochs=20, batch_size=32, verbosity=0):
+    def __init__(self, x_train, dataset_string, seed, epochs=20, batch_size=32, verbosity=0):
         self.x_train = x_train
         self.dataset_string = dataset_string
+        self.seed = seed
         self.verbosity = 1 if verbosity == 2 else 0
 
         self.epochs = epochs
@@ -75,7 +76,7 @@ class VAE(object):
 
         vae.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
-        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=0.2)
+        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=0.2, random_state=self.seed)
 
         vae.fit(x_train_split, x_train_split, batch_size=self.batch_size, epochs=self.epochs, verbose=self.verbosity,
                 shuffle=True, validation_data=(x_valid_split, x_valid_split))

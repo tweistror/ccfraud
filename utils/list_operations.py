@@ -4,6 +4,7 @@ import numpy as np
 def sample_shuffle(x, seed):
     n_samples = len(x)
     s = np.arange(n_samples)
+    np.random.seed(seed)
     np.random.shuffle(s)
     return np.array(x[s])
 

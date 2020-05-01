@@ -17,7 +17,9 @@ class RBM(object):
     The interface of the class is sklearn-like.
     """
 
-    def __init__(self, verbosity=0, plot_training_loss=False):
+    def __init__(self, seed, verbosity=0, plot_training_loss=False):
+        tf.set_random_seed(seed)
+        self.seed = seed
 
         self.visible_unit_type = 'bin'
         self.gibbs_sampling_steps = 1
@@ -74,7 +76,7 @@ class RBM(object):
         :return: self
         """
 
-        x_train_split, x_valid_split = train_test_split(x_train, test_size=validation_split)
+        x_train_split, x_valid_split = train_test_split(x_train, test_size=validation_split, random_state=self.seed)
 
         tf.reset_default_graph()
 
@@ -126,6 +128,7 @@ class RBM(object):
         :return: self
         """
 
+        np.random.seed(self.seed)
         np.random.shuffle(train_set)
 
         batches = [_ for _ in utils.gen_batches(train_set, self.batch_size)]
@@ -158,6 +161,8 @@ class RBM(object):
         :param data: training/validation set batch
         :return: dictionary(self.input_data: data, self.hrand: random_uniform)
         """
+
+        np.random.seed(self.seed)
 
         return {
             self.input_data: data,
@@ -276,6 +281,7 @@ class RBM(object):
                        visible bias(shape(num_visible)))
         """
 
+        tf.set_random_seed(self.seed)
         W = tf.Variable(tf.random_normal((self.num_visible, self.num_hidden), mean=0.0, stddev=0.01), name='weights')
         dw = tf.Variable(tf.zeros([self.num_visible, self.num_hidden]), name='derivative-weights')
 
