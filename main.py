@@ -24,6 +24,8 @@ parser = Parser(datasets, methods, baselines)
 dataset_string, verbosity, seed, method, baseline, iteration_count, use_oversampling, cross_validation_count = \
     parser.get_args()
 
+np.random.seed(seed)
+
 # Set parameters
 parameter_class = Parameters(dataset_string)
 
@@ -50,6 +52,8 @@ if verbosity > 0:
 
 for i in range(iteration_count):
     iterated_seed = seed + i
+    np.random.seed(iterated_seed)
+
     start_time = datetime.now()
 
     prec_list = list()
@@ -94,7 +98,7 @@ for i in range(iteration_count):
             method_special_list = method_special_list + [method_name]
 
     if method == 'all' or method == 'ae':
-        ae_model = Autoencoder(x_usv_train, dataset_string, verbosity=verbosity)
+        ae_model = Autoencoder(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
         ae_model.set_parameters(parameter_class.get_autoencoder_parameters())
         ae_model.build()
         prec, reca, f1, acc, method_name = ae_model.predict(x_test, y_test)
