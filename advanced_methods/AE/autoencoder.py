@@ -14,9 +14,10 @@ LABELS = ["Normal", "Break"]
 
 
 class Autoencoder(object):
-    def __init__(self, x_train, dataset_string, verbosity=0):
+    def __init__(self, x_train, dataset_string, seed, verbosity=0):
         self.x_train = x_train
         self.dataset_string = dataset_string
+        self.seed = seed
         self.verbosity = 1 if verbosity == 2 else 0
 
         self.input_dim = None
@@ -47,7 +48,7 @@ class Autoencoder(object):
                             loss='mean_squared_error',
                             optimizer='adam')
 
-        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=self.split_pct)
+        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=self.split_pct, random_state=self.seed)
 
         autoencoder.fit(x_train_split, x_train_split,
                         epochs=self.nb_epoch,
