@@ -1,4 +1,5 @@
 import argparse
+import random
 
 
 class Parser(object):
@@ -18,10 +19,15 @@ class Parser(object):
                             help="Desired count the specified methods are executed and evaluated")
         parser.add_argument("--cv", help="Activate crossvalidation with the desired count of train/test-splits")
         parser.add_argument("--oversampling", choices=['y', 'n'], default='n', help="Use oversampling (SMOTE) or not")
+        parser.add_argument("--seed", default='random', help="Specify a number as concrete seed (default is random")
         self.parser = parser
 
     def get_args(self):
         args = self.parser.parse_args()
 
-        return args.dataset, int(args.v), args.method, args.baselines, int(args.iterations), \
-            True if args.oversampling == 'y' else False, 1 if args.cv is None else int(args.cv)
+        seed = int(args.seed) if args.seed != 'random' else random.randint(1, 1000)
+        oversampling = True if args.oversampling == 'y' else False
+        cv_count = 1 if args.cv is None else int(args.cv)
+
+        return args.dataset, int(args.v), seed, args.method, args.baselines, \
+            int(args.iterations), oversampling, cv_count
