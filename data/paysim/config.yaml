@@ -25,6 +25,10 @@ parameters:
   vae:
     intermediate_dim: 5
     latent_dim: 2
+    activation_fct: 'relu'
+    optimizer: 'adam'
+    loss: 'mean_squared_error'
+    train_test_split: 0.2
   rbm:
     num_hidden: 4
     visible_unit_type: 'bin' # bin or gauss

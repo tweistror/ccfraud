@@ -28,6 +28,10 @@ class VAE(object):
         self.input_shape = None
         self.intermediate_dim = None
         self.latent_dim = None
+        self.activation_fct = None
+        self.optimizer = None
+        self.loss = None
+        self.train_test_split = None
 
         self.threshold = None
         self.vae = None
@@ -38,10 +42,14 @@ class VAE(object):
 
         self.intermediate_dim = parameters['intermediate_dim']
         self.latent_dim = parameters['latent_dim']
+        self.activation_fct = parameters['activation_fct']
+        self.optimizer = parameters['optimizer']
+        self.loss = parameters['loss']
+        self.train_test_split = parameters['train_test_split']
 
     def build(self):
         inputs = Input(shape=self.input_shape, name='encoder_input')
-        x = Dense(self.intermediate_dim, activation='relu')(inputs)
+        x = Dense(self.intermediate_dim, activation=self.activation_fct)(inputs)
         z_mean = Dense(self.latent_dim, name='z_mean')(x)
         z_log_var = Dense(self.latent_dim, name='z_log_var')(x)
 
@@ -54,7 +62,7 @@ class VAE(object):
 
         # build decoder model
         latent_inputs = Input(shape=(self.latent_dim,), name='z_sampling')
-        x = Dense(self.intermediate_dim, activation='relu')(latent_inputs)
+        x = Dense(self.intermediate_dim, activation=self.activation_fct)(latent_inputs)
         outputs = Dense(self.original_dim, activation='sigmoid')(x)
 
         # instantiate decoder model
@@ -74,9 +82,10 @@ class VAE(object):
         vae_loss = K.mean(reconstruction_loss + kl_loss)
         vae.add_loss(vae_loss)
 
-        vae.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
+        vae.compile(optimizer=self.optimizer, loss=self.loss, metrics=['accuracy'])
 
-        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=0.2, random_state=self.seed)
+        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=self.train_test_split,
+                                                        random_state=self.seed)
 
         vae.fit(x_train_split, x_train_split, batch_size=self.batch_size, epochs=self.epochs, verbose=self.verbosity,
                 shuffle=True, validation_data=(x_valid_split, x_valid_split))

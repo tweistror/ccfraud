@@ -10,7 +10,7 @@ parameters:
     g_dim: [64, 128, dim_input]
     hid_dim: [100]
   oc_gan_ae:
-#    TODO: Warum hid_dim / 2
+#    TODO: Why hid_dim / 2
     dim_input: 50
     d_dim: [dim_input, 128, 64, 2]
     g_dim: [64, 128, dim_input]
@@ -26,6 +26,10 @@ parameters:
   vae:
     intermediate_dim: 100
     latent_dim: 2
+    activation_fct: 'relu'
+    optimizer: 'adam'
+    loss: 'mean_squared_error'
+    train_test_split: 0.2
   rbm:
     num_hidden: 48
     visible_unit_type: 'bin' # bin or gauss
