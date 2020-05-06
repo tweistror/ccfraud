@@ -30,7 +30,7 @@ parameter_class = Parameters(dataset_string)
 usv_train, sv_train, sv_train_fraud, test_benign, test_fraud = \
     parameter_class.get_main_parameters(cross_validation_count)
 
-x_ben, x_fraud = LoadData(dataset_string, parameter_class.get_path(), seed, verbosity).get_data()
+x_ben, x_fraud = LoadData(dataset_string, parameter_class.get_path(), seed, parameter_class, verbosity).get_data()
 
 # Initialize collections for evaluation results
 prec_coll = list()

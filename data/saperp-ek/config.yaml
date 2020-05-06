@@ -1,7 +1,7 @@
 parameters:
   usv_train_size: 2000
   sv_train_size: 2000
-  sv_train_fraud_percentage: 0
+  sv_train_fraud_percentage: 0.005
   test_benign_count: 20
   test_fraud_count: 20
   oc_gan:
@@ -23,6 +23,8 @@ parameters:
     num_hidden: 48
 path:
   one: './data/saperp-ek'
+mode:
+  fraud_only: True # only fraud transactions are labeled positive, anomalies are labeled negative
 metadata:
   source: --
   entries: 12407

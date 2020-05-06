@@ -39,3 +39,6 @@ class Parameters(object):
 
     def get_rbm_parameters(self):
         return self.config['parameters']['rbm']
+
+    def get_saperp_mode(self):
+        return self.config['mode']

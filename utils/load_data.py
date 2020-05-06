@@ -8,11 +8,12 @@ from utils.data_loading.saperp_synthetic import get_data_saperp
 
 
 class LoadData(object):
-    def __init__(self, dataset_string, path, seed, verbosity=0):
+    def __init__(self, dataset_string, path, seed, parameter_class, verbosity=0):
         self.dataset_string = dataset_string
         self.verbosity = verbosity
         self.path = path
         self.seed = seed
+        self.parameter_class = parameter_class
 
     def get_data(self):
         if self.dataset_string == "paysim":
@@ -26,7 +27,8 @@ class LoadData(object):
         elif self.dataset_string == "nslkdd":
             x_ben, x_fraud = self.get_data_nslkdd()
         elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
-            x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path, self.seed)
+            fraud_only = self.parameter_class.get_saperp_mode()['fraud_only']
+            x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path, self.seed, fraud_only)
 
         return x_ben, x_fraud
 
