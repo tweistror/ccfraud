@@ -10,8 +10,6 @@ parameters:
     g_dim: [64, 128, dim_input]
     hid_dim: [100]
   oc_gan_ae:
-#    TODO: Why hid_dim / 2
-    dim_input: 50
     d_dim: [dim_input, 128, 64, 2]
     g_dim: [64, 128, dim_input]
   autoencoder:

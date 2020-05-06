@@ -10,7 +10,6 @@ parameters:
     g_dim: [15, 30, dim_input]
     hid_dim: [30]
   oc_gan_ae:
-    dim_input: 15
     d_dim: [dim_input, 30, 15, 2]
     g_dim: [15, 30, dim_input]
   autoencoder:

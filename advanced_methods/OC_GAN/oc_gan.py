@@ -41,7 +41,7 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
                                                 [ben_hid_repre, van_hid_repre]))
 
         ae_parameters = parameters['ae']
-        dim_input = ae_parameters['dim_input']
+        dim_input = int(hid_dim[0] / 2)
         d_dim = ae_parameters['d_dim']
         d_dim[0] = dim_input
         g_dim = ae_parameters['g_dim']
