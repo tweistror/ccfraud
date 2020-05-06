@@ -13,6 +13,7 @@
       <w>linearsvc</w>
       <w>logit</w>
       <w>nearmiss</w>
+      <w>nslkdd</w>
       <w>paysim</w>
       <w>perceptron</w>
       <w>prec</w>
