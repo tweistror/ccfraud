@@ -1,6 +1,8 @@
 import numpy as np
+
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
 from utils.list_operations import sample_shuffle, clean_inf_nan
 
 
