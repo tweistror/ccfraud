@@ -15,6 +15,11 @@ parameters:
     g_dim: [64, 256, dim_input]
   autoencoder:
     dims: [dim_input, 512, 256, 64, 4]
+    epochs: 50
+    batch_size: 64
+    train_test_split: 0.2
+    learning_rate: 1e-4
+    activation_fct: 'relu'
   vae:
     intermediate_dim: 200
     latent_dim: 2

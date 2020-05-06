@@ -17,37 +17,40 @@ class Autoencoder(object):
         self.verbosity = 1 if verbosity == 2 else 0
 
         self.input_dim = None
-        self.nb_epoch = None
+        self.epochs = None
         self.batch_size = None
-        self.split_pct = None
+        self.train_test_split = None
         self.learning_rate = None
         self.dims = None
+        self.activation_fct = None
 
         self.threshold = None
         self.autoencoder = None
 
     def set_parameters(self, parameters):
         self.input_dim = self.x_train.shape[1]
-        self.nb_epoch = 50
-        self.batch_size = 64
-        self.split_pct = 0.2
-        self.learning_rate = 1e-4
+        self.epochs = parameters['epochs']
+        self.batch_size = parameters['batch_size']
+        self.train_test_split = parameters['train_test_split']
+        self.learning_rate = parameters['learning_rate']
+        self.activation_fct = parameters['activation_fct']
 
         dim_input = self.x_train.shape[1]
         self.dims = parameters['dims']
         self.dims[0] = dim_input
 
     def build(self):
-        autoencoder = build_ae_model(self.dims, self.learning_rate)
+        autoencoder = build_ae_model(self.dims, self.learning_rate, self.activation_fct)
 
         autoencoder.compile(metrics=['accuracy'],
                             loss='mean_squared_error',
                             optimizer='adam')
 
-        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=self.split_pct, random_state=self.seed)
+        x_train_split, x_valid_split = train_test_split(self.x_train, test_size=self.train_test_split,
+                                                        random_state=self.seed)
 
         autoencoder.fit(x_train_split, x_train_split,
-                        epochs=self.nb_epoch,
+                        epochs=self.epochs,
                         batch_size=self.batch_size,
                         shuffle=True,
                         validation_data=(x_valid_split, x_valid_split),
