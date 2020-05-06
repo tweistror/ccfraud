@@ -18,6 +18,8 @@ class Dense_Autoencoder(object):
         self.autoencoder = Autoencoder(1 if verbosity == 2 else 0)
         self.autoencoder.modelMasking('dense', [self.input_dim], self.hidden_dim)
 
+        self.hidden_representation = None
+
     def compile(self):
         self.autoencoder.compile()
 
@@ -40,8 +42,6 @@ class Autoencoder(object):
 
     # def __init__(self, sample_weights, sample_weight_mode):
     def __init__(self, verbosity):
-        # super(Autoencoder, self).__init__()
-        # self.codeLayerType = 'dense'
         self.epochs = 50
         self.batch_size = 256
         self.shuffle = True
@@ -50,11 +50,14 @@ class Autoencoder(object):
         self.loss = 'mse'
         self.verbosity = verbosity
 
-    # self.sample_weights = sample_weights
-    # self.sample_weight_mode = sample_weight_mode
+        self.code_layer_type = None
+        self.model = None
+        self.sample_weight_mode = None
+        self.sample_weights = None
+        self.y_true = None
+        self.y_pred = None
 
     def model(self, code_layer_type, input_dim, code_dim):
-
         self.code_layer_type = code_layer_type
         assert len(code_dim) > 0
 
