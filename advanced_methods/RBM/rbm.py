@@ -22,13 +22,14 @@ class RBM(object):
         self.seed = seed
 
         self.visible_unit_type = 'bin'
-        self.gibbs_sampling_steps = 1
-        self.learning_rate = 0.01
-        self.momentum = 0.9
-        self.l2 = 0.001
-        self.batch_size = 10
-        self.num_epochs = 10
-        self.stddev = 0.1
+        self.gibbs_sampling_steps = None
+        self.learning_rate = None
+        self.momentum = None
+        self.l2 = None
+        self.batch_size = None
+        self.num_epochs = None
+        self.stddev = None
+
         self.verbosity = 1 if verbosity == 2 else 0
 
         self.plot_training_loss = plot_training_loss
@@ -45,7 +46,7 @@ class RBM(object):
         self.bv_upd8 = None
 
         self.encode = None
-        self.recontruct = None
+        self.reconstruct = None
 
         self.loss_function = None
         self.batch_cost = None
@@ -65,6 +66,15 @@ class RBM(object):
     def set_parameters(self, num_visible, parameters):
         self.num_visible = num_visible
         self.num_hidden = parameters['num_hidden']
+
+        self.visible_unit_type = parameters['visible_unit_type']
+        self.gibbs_sampling_steps = parameters['gibbs_sampling_steps']
+        self.learning_rate = parameters['learning_rate']
+        self.momentum = parameters['momentum']
+        self.l2 = parameters['l2']
+        self.batch_size = parameters['batch_size']
+        self.num_epochs = parameters['epochs']
+        self.stddev = parameters['stddev']
 
     def execute(self, x_train, x_test, y_test, validation_split=0.2):
 
@@ -187,7 +197,7 @@ class RBM(object):
             hprobs, hstates, vprobs, hprobs1, hstates1 = self.gibbs_sampling_step(nn_input)
             nn_input = vprobs
 
-        self.recontruct = vprobs
+        self.reconstruct = vprobs
 
         negative = tf.matmul(tf.transpose(vprobs), hprobs1)
 
@@ -204,20 +214,6 @@ class RBM(object):
         dbv_ = tf.reduce_mean(self.input_data - vprobs, 0)
         self.dbv_ = self.momentum * self.dbv_ + self.learning_rate * dbv_
         self.bv_upd8 = self.bv_.assign_add(self.dbv_)
-
-        """ method 2 for updating with momentum
-        def _update_with_momentum(x_old, x_new):
-            return self.momentum * x_old +\
-                   self.learning_rate * x_new * (1 - self.momentum) 
-        dw = positive - negative
-        self.dw = _update_with_momentum(self.dw, dw)
-        self.w_upd8 = self.W.assign_add(self.dw)
-        dbh_ = tf.reduce_mean(hprobs0 - hprobs1, 0)
-        self.dbh_ = _update_with_momentum(self.dbh_, dbh_)
-        self.bh_upd8 = self.bh_.assign_add(self.dbh_)
-        dbv_ = tf.reduce_mean(self.input_data - vprobs, 0)
-        self.dbv_ = _update_with_momentum(self.dbv_, dbv_)
-        self.bv_upd8 = self.bv_.assign_add(self.dbv_)"""
 
         self.loss_function = tf.sqrt(tf.reduce_mean(tf.square(self.input_data - vprobs)))
 
@@ -244,7 +240,7 @@ class RBM(object):
         :return: self
         """
 
-        self.batch_free_energy = - (tf.matmul(self.input_data, tf.reshape(self.bv_, [-1, 1])) + \
+        self.batch_free_energy = - (tf.matmul(self.input_data, tf.reshape(self.bv_, [-1, 1])) +
                                     tf.reshape(
                                         tf.reduce_sum(tf.log(tf.exp(tf.matmul(self.input_data, self.W) + self.bh_) + 1),
                                                       1), [-1, 1]))
@@ -255,8 +251,8 @@ class RBM(object):
         :return: self
         """
 
-        self.batch_free_energy = - (tf.matmul(self.input_data, tf.reshape(self.bv_, [-1, 1])) - \
-                                    tf.reshape(tf.reduce_sum(0.5 * self.input_data * self.input_data, 1), [-1, 1]) + \
+        self.batch_free_energy = - (tf.matmul(self.input_data, tf.reshape(self.bv_, [-1, 1])) -
+                                    tf.reshape(tf.reduce_sum(0.5 * self.input_data * self.input_data, 1), [-1, 1]) +
                                     tf.reshape(
                                         tf.reduce_sum(tf.log(tf.exp(tf.matmul(self.input_data, self.W) + self.bh_) + 1),
                                                       1), [-1, 1]))
@@ -360,7 +356,7 @@ class RBM(object):
 
         return positive
 
-    def getRecontructError(self, data):
+    def getReconstructError(self, data):
 
         """ return Reconstruction Error (loss) from data in batch.
         :param data: input data of shape num_samples x visible_size
@@ -383,10 +379,10 @@ class RBM(object):
 
             return batch_FE
 
-    def getRecontruction(self, data):
+    def getReconstruction(self, data):
 
         with tf.Session() as self.tf_session:
-            batch_reconstruct = self.tf_session.run(self.recontruct,
+            batch_reconstruct = self.tf_session.run(self.reconstruct,
                                                     feed_dict=self._create_feed_dict(data))
 
             return batch_reconstruct
@@ -406,10 +402,10 @@ class RBM(object):
 
     def predict(self, x_train, x_test, y_test):
         # Threshold calculation
-        train_reconstruction_errors = self.getRecontructError(x_train)
+        train_reconstruction_errors = self.getReconstructError(x_train)
         threshold = np.quantile(train_reconstruction_errors, 0.9)
 
-        test_reconstruction_errors = self.getRecontructError(x_test)
+        test_reconstruction_errors = self.getReconstructError(x_test)
         y_pred = [1 if val > threshold else 0 for val in test_reconstruction_errors]
         acc_score = accuracy_score(y_test, y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)

@@ -27,6 +27,14 @@ parameters:
     latent_dim: 2
   rbm:
     num_hidden: 10
+    visible_unit_type: 'bin' # bin or gauss
+    gibbs_sampling_steps: 1
+    learning_rate: 0.01
+    momentum: 0.9
+    l2: 0.001
+    batch_size: 10
+    epochs: 10
+    stddev: 0.1
 path:
   one: './data/ccfraud/ccfraud.csv'
 metadata:
