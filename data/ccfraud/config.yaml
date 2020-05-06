@@ -20,6 +20,8 @@ parameters:
     train_test_split: 0.2
     learning_rate: 1e-4
     activation_fct: 'relu'
+    optimizer: 'adam'
+    loss: 'mean_squared_error'
   vae:
     intermediate_dim: 12
     latent_dim: 2

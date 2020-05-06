@@ -23,6 +23,8 @@ class Autoencoder(object):
         self.learning_rate = None
         self.dims = None
         self.activation_fct = None
+        self.loss = None
+        self.optimizer = None
 
         self.threshold = None
         self.autoencoder = None
@@ -34,6 +36,8 @@ class Autoencoder(object):
         self.train_test_split = parameters['train_test_split']
         self.learning_rate = parameters['learning_rate']
         self.activation_fct = parameters['activation_fct']
+        self.loss = parameters['loss']
+        self.optimizer = parameters['optimizer']
 
         dim_input = self.x_train.shape[1]
         self.dims = parameters['dims']
@@ -43,8 +47,8 @@ class Autoencoder(object):
         autoencoder = build_ae_model(self.dims, self.learning_rate, self.activation_fct)
 
         autoencoder.compile(metrics=['accuracy'],
-                            loss='mean_squared_error',
-                            optimizer='adam')
+                            loss=self.loss,
+                            optimizer=self.optimizer)
 
         x_train_split, x_valid_split = train_test_split(self.x_train, test_size=self.train_test_split,
                                                         random_state=self.seed)
