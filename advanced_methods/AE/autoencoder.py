@@ -3,14 +3,10 @@
 
 import numpy as np
 
-from pylab import rcParams
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 
 from advanced_methods.AE.utils import build_ae_model
-
-rcParams['figure.figsize'] = 8, 6
-LABELS = ["Normal", "Break"]
 
 
 class Autoencoder(object):
