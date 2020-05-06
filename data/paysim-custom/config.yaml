@@ -41,6 +41,8 @@ parameters:
 path:
   one: './data/paysim-custom/paysim_custom.csv'
 metadata:
+  source: --
   entries: 3308183
   frauds: 1476
   benign: 3306707
+  features: 12

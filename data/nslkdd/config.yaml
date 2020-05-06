@@ -42,7 +42,8 @@ path:
   one: './data/nslkdd/KDDTrain+.csv'
   two: './data/nslkdd/KDDTest+.csv'
 metadata:
-  source: https://web.archive.org/web/20150205070216/http://nsl.cs.unb.ca/NSL-KDD/
-  entries: 3308183
-  frauds: 1476
-  benign: 3306707
+  source: 'https://web.archive.org/web/20150205070216/http://nsl.cs.unb.ca/NSL-KDD/'
+  entries: 148517
+  frauds: 71463
+  benign: 77054
+  features: 41

@@ -42,7 +42,8 @@ path:
   one: './data/ieee/ieee_transaction.csv'
   two: './data/ieee/ieee_identity.csv'
 metadata:
-  source: https://www.kaggle.com/c/ieee-fraud-detection/data
+  source: 'https://www.kaggle.com/c/ieee-fraud-detection/data'
   entries: 590540
   frauds: 569877
   benign: 20663
+  features: 431

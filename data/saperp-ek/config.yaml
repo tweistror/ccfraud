@@ -45,8 +45,8 @@ mode:
 metadata:
   source: --
   entries: 12407
-  anomalies: 97
-  frauds: --
+  anomalies: 97 # all anomalies including frauds
+  frauds: 35
   benign: 12310
   features: 147
 

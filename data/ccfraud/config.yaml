@@ -41,7 +41,8 @@ parameters:
 path:
   one: './data/ccfraud/ccfraud.csv'
 metadata:
-  source: https://www.kaggle.com/mlg-ulb/creditcardfraud
-  entries: 284407
+  source: 'https://www.kaggle.com/mlg-ulb/creditcardfraud'
+  entries: 284807
   frauds: 492
-  benign: 283915
+  benign: 284315
+  features: 28

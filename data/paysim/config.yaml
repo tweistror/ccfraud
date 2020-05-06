@@ -41,7 +41,8 @@ parameters:
 path:
   one: './data/paysim/paysim.csv'
 metadata:
-  source: https://www.kaggle.com/ntnu-testimon/paysim1
+  source: 'https://www.kaggle.com/ntnu-testimon/paysim1'
   entries: 6362620
   frauds: 8213
   benign: 6354407
+  features: 11
