@@ -1,5 +1,6 @@
 from baseline_methods.sv_baselines import svm_svc, knn, random_forest, decision_tree, svm_linearsvc, gnb, xgboost, \
     logistic_regression, sgd, gaussian_process, adaboost, mlp
+from baseline_methods.utils import binarize_sv_test_labels
 
 
 def build_supervised_baselines(x_train, y_train, x_test, y_test):
@@ -17,7 +18,7 @@ def build_supervised_baselines(x_train, y_train, x_test, y_test):
         'x_train': x_train,
         'y_train': y_train,
         'x_test': x_test,
-        'y_test': y_test,
+        'y_test': binarize_sv_test_labels(y_test),
     }
 
     # SVM RBF SVC

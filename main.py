@@ -148,14 +148,13 @@ for i in range(iteration_count):
 
     if baseline == 'usv' or baseline == 'both':
         # Execute unsupervised learning baseline methods
-        prec_usv_list, reca_usv_list, f1_usv_list, acc_usv_list, method_usv_list = \
-            build_unsupervised_baselines(x_usv_train, x_test, y_test)
+        results = build_unsupervised_baselines(x_usv_train, x_test, y_test)
 
         # Add metrics to collections
-        prec_list = prec_list + prec_usv_list
-        reca_list = reca_list + reca_usv_list
-        f1_list = f1_list + f1_usv_list
-        acc_list = acc_list + acc_usv_list
+        prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
+            = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
+
+        method_usv_list = results['method_list']
 
         # Some verbosity output
         if verbosity > 1:

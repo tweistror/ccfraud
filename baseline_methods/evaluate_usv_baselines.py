@@ -1,36 +1,35 @@
 from baseline_methods.usv_baselines import svm_oneclass, elliptic_envelope, iso_forest, local_outlier_factor
-from baseline_methods.run_models import run_usv_classification
+from baseline_methods.utils import binarize_usv_test_labels
 
 
 def build_unsupervised_baselines(x_train, x_test, y_test):
-
-    def evaluate_model(clf, lists, label):
-        prec, reca, f1, acc = run_usv_classification(x_test, y_test, clf, 'fraud-prediction')
-        lists['prec_list'].append(prec)
-        lists['reca_list'].append(reca)
-        lists['f1_list'].append(f1)
-        lists['acc_list'].append(acc)
-        lists['method_list'].append(label)
-        return lists
-
     results = {
         'prec_list': list(),
         'reca_list': list(),
         'f1_list': list(),
         'acc_list': list(),
-        'method_list': list()
+        'pr_auc_list': list(),
+        'roc_auc_list': list(),
+        'method_list': list(),
+    }
+
+    train_test_split = {
+        'x_train': x_train,
+        'y_train': [],
+        'x_test': x_test,
+        'y_test': binarize_usv_test_labels(y_test),
     }
 
     # OC-SVM
-    results = evaluate_model(svm_oneclass(x_train), results, 'OC-SVM')
+    results = svm_oneclass(train_test_split, 'OC-SVM', results)
 
     # Elliptic Envelope
-    results = evaluate_model(elliptic_envelope(x_train), results, 'Elliptic Envelope')
+    results = elliptic_envelope(train_test_split, 'Elliptic Envelope', results)
 
     # Isolation Forest
-    results = evaluate_model(iso_forest(x_train), results, 'Isolation Forest')
+    results = iso_forest(train_test_split, 'Isolation Forest', results)
 
     # kNN Local Outlier Factor
-    results = evaluate_model(local_outlier_factor(x_train), results, 'kNN Local Outlier Factor')
+    results = local_outlier_factor(train_test_split, 'kNN Local Outlier Factor', results)
 
-    return results['prec_list'], results['reca_list'], results['f1_list'], results['acc_list'], results['method_list']
+    return results
