@@ -5,7 +5,7 @@ from utils.to_latex_table import to_latex_table
 
 
 def print_results(method_list, dataset_string, iteration_count, special_count, usv_count, prec_coll, reca_coll,
-                  f1_coll, acc_coll, usv_train, sv_train, sv_train_fraud):
+                  f1_coll, acc_coll, pr_auc_coll, roc_auc_coll, usv_train, sv_train, sv_train_fraud):
     results = list()
     l_results = list()
 
@@ -24,14 +24,17 @@ def print_results(method_list, dataset_string, iteration_count, special_count, u
         reca = f'{np.mean(reca_coll[:, index]).round(3)} \u00B1 {np.std(reca_coll[:, index]).round(3)}'
         f1 = f'{np.mean(f1_coll[:, index]).round(3)} \u00B1 {np.std(f1_coll[:, index]).round(3)}'
         acc = f'{np.mean(acc_coll[:, index]).round(3)} \u00B1 {np.std(acc_coll[:, index]).round(3)}'
+        pr_auc = f'{np.mean(pr_auc_coll[:, index]).round(3)} \u00B1 {np.std(pr_auc_coll[:, index]).round(3)}'
+        roc_auc = f'{np.mean(roc_auc_coll[:, index]).round(3)} \u00B1 {np.std(roc_auc_coll[:, index]).round(3)}'
 
+        # TODO: Add pr_auc and roc_auc
         # For latex table
         l_prec = f'{np.mean(prec_coll[:, index]).round(3)} $\\pm$ {np.std(prec_coll[:, index]).round(3)}'
         l_reca = f'{np.mean(reca_coll[:, index]).round(3)} $\\pm$ {np.std(reca_coll[:, index]).round(3)}'
         l_f1 = f'{np.mean(f1_coll[:, index]).round(3)} $\\pm$ {np.std(f1_coll[:, index]).round(3)}'
         l_acc = f'{np.mean(acc_coll[:, index]).round(3)} $\\pm$ {np.std(acc_coll[:, index]).round(3)}'
 
-        results.append([method, prec, reca, f1, acc])
+        results.append([method, prec, reca, f1, acc, pr_auc, roc_auc])
         l_results.append([method, l_prec, l_reca, l_f1, l_acc])
 
     # Script for creating latex tables
@@ -42,4 +45,4 @@ def print_results(method_list, dataset_string, iteration_count, special_count, u
 
     print('Training Information:')
     print(f'usv_train: {usv_train} | sv_train: {sv_train - sv_train_fraud} benign & {sv_train_fraud} fraud')
-    print(tabulate(results, headers=['Method', 'Precision', 'Recall', 'F1 score', 'ACC']))
+    print(tabulate(results, headers=['Method', 'Precision', 'Recall', 'F1 score', 'ACC', 'PR AUC', 'ROC AUC']))

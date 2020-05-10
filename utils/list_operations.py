@@ -22,3 +22,15 @@ def one_hot(x, depth):
     for i in range(x_one_hot.shape[0]):
         x_one_hot[i, x[i]] = 1
     return x_one_hot
+
+
+def update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list):
+    prec_list = prec_list + results['prec_list']
+    reca_list = reca_list + results['reca_list']
+    f1_list = f1_list + results['f1_list']
+    acc_list = acc_list + results['acc_list']
+    pr_auc_list = pr_auc_list + results['pr_auc_list']
+    roc_auc_list = roc_auc_list + results['roc_auc_list']
+
+    return prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list
+

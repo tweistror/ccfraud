@@ -8,6 +8,7 @@ from advanced_methods.OC_GAN.oc_gan import execute_oc_gan
 from baseline_methods.evaluate_sv_baselines import build_supervised_baselines
 from baseline_methods.evaluate_usv_baselines import build_unsupervised_baselines
 from utils.crossvalidator import Crossvalidator
+from utils.list_operations import update_result_lists
 from utils.load_data import LoadData
 from utils.parameters import Parameters
 from utils.parser import Parser
@@ -18,6 +19,8 @@ from utils.split_preprocess_data import SplitPreprocessData
 datasets = ["paysim", "paysim-custom", "ccfraud", "ieee", "nslkdd", "saperp-ek", "saperp-vk"]
 methods = ["all", "oc-gan", "oc-gan-ae", "ae", "rbm", "vae"]
 baselines = ["both", "usv", "sv", "none"]
+
+# TODO: Add parameter for plotting roc/pr curves
 
 parser = Parser(datasets, methods, baselines)
 
@@ -37,6 +40,8 @@ prec_coll = list()
 reca_coll = list()
 f1_coll = list()
 acc_coll = list()
+pr_auc_coll = list()
+roc_auc_coll = list()
 method_list = list()
 
 method_special_list = list()
@@ -57,6 +62,8 @@ for i in range(iteration_count):
     reca_list = list()
     f1_list = list()
     acc_list = list()
+    pr_auc_list = list()
+    roc_auc_list = list()
 
     split_preprocess_class = SplitPreprocessData(dataset_string, iterated_seed, cross_validation_count, verbosity)
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
@@ -70,6 +77,8 @@ for i in range(iteration_count):
     if verbosity > 1:
         print(f'Starting iteration #{i + 1}')
 
+    # TODO: Add pr and roc auc to all methods
+    # TODO: Create method for updating lists
     if method == 'all' or method == 'oc-gan':
         prec, reca, f1, acc, method_name = execute_oc_gan(x_usv_train, x_test[:test_benign],
                                                           x_test[test_benign:], test_benign,
@@ -79,6 +88,7 @@ for i in range(iteration_count):
         reca_list = reca_list + [reca]
         f1_list = f1_list + [f1]
         acc_list = acc_list + [acc]
+
         if i == 0:
             method_special_list = method_special_list + [method_name]
 
@@ -155,16 +165,16 @@ for i in range(iteration_count):
         # Execute supervised learning baseline methods
         if cross_validation_count > 1:
             cv = Crossvalidator(cross_validation_count, x_sv_train, y_sv_train)
+            # TODO: CV correct results
             prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = cv.execute_cv()
         else:
-            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = \
-                build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
+            results = build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
 
         # Add metrics to collections
-        prec_list = prec_list + prec_sv_list
-        reca_list = reca_list + reca_sv_list
-        f1_list = f1_list + f1_sv_list
-        acc_list = acc_list + acc_sv_list
+        prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
+            = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
+
+        method_sv_list = results['method_list']
 
         # Some verbosity output
         if verbosity > 1:
@@ -174,6 +184,8 @@ for i in range(iteration_count):
     reca_coll.append(reca_list)
     f1_coll.append(f1_list)
     acc_coll.append(acc_list)
+    pr_auc_coll.append(pr_auc_list)
+    roc_auc_coll.append(roc_auc_list)
 
     if i == 0:
         method_list = method_special_list + method_usv_list + method_sv_list
@@ -186,9 +198,11 @@ if verbosity > 1:
     time_required = str(datetime.now() - start_time_complete)
     print(f'All {iteration_count} iterations finished in {time_required}')
 
-prec_coll, reca_coll, f1_coll, acc_coll, method_list = \
-    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll), np.array(method_list)
+# TODO: Create a method "to np array"
+prec_coll, reca_coll, f1_coll, acc_coll, pr_auc_coll, roc_auc_coll, method_list = \
+    np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll), np.array(pr_auc_coll), \
+    np.array(roc_auc_coll), np.array(method_list)
 
 print_results(method_list, dataset_string, iteration_count,
-              len(method_special_list), len(method_usv_list), prec_coll, reca_coll, f1_coll, acc_coll, usv_train,
-              sv_train, sv_train_fraud)
+              len(method_special_list), len(method_usv_list), prec_coll, reca_coll, f1_coll, acc_coll, pr_auc_coll,
+              roc_auc_coll, usv_train, sv_train, sv_train_fraud)
