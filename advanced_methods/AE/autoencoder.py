@@ -3,10 +3,12 @@
 
 import numpy as np
 
+from sklearn import metrics
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score, precision_recall_curve, roc_auc_score
 
 from advanced_methods.AE.utils import build_ae_model
+from baseline_methods.utils import plot_pr_curve, plot_roc_curve
 
 
 class Autoencoder(object):
@@ -67,14 +69,36 @@ class Autoencoder(object):
         self.threshold = np.quantile(mse, 0.9)
         self.autoencoder = autoencoder
 
-    def predict(self, x_test, y_test):
+    def predict(self, x_test, y_test, plots):
         # Predict the test set
         y_pred = self.autoencoder.predict(x_test)
+
         mse = np.mean(np.power(x_test - y_pred, 2), axis=1)
+
+        precision_pts, recall_pts, _ = precision_recall_curve(y_test, mse)
+        pr_auc = metrics.auc(recall_pts, precision_pts)
+        roc_auc = roc_auc_score(y_test, mse)
+
+        if plots == 'pr' or plots == 'both':
+            plot_pr_curve(y_test, mse, 'Autoencoder')
+
+        if plots == 'roc' or plots == 'both':
+            plot_roc_curve(y_test, mse, 'Autoencoder')
+
         y_pred = [1 if val > self.threshold else 0 for val in mse]
         acc_score = accuracy_score(y_test, y_pred)
 
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
         # class_report = classification_report(self.y_test, y_pred, target_names=['benign', 'fraud'], digits=4)
 
-        return precision[1], recall[1], fscore[1], acc_score, 'Autoencoder'
+        results = {
+            'prec_list': [precision[1]],
+            'reca_list': [recall[1]],
+            'f1_list': [fscore[1]],
+            'acc_list': [acc_score],
+            'pr_auc_list': [pr_auc],
+            'roc_auc_list': [roc_auc],
+            'method_list': ['Autoencoder'],
+        }
+
+        return results

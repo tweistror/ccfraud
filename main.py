@@ -108,14 +108,13 @@ for i in range(iteration_count):
         ae_model = Autoencoder(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
         ae_model.set_parameters(parameter_class.get_autoencoder_parameters())
         ae_model.build()
-        prec, reca, f1, acc, method_name = ae_model.predict(x_test, y_test)
+        results = ae_model.predict(x_test, y_test, plots)
 
-        prec_list = prec_list + [prec]
-        reca_list = reca_list + [reca]
-        f1_list = f1_list + [f1]
-        acc_list = acc_list + [acc]
+        prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
+            = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
+
         if i == 0:
-            method_special_list = method_special_list + [method_name]
+            method_special_list = method_special_list + results['method_list']
 
     if method == 'all' or method == 'rbm':
         rbm_model = RBM(iterated_seed, verbosity=verbosity)
