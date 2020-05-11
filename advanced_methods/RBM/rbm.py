@@ -29,6 +29,7 @@ class RBM(object):
         self.batch_size = None
         self.num_epochs = None
         self.stddev = None
+        self.train_test_split = None
 
         self.verbosity = 1 if verbosity == 2 else 0
 
@@ -75,6 +76,7 @@ class RBM(object):
         self.batch_size = parameters['batch_size']
         self.num_epochs = parameters['epochs']
         self.stddev = parameters['stddev']
+        self.train_test_split = parameters['train_test_split']
 
     def execute(self, x_train, x_test, y_test, validation_split=0.2):
 
@@ -86,7 +88,7 @@ class RBM(object):
         :return: self
         """
 
-        x_train_split, x_valid_split = train_test_split(x_train, test_size=validation_split, random_state=self.seed)
+        x_train_split, x_valid_split = train_test_split(x_train, test_size=self.train_test_split, random_state=self.seed)
 
         tf.reset_default_graph()
 

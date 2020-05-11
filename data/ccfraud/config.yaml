@@ -38,6 +38,7 @@ parameters:
     batch_size: 10
     epochs: 10
     stddev: 0.1
+    train_test_split: 0.2
 path:
   one: './data/ccfraud/ccfraud.csv'
 metadata:
