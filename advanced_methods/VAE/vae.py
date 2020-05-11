@@ -7,11 +7,13 @@ from keras.losses import mse
 from keras import backend as K
 
 import numpy as np
+from sklearn import metrics
 
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, precision_recall_curve, roc_auc_score
 from sklearn.model_selection import train_test_split
 
 from advanced_methods.VAE.utils import sampling
+from baseline_methods.utils import plot_pr_curve, plot_roc_curve
 
 
 class VAE(object):
@@ -95,7 +97,7 @@ class VAE(object):
         self.threshold = np.quantile(train_mse, 0.9)
         self.vae = vae
 
-    def predict(self, x_test, y_test):
+    def predict(self, x_test, y_test, plots):
         y_pred = self.vae.predict(x_test)
         test_mse = np.mean(np.power(x_test - y_pred, 2), axis=1)
         y_pred = [1 if val > self.threshold else 0 for val in test_mse]
@@ -103,4 +105,24 @@ class VAE(object):
 
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
-        return precision[1], recall[1], fscore[1], acc_score, 'VAE'
+        precision_pts, recall_pts, _ = precision_recall_curve(y_test, test_mse)
+        pr_auc = metrics.auc(recall_pts, precision_pts)
+        roc_auc = roc_auc_score(y_test, test_mse)
+
+        if plots == 'pr' or plots == 'both':
+            plot_pr_curve(y_test, test_mse, 'RBM')
+
+        if plots == 'roc' or plots == 'both':
+            plot_roc_curve(y_test, test_mse, 'RBM')
+
+        results = {
+            'prec_list': [precision[1]],
+            'reca_list': [recall[1]],
+            'f1_list': [fscore[1]],
+            'acc_list': [acc_score],
+            'pr_auc_list': [pr_auc],
+            'roc_auc_list': [roc_auc],
+            'method_list': ['VAE'],
+        }
+
+        return results

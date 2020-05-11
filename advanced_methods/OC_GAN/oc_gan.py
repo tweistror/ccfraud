@@ -2,18 +2,21 @@
 
 import tensorflow as tf
 import numpy as np
+from sklearn import metrics
 
-from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score
+from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score, \
+    precision_recall_curve, roc_auc_score
 
 from advanced_methods.OC_GAN.autoencoder import Dense_Autoencoder
 from advanced_methods.OC_GAN.utils import xavier_init, pull_away_loss, sample_Z, draw_trend, \
     preprocess_minus_1_and_pos_1
+from baseline_methods.utils import plot_pr_curve, plot_roc_curve
 from utils.list_operations import one_hot, sample_shuffle
 
 tf.compat.v1.disable_eager_execution()
 
 
-def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters, seed,
+def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters, seed, plots,
                    autoencoding=False, verbosity=0):
 
     # Set parameters using YAML-config
@@ -236,8 +239,29 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     acc = accuracy_score(y_test, y_pred)
     precision, recall, f1, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
+    y_prob = prob[:, 1]
+
+    precision_pts, recall_pts, _ = precision_recall_curve(y_test, y_prob)
+    pr_auc = metrics.auc(recall_pts, precision_pts)
+    roc_auc = roc_auc_score(y_test, y_prob)
+
+    if plots == 'pr' or plots == 'both':
+        plot_pr_curve(y_test, y_prob, f'OC-GAN{" with AE" if autoencoding is True else ""}')
+
+    if plots == 'roc' or plots == 'both':
+        plot_roc_curve(y_test, y_prob, f'OC-GAN{" with AE" if autoencoding is True else ""}')
+
+    results = {
+        'prec_list': [precision[1]],
+        'reca_list': [recall[1]],
+        'f1_list': [f1[1]],
+        'acc_list': [acc],
+        'pr_auc_list': [pr_auc],
+        'roc_auc_list': [roc_auc],
+        'method_list': [f'OC-GAN{" with AE" if autoencoding is True else ""}'],
+    }
+
     # print(conf_mat)
     # draw_trend(d_ben_pro, d_fake_pro, d_val_pro, fm_loss_coll, f1_score)
 
-    return precision[1], recall[1], f1[1], acc, f'OC-GAN{" with AE" if autoencoding is True else ""}'
-
+    return results

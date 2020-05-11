@@ -4,10 +4,12 @@
 import tensorflow.compat.v1 as tf
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from sklearn import metrics
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, precision_recall_curve, roc_auc_score
 from sklearn.model_selection import train_test_split
 
 from advanced_methods.RBM import utils
+from baseline_methods.utils import plot_pr_curve, plot_roc_curve
 
 tf.disable_v2_behavior()
 
@@ -78,13 +80,13 @@ class RBM(object):
         self.stddev = parameters['stddev']
         self.train_test_split = parameters['train_test_split']
 
-    def execute(self, x_train, x_test, y_test, validation_split=0.2):
+    def execute(self, x_train, x_test, y_test, plots):
 
         """ Execute the model with given training and test data.
         :param x_train: training set
         :param x_test: testing set
         :param y_test: testing labels
-        :param validation_split: validation set split percentage
+        :param plots: plots
         :return: self
         """
 
@@ -106,7 +108,7 @@ class RBM(object):
                 plt.ylabel("Reconstruction error")
                 plt.show()
 
-            return self.predict(x_train, x_test, y_test)
+            return self.predict(x_train, x_test, y_test, plots)
 
     def _initialize_tf_utilities_and_ops(self):
 
@@ -402,7 +404,7 @@ class RBM(object):
                 'bv_': self.bv_.eval()
             }
 
-    def predict(self, x_train, x_test, y_test):
+    def predict(self, x_train, x_test, y_test, plots):
         # Threshold calculation
         train_reconstruction_errors = self.getReconstructError(x_train)
         threshold = np.quantile(train_reconstruction_errors, 0.9)
@@ -412,4 +414,24 @@ class RBM(object):
         acc_score = accuracy_score(y_test, y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
-        return precision[1], recall[1], fscore[1], acc_score, 'RBM'
+        precision_pts, recall_pts, _ = precision_recall_curve(y_test, test_reconstruction_errors)
+        pr_auc = metrics.auc(recall_pts, precision_pts)
+        roc_auc = roc_auc_score(y_test, test_reconstruction_errors)
+
+        if plots == 'pr' or plots == 'both':
+            plot_pr_curve(y_test, test_reconstruction_errors, 'RBM')
+
+        if plots == 'roc' or plots == 'both':
+            plot_roc_curve(y_test, test_reconstruction_errors, 'RBM')
+
+        results = {
+            'prec_list': [precision[1]],
+            'reca_list': [recall[1]],
+            'f1_list': [fscore[1]],
+            'acc_list': [acc_score],
+            'pr_auc_list': [pr_auc],
+            'roc_auc_list': [roc_auc],
+            'method_list': ['RBM'],
+        }
+
+        return results

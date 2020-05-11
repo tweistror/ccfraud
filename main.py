@@ -80,29 +80,28 @@ for i in range(iteration_count):
     # TODO: Add pr and roc auc to all methods
     # TODO: Create method for updating lists
     if method == 'all' or method == 'oc-gan':
-        prec, reca, f1, acc, method_name = execute_oc_gan(x_usv_train, x_test[:test_benign],
-                                                          x_test[test_benign:], test_benign,
-                                                          parameter_class.get_oc_gan_parameters(), iterated_seed,
-                                                          autoencoding=False, verbosity=verbosity)
-        prec_list = prec_list + [prec]
-        reca_list = reca_list + [reca]
-        f1_list = f1_list + [f1]
-        acc_list = acc_list + [acc]
+        results = execute_oc_gan(x_usv_train, x_test[:test_benign],
+                                 x_test[test_benign:], test_benign,
+                                 parameter_class.get_oc_gan_parameters(), iterated_seed, plots,
+                                 autoencoding=False, verbosity=verbosity)
+
+        prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
+            = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
 
         if i == 0:
-            method_special_list = method_special_list + [method_name]
+            method_special_list = method_special_list + results['method_list']
 
     if method == 'all' or method == 'oc-gan-ae':
-        prec, reca, f1, acc, method_name = execute_oc_gan(x_usv_train, x_test[:test_benign],
-                                                          x_test[test_benign:], test_benign,
-                                                          parameter_class.get_oc_gan_parameters(), iterated_seed,
-                                                          autoencoding=True, verbosity=verbosity)
-        prec_list = prec_list + [prec]
-        reca_list = reca_list + [reca]
-        f1_list = f1_list + [f1]
-        acc_list = acc_list + [acc]
+        results = execute_oc_gan(x_usv_train, x_test[:test_benign],
+                                 x_test[test_benign:], test_benign,
+                                 parameter_class.get_oc_gan_parameters(), iterated_seed, plots,
+                                 autoencoding=True, verbosity=verbosity)
+
+        prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
+            = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
+
         if i == 0:
-            method_special_list = method_special_list + [method_name]
+            method_special_list = method_special_list + results['method_list']
 
     if method == 'all' or method == 'ae':
         ae_model = Autoencoder(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
@@ -119,27 +118,25 @@ for i in range(iteration_count):
     if method == 'all' or method == 'rbm':
         rbm_model = RBM(iterated_seed, verbosity=verbosity)
         rbm_model.set_parameters(x_usv_train.shape[1], parameter_class.get_rbm_parameters())
-        prec, reca, f1, acc, method_name = rbm_model.execute(x_usv_train, x_test, y_test)
+        results = rbm_model.execute(x_usv_train, x_test, y_test, plots)
 
-        prec_list = prec_list + [prec]
-        reca_list = reca_list + [reca]
-        f1_list = f1_list + [f1]
-        acc_list = acc_list + [acc]
+        prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
+            = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
+
         if i == 0:
-            method_special_list = method_special_list + [method_name]
+            method_special_list = method_special_list + results['method_list']
 
     if method == 'all' or method == 'vae':
         vae_model = VAE(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
         vae_model.set_parameters(parameter_class.get_vae_parameters())
         vae_model.build()
-        prec, reca, f1, acc, method_name = vae_model.predict(x_test, y_test)
+        results = vae_model.predict(x_test, y_test, plots)
 
-        prec_list = prec_list + [prec]
-        reca_list = reca_list + [reca]
-        f1_list = f1_list + [f1]
-        acc_list = acc_list + [acc]
+        prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
+            = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
+
         if i == 0:
-            method_special_list = method_special_list + [method_name]
+            method_special_list = method_special_list + results['method_list']
 
     # Some verbosity output
     if verbosity > 1:
