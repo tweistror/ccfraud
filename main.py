@@ -24,7 +24,7 @@ baselines = ["both", "usv", "sv", "none"]
 
 parser = Parser(datasets, methods, baselines)
 
-dataset_string, verbosity, seed, method, baseline, iteration_count, use_oversampling, cross_validation_count = \
+dataset_string, verbosity, seed, method, baseline, iteration_count, use_oversampling, cross_validation_count, plots = \
     parser.get_args()
 
 # Set parameters

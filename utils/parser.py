@@ -19,7 +19,9 @@ class Parser(object):
                             help="Desired count the specified methods are executed and evaluated")
         parser.add_argument("--cv", help="Activate crossvalidation with the desired count of train/test-splits")
         parser.add_argument("--oversampling", choices=['y', 'n'], default='n', help="Use oversampling (SMOTE) or not")
-        parser.add_argument("--seed", default='random', help="Specify a number as concrete seed (default is random")
+        parser.add_argument("--seed", default='random', help="Specify a number as concrete seed (default is random)")
+        parser.add_argument("--plots", default='none', choices=['none', 'roc', 'pr', 'both'],
+                            help="Curves to be plotted")
         self.parser = parser
 
     def get_args(self):
@@ -30,4 +32,4 @@ class Parser(object):
         cv_count = 1 if args.cv is None else int(args.cv)
 
         return args.dataset, int(args.v), seed, args.method, args.baselines, \
-            int(args.iterations), oversampling, cv_count
+            int(args.iterations), oversampling, cv_count, args.plots
