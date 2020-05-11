@@ -246,10 +246,10 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     roc_auc = roc_auc_score(y_test, y_prob)
 
     if plots == 'pr' or plots == 'both':
-        plot_pr_curve(y_test, y_prob, f'OC-GAN{" with AE" if autoencoding is True else ""}')
+        plot_pr_curve(y_test, y_prob, f'OCAN{" with AE" if autoencoding is True else ""}')
 
     if plots == 'roc' or plots == 'both':
-        plot_roc_curve(y_test, y_prob, f'OC-GAN{" with AE" if autoencoding is True else ""}')
+        plot_roc_curve(y_test, y_prob, f'OCAN{" with AE" if autoencoding is True else ""}')
 
     results = {
         'prec_list': [precision[1]],
@@ -258,7 +258,7 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
         'acc_list': [acc],
         'pr_auc_list': [pr_auc],
         'roc_auc_list': [roc_auc],
-        'method_list': [f'OC-GAN{" with AE" if autoencoding is True else ""}'],
+        'method_list': [f'OCAN{" with AE" if autoencoding is True else ""}'],
     }
 
     # print(conf_mat)

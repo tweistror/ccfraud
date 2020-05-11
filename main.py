@@ -17,10 +17,8 @@ from utils.smote import execute_smote
 from utils.split_preprocess_data import SplitPreprocessData
 
 datasets = ["paysim", "paysim-custom", "ccfraud", "ieee", "nslkdd", "saperp-ek", "saperp-vk", "mnist"]
-methods = ["all", "oc-gan", "oc-gan-ae", "ae", "rbm", "vae"]
+methods = ["all", "ocan", "ocan-ae", "ae", "rbm", "vae"]
 baselines = ["both", "usv", "sv", "none"]
-
-# TODO: Add parameter for plotting roc/pr curves
 
 parser = Parser(datasets, methods, baselines)
 
@@ -79,7 +77,7 @@ for i in range(iteration_count):
 
     # TODO: Add pr and roc auc to all methods
     # TODO: Create method for updating lists
-    if method == 'all' or method == 'oc-gan':
+    if method == 'all' or method == 'ocan':
         results = execute_oc_gan(x_usv_train, x_test[:test_benign],
                                  x_test[test_benign:], test_benign,
                                  parameter_class.get_oc_gan_parameters(), iterated_seed, plots,
@@ -91,7 +89,7 @@ for i in range(iteration_count):
         if i == 0:
             method_special_list = method_special_list + results['method_list']
 
-    if method == 'all' or method == 'oc-gan-ae':
+    if method == 'all' or method == 'ocan-ae':
         results = execute_oc_gan(x_usv_train, x_test[:test_benign],
                                  x_test[test_benign:], test_benign,
                                  parameter_class.get_oc_gan_parameters(), iterated_seed, plots,
