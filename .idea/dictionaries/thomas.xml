@@ -12,6 +12,7 @@
       <w>fscore</w>
       <w>linearsvc</w>
       <w>logit</w>
+      <w>mnist</w>
       <w>nearmiss</w>
       <w>nslkdd</w>
       <w>paysim</w>
@@ -21,11 +22,14 @@
       <w>reca</w>
       <w>recas</w>
       <w>relu</w>
+      <w>reparameterization</w>
       <w>repre</w>
+      <w>saperp</w>
       <w>scaler</w>
       <w>thrld</w>
       <w>tsne</w>
       <w>undersampling</w>
+      <w>vprobs</w>
       <w>xgboost</w>
     </words>
   </dictionary>
