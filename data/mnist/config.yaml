@@ -1,0 +1,53 @@
+parameters:
+  usv_train_size: 20000
+  sv_train_size: 5000
+  sv_train_fraud_percentage: 0.04
+  test_benign_count: 2000
+  test_fraud_count: 2000
+  oc_gan:
+    mb_size: 70
+    d_dim: [dim_input, 256, 64, 2]
+    g_dim: [64, 256, dim_input]
+    hid_dim: [400]
+  oc_gan_ae:
+    d_dim: [dim_input, 256, 64, 2]
+    g_dim: [64, 256, dim_input]
+  autoencoder:
+    dims: [dim_input, 512, 256, 64, 4]
+    epochs: 50
+    batch_size: 64
+    train_test_split: 0.2
+    learning_rate: 1e-3
+    activation_fct: 'relu'
+    optimizer: 'adam'
+    loss: 'mean_squared_error'
+  vae:
+    intermediate_dim: 200
+    latent_dim: 2
+    activation_fct: 'relu'
+    optimizer: 'adam'
+    loss: 'mean_squared_error'
+    train_test_split: 0.2
+  rbm:
+    num_hidden: 180
+    visible_unit_type: 'bin' # bin or gauss
+    gibbs_sampling_steps: 1
+    learning_rate: 0.01
+    momentum: 0.9
+    l2: 0.001
+    batch_size: 10
+    epochs: 10
+    stddev: 0.1
+mode:
+  fraud_number: 8
+path:
+  train_labels: './data/mnist/train-labels-idx1-ubyte'
+  train_images: './data/mnist/train-images-idx3-ubyte'
+  test_labels: './data/mnist/t10k-labels-idx1-ubyte'
+  test_images: './data/mnist/t10k-images-idx3-ubyte'
+metadata:
+  source: 'https://www.kaggle.com/c/ieee-fraud-detection/data'
+  entries: 590540
+  frauds: 569877
+  benign: 20663
+  features: 431

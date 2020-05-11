@@ -42,3 +42,6 @@ class Parameters(object):
 
     def get_saperp_mode(self):
         return self.config['mode']
+
+    def get_mnist_mode(self):
+        return self.config['mode']

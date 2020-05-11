@@ -4,6 +4,7 @@ import pandas as pd
 
 from sklearn.preprocessing import LabelEncoder
 
+from utils.data_loading.mnist import get_data_mnist
 from utils.data_loading.saperp_synthetic import get_data_saperp
 
 
@@ -29,6 +30,9 @@ class LoadData(object):
         elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
             fraud_only = self.parameter_class.get_saperp_mode()['fraud_only']
             x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path, self.seed, fraud_only)
+        elif self.dataset_string == "mnist":
+            fraud_number = self.parameter_class.get_mnist_mode()['fraud_number']
+            x_ben, x_fraud = get_data_mnist(self.path, self.seed, fraud_number)
 
         return x_ben, x_fraud
 

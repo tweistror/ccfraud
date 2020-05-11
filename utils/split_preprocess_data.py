@@ -30,6 +30,8 @@ class SplitPreprocessData(object):
             x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_nslkdd(parameter_dict)
         elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
             x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_saperp(parameter_dict)
+        elif self.dataset_string == "mnist":
+            x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_mnist(parameter_dict)
 
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
@@ -124,7 +126,7 @@ class SplitPreprocessData(object):
 
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
-    def data_sampling(self, parameters):
+    def data_sampling(self, parameters, is_numpy=False):
         k = self.cross_validation_k
         usv_train = parameters['usv_train']
         sv_train_ben = parameters['sv_train_ben']
@@ -134,9 +136,10 @@ class SplitPreprocessData(object):
         x_ben = parameters['x_ben']
         x_fraud = parameters['x_fraud']
 
-        x_ben = x_ben.sample(n=k * (usv_train + sv_train_ben + sv_train_fraud + test_benign + test_fraud),
-                             random_state=self.seed).values
-        x_fraud = x_fraud.sample(frac=1, random_state=self.seed).values
+        if not is_numpy:
+            x_ben = x_ben.sample(n=k * (usv_train + sv_train_ben + sv_train_fraud + test_benign + test_fraud),
+                                 random_state=self.seed).values
+            x_fraud = x_fraud.sample(frac=1, random_state=self.seed).values
 
         x_usv_train = x_ben[0:k * usv_train]
         x_sv_train_ben = x_ben[0:k * sv_train_ben]
@@ -153,5 +156,11 @@ class SplitPreprocessData(object):
 
         y_test = np.zeros((test_benign + test_fraud))
         y_test[test_benign:] = 1
+
+        return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
+
+    def with_mnist(self, parameters):
+        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
+            self.data_sampling(parameters, is_numpy=True)
 
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
