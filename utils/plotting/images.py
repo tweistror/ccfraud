@@ -6,13 +6,14 @@ import math
 import random
 
 
-def plot_images(x_test, x_generated, n=5):
+def plot_mnist_images(x_test, x_generated, label, dataset='', n=5):
 
     indices = random.sample(range(0, x_test.shape[0] - 1), n)
 
-    dim = int(math.sqrt(x_test.shape[1]))
+    dim = 28
 
     plt.figure(figsize=(10, 4.5))
+
     for i in range(n):
         # plot original image
         ax = plt.subplot(2, n, i + 1)
@@ -26,6 +27,32 @@ def plot_images(x_test, x_generated, n=5):
         # plot reconstruction
         ax = plt.subplot(2, n, i + 1 + n)
         plt.imshow(x_generated[indices[i]].reshape(dim, dim))
+        plt.gray()
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+        if i == n/2:
+            ax.set_title('Reconstructed Images')
+    plt.show()
+
+
+def plot_cifar10_images(x_test, x_generated, label, dataset='', n=5):
+    indices = random.sample(range(0, x_test.shape[0] - 1), n)
+
+    plt.figure(figsize=(10, 4.5))
+
+    for i in range(n):
+        # plot original image
+        ax = plt.subplot(2, n, i + 1)
+        plt.imshow(x_test[indices[i]].reshape(3, 32, 32).transpose([1, 2, 0]))
+        plt.gray()
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+        if i == n/2:
+            ax.set_title('Original Images')
+
+        # plot reconstruction
+        ax = plt.subplot(2, n, i + 1 + n)
+        plt.imshow(x_generated[indices[i]].reshape(3, 32, 32).transpose([1, 2, 0]))
         plt.gray()
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
