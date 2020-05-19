@@ -7,8 +7,8 @@ from sklearn import metrics
 from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score, \
     precision_recall_curve, roc_auc_score
 
-from advanced_methods.OC_GAN.autoencoder import Dense_Autoencoder
-from advanced_methods.OC_GAN.utils import xavier_init, pull_away_loss, sample_Z, draw_trend, \
+from advanced_methods.OCAN.autoencoder import Dense_Autoencoder
+from advanced_methods.OCAN.utils import xavier_init, pull_away_loss, sample_Z, draw_trend, \
     preprocess_minus_1_and_pos_1
 from baseline_methods.utils import plot_pr_curve, plot_roc_curve
 from utils.list_operations import one_hot, sample_shuffle
