@@ -39,15 +39,15 @@ class SplitPreprocessData(object):
         elif self.dataset_string == "ccfraud":
             x_usv_train, x_sv_train, x_test = self.with_ccfraud()
         elif self.dataset_string == "ieee":
-            x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_ieee(parameter_dict)
+            x_usv_train, x_sv_train, x_test = self.with_ieee()
         elif self.dataset_string == "nslkdd":
-            x_usv_train, x_sv_train, x_test = self.with_nslkdd(parameter_dict)
+            x_usv_train, x_sv_train, x_test = self.with_nslkdd()
         elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
-            x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_saperp(parameter_dict)
+            x_usv_train, x_sv_train, x_test = self.with_saperp()
         elif self.dataset_string == "mnist":
             x_usv_train, x_sv_train, x_test = self.with_mnist()
         elif self.dataset_string == "cifar10":
-            x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_cifar10(parameter_dict)
+            x_usv_train, x_sv_train, x_test = self.with_cifar10()
 
         return x_usv_train, x_sv_train, self.y_sv_train, x_test, self.y_test
 
@@ -69,36 +69,16 @@ class SplitPreprocessData(object):
 
         return x_usv_train, x_sv_train, x_test
 
-    def with_ieee(self, parameters):
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-            self.split_data(parameters)
+    def with_ieee(self):
+        pp_ieee = self.preprocess_class
 
-        # Cleaning infinite values to NaN
-        x_usv_train = clean_inf_nan(x_usv_train)
-        x_sv_train = clean_inf_nan(x_sv_train)
-        x_test = clean_inf_nan(x_test)
+        x_sv_train, x_usv_train, x_test = pp_ieee.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
 
-        pca = PCA(n_components=x_usv_train.shape[1])
-        if len(x_sv_train) > len(x_usv_train):
-            x_sv_train = pca.fit_transform(X=x_sv_train)
-            x_usv_train = pca.transform(X=x_usv_train)
-        else:
-            x_usv_train = pca.fit_transform(x_usv_train)
-            x_sv_train = pca.transform(x_sv_train)
-        x_test = pca.transform(X=x_test)
+        # print(pp_ieee.inverse_preprocessing(x_sv_train).head(10))
 
-        sc = StandardScaler()
-        if len(x_sv_train) > len(x_usv_train):
-            x_sv_train = sc.fit_transform(x_sv_train)
-            x_usv_train = sc.transform(x_usv_train)
-        else:
-            x_usv_train = sc.fit_transform(x_usv_train)
-            x_sv_train = sc.transform(x_sv_train)
-        x_test = sc.transform(x_test)
+        return x_usv_train, x_sv_train, x_test
 
-        return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
-
-    def with_nslkdd(self, parameters):
+    def with_nslkdd(self):
         pp_nslkdd = self.preprocess_class
 
         x_sv_train, x_usv_train, x_test = pp_nslkdd.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
@@ -112,6 +92,20 @@ class SplitPreprocessData(object):
             self.split_data(parameters)
 
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
+
+    def with_mnist(self):
+        pp_mnist = self.preprocess_class
+
+        x_sv_train, x_usv_train, x_test = pp_mnist.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
+
+        return x_usv_train, x_sv_train, x_test
+
+    def with_cifar10(self):
+        pp_cifar10 = self.preprocess_class
+
+        x_sv_train, x_usv_train, x_test = pp_cifar10.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
+
+        return x_usv_train, x_sv_train, x_test
 
     def split_data(self, parameters):
         k = self.cross_validation_k
@@ -141,15 +135,4 @@ class SplitPreprocessData(object):
 
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
-    def with_mnist(self):
-        pp_mnist = self.preprocess_class
 
-        x_sv_train, x_usv_train, x_test = pp_mnist.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
-
-        return x_usv_train, x_sv_train, x_test
-
-    def with_cifar10(self, parameters):
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-            self.split_data(parameters)
-
-        return x_usv_train, x_sv_train, y_sv_train, x_test, y_test

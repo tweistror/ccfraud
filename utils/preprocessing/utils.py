@@ -77,3 +77,10 @@ def is_image_dataset(dataset_string):
     if dataset_string == "mnist" or dataset_string == "cifar10":
         return True
     return False
+
+
+def unpickle(file):
+    import pickle
+    with open(file, 'rb') as fo:
+        _dict = pickle.load(fo, encoding='bytes')
+    return _dict

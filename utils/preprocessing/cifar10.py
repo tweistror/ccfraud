@@ -1,7 +1,6 @@
 import numpy as np
 
-
-class Preprocess_mnist:
+class Preprocess_cifar10:
     def __init__(self, anomaly_number):
         self.anomaly_number = anomaly_number
 
@@ -33,7 +32,7 @@ class Preprocess_mnist:
 
         return data
 
-    def initial_processing(self, train_images, train_labels, test_images, test_labels):
+    def initial_processing(self, images, labels):
         anomaly_number = self.anomaly_number
 
         def is_anomaly(x):
@@ -42,22 +41,7 @@ class Preprocess_mnist:
         def is_not_anomaly(x):
             return True if x != anomaly_number else False
 
-        train_benign = train_images[np.vectorize(is_not_anomaly)(train_labels)]
-        train_fraud = train_images[np.vectorize(is_anomaly)(train_labels)]
-
-        test_benign = test_images[np.vectorize(is_not_anomaly)(test_labels)]
-        test_fraud = test_images[np.vectorize(is_anomaly)(test_labels)]
-
-        train_test_dimensions = {
-            'train_benign': train_benign.shape[0],
-            'train_fraud': train_fraud.shape[0],
-            'test_benign': test_benign.shape[0],
-            'test_fraud': test_fraud.shape[0],
-        }
-
-        self.set_train_test_dimensions(train_test_dimensions)
-
-        x_ben = np.concatenate((train_benign, test_benign))
-        x_fraud = np.concatenate((train_fraud, test_fraud))
+        x_ben = images[np.vectorize(is_not_anomaly)(labels)]
+        x_fraud = images[np.vectorize(is_anomaly)(labels)]
 
         return x_ben, x_fraud

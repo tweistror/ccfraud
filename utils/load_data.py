@@ -1,18 +1,19 @@
 from datetime import datetime
 
 import pandas as pd
+import numpy as np
+from mlxtend.data import loadlocal_mnist
 
-from sklearn.preprocessing import LabelEncoder
-
-from utils.data_loading.cifar10 import get_data_cifar10
-from utils.data_loading.mnist import get_data_mnist
 from utils.data_loading.saperp_synthetic import get_data_saperp
 from utils.list_operations import sample_shuffle
 from utils.preprocessing.ccfraud import Preprocess_ccfraud
+from utils.preprocessing.cifar10 import Preprocess_cifar10
+from utils.preprocessing.ieee import Preprocess_ieee
+from utils.preprocessing.mnist import Preprocess_mnist
 from utils.preprocessing.nslkdd import Preprocess_nslkdd
 from utils.preprocessing.paysim import Preprocess_paysim
 from utils.preprocessing.paysim_custom import Preprocess_paysim_custom
-from utils.preprocessing.utils import drop_columns, one_hot_encode_column
+from utils.preprocessing.utils import drop_columns, one_hot_encode_column, unpickle
 
 
 class LoadData(object):
@@ -42,11 +43,9 @@ class LoadData(object):
             fraud_only = self.parameter_class.get_saperp_mode()['fraud_only']
             x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path, fraud_only)
         elif self.dataset_string == "mnist":
-            anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
-            x_ben, x_fraud, preprocessing_class = get_data_mnist(self.path, anomaly_number)
+            x_ben, x_fraud, preprocessing_class = self.get_data_mnist()
         elif self.dataset_string == "cifar10":
-            anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
-            x_ben, x_fraud = get_data_cifar10(self.path, anomaly_number)
+            x_ben, x_fraud, preprocessing_class = self.get_data_cifar10()
 
         if self.dataset_string == "cifar10" or self.dataset_string == "mnist":
             x_ben = sample_shuffle(x_ben, self.seed)
@@ -71,15 +70,7 @@ class LoadData(object):
         # data = pd.concat([data, pd.get_dummies(data['from_to'], prefix='from_to')], axis=1)
         # data.drop(columns=['from_to'], inplace=True)
 
-        data = drop_columns(data, ['nameOrig', 'nameDest', 'isFlaggedFraud'])
-        data = one_hot_encode_column(data, 'type')
-
-        # Extract fraud and benign transactions and randomize order
-        x_fraud = data.loc[data['isFraud'] == 1]
-        x_ben = data.loc[data['isFraud'] == 0]
-
-        x_fraud = drop_columns(x_fraud, ['isFraud'])
-        x_ben = drop_columns(x_ben, ['isFraud'])
+        x_ben, x_fraud = pp_paysim.initial_processing(data)
 
         return x_ben, x_fraud, pp_paysim
 
@@ -88,15 +79,7 @@ class LoadData(object):
 
         data = self.read_csv(self.path['one'])
 
-        # Drop `Time` and `Amount`
-        data = drop_columns(data, ['Time', 'Amount'])
-
-        # Extract fraud and benign transactions and randomize order
-        x_fraud = data.loc[data['Class'] == 1]
-        x_ben = data.loc[data['Class'] == 0]
-
-        x_fraud = drop_columns(x_fraud, ['Class'])
-        x_ben = drop_columns(x_ben, ['Class'])
+        x_ben, x_fraud = pp_ccfraud.initial_processing(data)
 
         return x_ben, x_fraud, pp_ccfraud
 
@@ -105,27 +88,13 @@ class LoadData(object):
 
         data = self.read_csv(self.path['one'])
 
-        # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
-        # => Feature is not important
-        # data['nameOrig'] = data['nameOrig'].apply(lambda x: x[:1])
-        # data['nameDest'] = data['nameDest'].apply(lambda x: x[:1])
-        # data['from_to'] = data['nameOrig'] + data['nameDest']
-        # data = pd.concat([data, pd.get_dummies(data['from_to'], prefix='from_to')], axis=1)
-        # data.drop(columns=['from_to'], inplace=True)
-
-        data = drop_columns(data, ['nameOrig', 'nameDest', 'isFlaggedFraud'])
-        data = one_hot_encode_column(data, 'action')
-
-        # Extract fraud and benign transactions and randomize order
-        x_fraud = data.loc[data['isFraud'] == 1]
-        x_ben = data.loc[data['isFraud'] == 0]
-
-        x_fraud = drop_columns(x_fraud, ['isFraud'])
-        x_ben = drop_columns(x_ben, ['isFraud'])
+        x_ben, x_fraud = pp_paysim_custom.initial_processing(data)
 
         return x_ben, x_fraud, pp_paysim_custom
 
     def get_data_ieee(self):
+        pp_ieee = Preprocess_ieee()
+
         # if skip is True:
         #     start_time = datetime.now()
         #     x_ben = pd.read_csv('./debug/ieee/x_ben.csv')
@@ -141,48 +110,12 @@ class LoadData(object):
         data = pd.merge(transaction_data, identity_data, on='TransactionID', how='left')
         del transaction_data, identity_data
 
-        # Remove columns with: Only 1 value, many null values and big top values
-        # one_value_cols = [col for col in data.columns if data[col].nunique() <= 1]
-        # many_null_cols = [col for col in data.columns if data[col].isnull().sum() / data.shape[0] > 0.9]
-        # big_top_value_cols = [col for col in data.columns if
-        #                       data[col].value_counts(dropna=False, normalize=True).values[0] > 0.9]
-        # cols_to_drop = list(set(many_null_cols + big_top_value_cols + one_value_cols))
-        # cols_to_drop.remove('isFraud')
-        # data = data.drop(cols_to_drop, axis=1)
-
-        cat_cols = ['ProductCD', 'card1', 'card2', 'card3', 'card4', 'card5', 'card6', 'addr1', 'addr2',
-                    'P_emaildomain', 'R_emaildomain', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8', 'M9',
-                    'id_12', 'id_13', 'id_14', 'id_15', 'id_16', 'id_17', 'id_18', 'id_19', 'id_20', 'id_21',
-                    'id_22', 'id_23', 'id_24', 'id_25', 'id_26', 'id_27', 'id_28', 'id_29', 'id_30',
-                    'id_31', 'id_32', 'id_33', 'id_34', 'id_35', 'id_36', 'id_37', 'id_38', 'DeviceType', 'DeviceInfo']
-
-        # Remove dropped cols from cat_cols
-        # for i in cols_to_drop:
-        #     try:
-        #         cat_cols.remove(i)
-        #     except ValueError:
-        #         pass
-
-        # Label-Encode categorical values
-        for col in cat_cols:
-            if col in data.columns:
-                le = LabelEncoder()
-                le.fit(list(data[col].astype(str).values))
-                data[col] = le.transform(list(data[col].astype(str).values))
-
-        data.drop(['TransactionDT', 'TransactionID'], axis=1, inplace=True)
-
-        # Extract `positive_samples` of benign transactions and all fraud transactions
-        x_ben = data.loc[data['isFraud'] == 0]
-        x_fraud = data.loc[data['isFraud'] == 1]
-
-        x_fraud.drop(['isFraud'], axis=1, inplace=True)
-        x_ben.drop(['isFraud'], axis=1, inplace=True)
+        x_ben, x_fraud = pp_ieee.initial_processing(data)
 
         # x_ben.to_csv(r'x_ben.csv')
         # x_fraud.to_csv(r'x_fraud.csv')
 
-        return x_ben, x_fraud
+        return x_ben, x_fraud, pp_ieee
 
     def get_data_nslkdd(self):
         pp_nslkdd = Preprocess_nslkdd()
@@ -201,77 +134,49 @@ class LoadData(object):
         train_data = self.read_csv(self.path['one'], columns=columns)
         test_data = self.read_csv(self.path['two'], columns=columns)
 
-        attack_mapping = {
-            'normal': 'normal',
-
-            'back': 'dos',
-            'land': 'dos',
-            'neptune': 'dos',
-            'pod': 'dos',
-            'smurf': 'dos',
-            'teardrop': 'dos',
-            'apache2': 'dos',
-            'udpstorm': 'dos',
-            'processtable': 'dos',
-            'worm': 'dos',
-
-            'satan': 'probe',
-            'ipsweep': 'probe',
-            'nmap': 'probe',
-            'portsweep': 'probe',
-            'mscan': 'probe',
-            'saint': 'probe',
-
-            'guess_passwd': 'R2L',
-            'ftp_write': 'R2L',
-            'imap': 'R2L',
-            'phf': 'R2L',
-            'multihop': 'R2L',
-            'warezmaster': 'R2L',
-            'warezclient': 'R2L',
-            'spy': 'R2L',
-            'xlock': 'R2L',
-            'xsnoop': 'R2L',
-            'snmpguess': 'R2L',
-            'snmpgetattack': 'R2L',
-            'httptunnel': 'R2L',
-            'sendmail': 'R2L',
-            'named': 'R2L',
-
-            'buffer_overflow': 'U2R',
-            'loadmodule': 'U2R',
-            'rootkit': 'U2R',
-            'perl': 'U2R',
-            'sqlattack': 'U2R',
-            'xterm': 'U2R',
-            'ps': 'U2R'
-        }
-
-        # Map various attacks to predefined labels
-        train_data['label'] = train_data['label'].map(attack_mapping)
-        test_data['label'] = test_data['label'].map(attack_mapping)
-
         data = train_data.append(test_data)
         del train_data, test_data
 
-        data = drop_columns(data, ['difficulty'])
-
-        cat_cols = ['protocol_type', 'service', 'flag']
-
-        for col in cat_cols:
-            if col in data.columns:
-                le = LabelEncoder()
-                le.fit(list(data[col].astype(str).values))
-                data[col] = le.transform(list(data[col].astype(str).values))
-                pp_nslkdd.add_cat_column_encoder(col, le)
-
-        x_ben = data.loc[data['label'] == 'normal']
-        x_fraud = data.loc[data['label'] != 'normal']
-
-        x_ben = drop_columns(x_ben, ['label'])
-        x_fraud = drop_columns(x_fraud, ['label'])
+        x_ben, x_fraud = pp_nslkdd.initial_processing(data)
 
         return x_ben, x_fraud, pp_nslkdd
+
+    def get_data_cifar10(self):
+        anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
+        pp_cifar10 = Preprocess_cifar10(anomaly_number)
+
+        labels = None
+        images = None
+
+        for i in range(1, 7):
+            batch_path = self.path[f'batch{i}']
+            batch = unpickle(batch_path)
+            if i == 1:
+                labels = batch[b'labels']
+                images = batch[b'data']
+            else:
+                labels = np.concatenate((labels, batch[b'labels']))
+                images = np.concatenate((images, batch[b'data']))
+
+        x_ben, x_fraud = pp_cifar10.initial_processing(images, labels)
+
+        return x_ben, x_fraud, pp_cifar10
+
+    def get_data_mnist(self):
+        anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
+        pp_mnist = Preprocess_mnist(anomaly_number)
+
+        train_images, train_labels = loadlocal_mnist(
+            images_path=self.path['train_images'],
+            labels_path=self.path['train_labels'])
+        test_images, test_labels = loadlocal_mnist(
+            images_path=self.path['test_images'],
+            labels_path=self.path['test_labels'])
+
+        x_ben, x_fraud = pp_mnist.initial_processing(train_images, train_labels, test_images, test_labels)
+
+        return x_ben, x_fraud, pp_mnist
+
 
     def read_csv(self, path, columns=None):
         start_time = datetime.now()
@@ -285,12 +190,3 @@ class LoadData(object):
             print(f'{path}: Dataset loaded in {time_required}')
 
         return data
-
-
-# Copy in desired `get`-method for heatmap of feature corr
-# # Using Pearson Correlation
-# plt.figure(figsize=(12, 10))
-# cor = data.corr()
-# sns.heatmap(cor, annot=True, cmap=plt.cm.Reds, mask=cor < 0.1)
-# plt.show()
-# exit(0)
