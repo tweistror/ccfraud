@@ -9,7 +9,7 @@ from sklearn.metrics import precision_recall_fscore_support, accuracy_score, pre
 
 from advanced_methods.AE.utils import build_ae_model
 from baseline_methods.utils import plot_pr_curve, plot_roc_curve
-from utils.plotting.images import plot_images
+from utils.plotting.images import plot_mnist_images, plot_cifar10_images
 
 
 class Autoencoder(object):
@@ -117,4 +117,6 @@ class Autoencoder(object):
         return results
 
     def plot_autoencoded_data(self, x_test):
-        plot_images(x_test, self.autoencoded_x_test, 10)
+        # plot_cifar10_images(x_test, self.autoencoded_x_test, 'Autoencoder', self.dataset_string, 10)
+        # plot_mnist_images(x_test, self.autoencoded_x_test, 'Autoencoder', self.dataset_string, 10)
+        return None
