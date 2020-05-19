@@ -14,6 +14,7 @@ from sklearn.model_selection import train_test_split
 
 from advanced_methods.VAE.utils import sampling
 from baseline_methods.utils import plot_pr_curve, plot_roc_curve
+from utils.plotting.images import plot_mnist_images
 
 
 class VAE(object):
@@ -37,6 +38,7 @@ class VAE(object):
 
         self.threshold = None
         self.vae = None
+        self.autoencoded_x_test = None
 
     def set_parameters(self, parameters):
         self.original_dim = self.x_train.shape[1]
@@ -99,6 +101,9 @@ class VAE(object):
 
     def predict(self, x_test, y_test, plots):
         y_pred = self.vae.predict(x_test)
+
+        self.autoencoded_x_test = y_pred
+
         test_mse = np.mean(np.power(x_test - y_pred, 2), axis=1)
         y_pred = [1 if val > self.threshold else 0 for val in test_mse]
         acc_score = accuracy_score(y_test, y_pred)
@@ -126,3 +131,9 @@ class VAE(object):
         }
 
         return results
+
+    def plot_autoencoded_data(self, x_test):
+        # TODO: Conditional plotting
+        # plot_cifar10_images(x_test, self.autoencoded_x_test, 'VAE', self.dataset_string, 10)
+        # plot_mnist_images(x_test, self.autoencoded_x_test, 'VAE', self.dataset_string, 10)
+        return None
