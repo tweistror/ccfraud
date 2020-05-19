@@ -4,7 +4,7 @@ from datetime import datetime
 from advanced_methods.AE.autoencoder import Autoencoder
 from advanced_methods.RBM.rbm import RBM
 from advanced_methods.VAE.vae import VAE
-from advanced_methods.OC_GAN.oc_gan import execute_oc_gan
+from advanced_methods.OCAN.ocan import execute_oc_gan
 from baseline_methods.evaluate_sv_baselines import build_supervised_baselines
 from baseline_methods.evaluate_usv_baselines import build_unsupervised_baselines
 from utils.crossvalidator import Crossvalidator
@@ -16,7 +16,7 @@ from utils.printing import print_results
 from utils.smote import execute_smote
 from utils.split_preprocess_data import SplitPreprocessData
 
-datasets = ["paysim", "paysim-custom", "ccfraud", "ieee", "nslkdd", "saperp-ek", "saperp-vk", "mnist"]
+datasets = ["paysim", "paysim-custom", "ccfraud", "ieee", "nslkdd", "saperp-ek", "saperp-vk", "mnist", "cifar10"]
 methods = ["all", "ocan", "ocan-ae", "ae", "rbm", "vae"]
 baselines = ["both", "usv", "sv", "none"]
 
@@ -31,7 +31,8 @@ parameter_class = Parameters(dataset_string)
 usv_train, sv_train, sv_train_fraud, test_benign, test_fraud = \
     parameter_class.get_main_parameters(cross_validation_count)
 
-x_ben, x_fraud = LoadData(dataset_string, parameter_class.get_path(), seed, parameter_class, verbosity).get_data()
+x_ben, x_fraud, preprocess_class = \
+    LoadData(dataset_string, parameter_class.get_path(), seed, parameter_class, verbosity).get_data()
 
 # Initialize collections for evaluation results
 prec_coll = list()
@@ -63,7 +64,8 @@ for i in range(iteration_count):
     pr_auc_list = list()
     roc_auc_list = list()
 
-    split_preprocess_class = SplitPreprocessData(dataset_string, iterated_seed, cross_validation_count, verbosity)
+    split_preprocess_class = SplitPreprocessData(dataset_string, preprocess_class, iterated_seed,
+                                                 cross_validation_count, verbosity)
     x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
         split_preprocess_class.execute_split_preprocess(x_ben, x_fraud, usv_train, sv_train,
                                                         sv_train_fraud, test_fraud, test_benign)
@@ -75,8 +77,6 @@ for i in range(iteration_count):
     if verbosity > 1:
         print(f'Starting iteration #{i + 1}')
 
-    # TODO: Add pr and roc auc to all methods
-    # TODO: Create method for updating lists
     if method == 'all' or method == 'ocan':
         results = execute_oc_gan(x_usv_train, x_test[:test_benign],
                                  x_test[test_benign:], test_benign,
@@ -106,6 +106,8 @@ for i in range(iteration_count):
         ae_model.set_parameters(parameter_class.get_autoencoder_parameters())
         ae_model.build()
         results = ae_model.predict(x_test, y_test, plots)
+
+        # ae_model.plot_autoencoded_data(x_test)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
