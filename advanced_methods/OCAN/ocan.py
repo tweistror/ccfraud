@@ -200,9 +200,14 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     d_ben_pro, d_fake_pro, fm_loss_coll = list(), list(), list()
     f1_score = list()
     d_val_pro = list()
+
+    # TODO: Variable in config
     n_round = 200
 
     for n_epoch in range(n_round):
+        # TODO: More info
+        print(f'Epoch : {n_epoch + 1}/{n_round}')
+
         x_mb_oc = sample_shuffle(x_train, seed)
 
         for n_batch in range(int(q)):
