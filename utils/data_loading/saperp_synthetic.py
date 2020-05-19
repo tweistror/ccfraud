@@ -3,6 +3,7 @@ import datetime
 
 from sklearn.preprocessing import MinMaxScaler
 
+# TODO: Put in preprocessing folder with extra class
 
 def get_data_saperp(dataset_string, path, fraud_only):
     path = path['one']
