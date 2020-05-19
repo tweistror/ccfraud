@@ -56,9 +56,7 @@ class SplitPreprocessData(object):
 
         x_sv_train, x_usv_train, x_test = pp_paysim.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
 
-        print(pp_paysim.inverse_preprocessing(x_sv_train).head(5))
-
-        exit(0)
+        # print(pp_paysim.inverse_preprocessing(x_sv_train).head(5))
 
         return x_usv_train, x_sv_train, x_test
 
