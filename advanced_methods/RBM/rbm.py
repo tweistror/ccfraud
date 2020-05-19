@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 
 from advanced_methods.RBM import utils
 from baseline_methods.utils import plot_pr_curve, plot_roc_curve
+from utils.plotting.images import plot_mnist_images
 
 tf.disable_v2_behavior()
 
@@ -19,7 +20,8 @@ class RBM(object):
     The interface of the class is sklearn-like.
     """
 
-    def __init__(self, seed, verbosity=0, plot_training_loss=False):
+    def __init__(self, dataset_string, seed, verbosity=0, plot_training_loss=False):
+        self.dataset_string = dataset_string
         tf.set_random_seed(seed)
         self.seed = seed
 
@@ -90,14 +92,14 @@ class RBM(object):
         :return: self
         """
 
-        x_train_split, x_valid_split = train_test_split(x_train, test_size=self.train_test_split, random_state=self.seed)
+        x_train_split, x_valid_split = train_test_split(x_train, test_size=self.train_test_split,
+                                                        random_state=self.seed)
 
         tf.reset_default_graph()
 
         self._build_model()
 
         with tf.Session() as self.tf_session:
-
             self._initialize_tf_utilities_and_ops()
             self._train_model(x_train_split, x_valid_split)
 
@@ -385,11 +387,10 @@ class RBM(object):
 
     def getReconstruction(self, data):
 
-        with tf.Session() as self.tf_session:
-            batch_reconstruct = self.tf_session.run(self.reconstruct,
-                                                    feed_dict=self._create_feed_dict(data))
+        batch_reconstruct = self.tf_session.run(self.reconstruct,
+                                                feed_dict=self._create_feed_dict(data))
 
-            return batch_reconstruct
+        return batch_reconstruct
 
     def get_model_parameters(self):
 
@@ -410,6 +411,11 @@ class RBM(object):
         threshold = np.quantile(train_reconstruction_errors, 0.9)
 
         test_reconstruction_errors = self.getReconstructError(x_test)
+
+        # TODO: Conditional plotting
+        # reconstructed_x_test = self.getReconstruction(x_test)
+        # plot_mnist_images(x_test, reconstructed_x_test, 'RBM', self.dataset_string, 10)
+
         y_pred = [1 if val > threshold else 0 for val in test_reconstruction_errors]
         acc_score = accuracy_score(y_test, y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
