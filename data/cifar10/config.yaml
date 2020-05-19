@@ -1,0 +1,56 @@
+parameters:
+  usv_train_size: 2000
+  sv_train_size: 2000
+  sv_train_fraud_percentage: 0.01
+  test_benign_count: 800
+  test_fraud_count: 800
+  oc_gan:
+    mb_size: 70
+    d_dim: [dim_input, 256, 64, 2]
+    g_dim: [64, 256, dim_input]
+    hid_dim: [400]
+  oc_gan_ae:
+    d_dim: [dim_input, 256, 64, 2]
+    g_dim: [64, 256, dim_input]
+  autoencoder:
+    dims: [dim_input, 512, 256, 64, 4]
+    epochs: 50
+    batch_size: 64
+    train_test_split: 0.2
+    learning_rate: 1e-3
+    optimizer: 'adam'
+    loss: 'mean_squared_error'
+    activation_fct: 'relu'
+    output_activation_fct: 'sigmoid'
+    kernel_regularizer: 'None'
+    activity_regularizer: 'None'
+  vae:
+    intermediate_dim: 200
+    latent_dim: 2
+    activation_fct: 'relu'
+    optimizer: 'adam'
+    loss: 'mean_squared_error'
+    train_test_split: 0.2
+  rbm:
+    num_hidden: 180
+    visible_unit_type: 'bin' # bin or gauss
+    gibbs_sampling_steps: 1
+    learning_rate: 0.01
+    momentum: 0.9
+    l2: 0.001
+    batch_size: 10
+    epochs: 10
+    stddev: 0.1
+    train_test_split: 0.2
+mode:
+  anomaly_number: 8
+path:
+  batch1: './data/cifar10/data_batch_1'
+  batch2: './data/cifar10/data_batch_2'
+  batch3: './data/cifar10/data_batch_3'
+metadata:
+  source: --
+  entries: --
+  frauds: --
+  benign: --
+  features: 3072
