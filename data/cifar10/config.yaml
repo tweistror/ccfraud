@@ -1,9 +1,9 @@
 parameters:
-  usv_train_size: 2000
-  sv_train_size: 2000
+  usv_train_size: 5000
+  sv_train_size: 5000
   sv_train_fraud_percentage: 0.01
-  test_benign_count: 800
-  test_fraud_count: 800
+  test_benign_count: 1000
+  test_fraud_count: 1000
   oc_gan:
     mb_size: 70
     d_dim: [dim_input, 256, 64, 2]
@@ -13,9 +13,9 @@ parameters:
     d_dim: [dim_input, 256, 64, 2]
     g_dim: [64, 256, dim_input]
   autoencoder:
-    dims: [dim_input, 512, 256, 64, 4]
+    dims: [dim_input, 512, 64]
     epochs: 50
-    batch_size: 64
+    batch_size: 32
     train_test_split: 0.2
     learning_rate: 1e-3
     optimizer: 'adam'
@@ -43,11 +43,24 @@ parameters:
     stddev: 0.1
     train_test_split: 0.2
 mode:
-  anomaly_number: 8
+  anomaly_number: 0
+#airplane 0
+#automobile 1
+#bird 2
+#cat 3
+#deer 4
+#dog 5
+#frog 6
+#horse 7
+#ship 8
+#truck 9
 path:
   batch1: './data/cifar10/data_batch_1'
   batch2: './data/cifar10/data_batch_2'
   batch3: './data/cifar10/data_batch_3'
+  batch4: './data/cifar10/data_batch_4'
+  batch5: './data/cifar10/data_batch_5'
+  batch6: './data/cifar10/test_batch'
 metadata:
   source: --
   entries: --
