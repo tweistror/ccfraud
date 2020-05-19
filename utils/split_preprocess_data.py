@@ -4,14 +4,25 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 from utils.list_operations import sample_shuffle, clean_inf_nan
+from utils.preprocessing.utils import is_image_dataset
 
 
 class SplitPreprocessData(object):
-    def __init__(self, dataset_string, seed, cross_validation_k=0, verbosity=0):
+    def __init__(self, dataset_string, preprocess_class, seed, cross_validation_k=0, verbosity=0):
         self.dataset_string = dataset_string
+        self.preprocess_class = preprocess_class
+        self.seed = seed
         self.cross_validation_k = cross_validation_k
         self.verbosity = verbosity
-        self.seed = seed
+
+        self.scaler = None
+        self.pca = None
+
+        self.x_usv_train = None
+        self.x_sv_train = None
+        self.y_sv_train = None
+        self.x_test = None
+        self.y_test = None
 
     def execute_split_preprocess(self, x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, test_benign):
         parameters = [x_ben, x_fraud, usv_train, sv_train, sv_train_fraud, test_fraud, test_benign]
@@ -20,64 +31,47 @@ class SplitPreprocessData(object):
         parameter_dict = {parameter_strings[i]: parameters[i] for i in range(0, len(parameters))}
         parameter_dict['sv_train_ben'] = sv_train - sv_train_fraud
 
+        self.x_usv_train, self.x_sv_train, self.y_sv_train, self.x_test, self.y_test = \
+            self.split_data(parameter_dict)
+
         if self.dataset_string == "paysim" or self.dataset_string == "paysim-custom":
-            x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_paysim(parameter_dict)
+            x_usv_train, x_sv_train, x_test = self.with_paysim()
         elif self.dataset_string == "ccfraud":
-            x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_ccfraud(parameter_dict)
+            x_usv_train, x_sv_train, x_test = self.with_ccfraud()
         elif self.dataset_string == "ieee":
             x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_ieee(parameter_dict)
         elif self.dataset_string == "nslkdd":
-            x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_nslkdd(parameter_dict)
+            x_usv_train, x_sv_train, x_test = self.with_nslkdd(parameter_dict)
         elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
             x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_saperp(parameter_dict)
         elif self.dataset_string == "mnist":
-            x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_mnist(parameter_dict)
+            x_usv_train, x_sv_train, x_test = self.with_mnist()
+        elif self.dataset_string == "cifar10":
+            x_usv_train, x_sv_train, y_sv_train, x_test, y_test = self.with_cifar10(parameter_dict)
 
-        return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
+        return x_usv_train, x_sv_train, self.y_sv_train, x_test, self.y_test
 
-    def with_paysim(self, parameters):
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-            self.data_sampling(parameters)
+    def with_paysim(self):
+        pp_paysim = self.preprocess_class
 
-        pca = PCA(n_components=x_usv_train.shape[1])
-        if len(x_sv_train) > len(x_usv_train):
-            x_sv_train = pca.fit_transform(X=x_sv_train)
-            x_usv_train = pca.transform(X=x_usv_train)
-        else:
-            x_usv_train = pca.fit_transform(x_usv_train)
-            x_sv_train = pca.transform(x_sv_train)
-        x_test = pca.transform(X=x_test)
+        x_sv_train, x_usv_train, x_test = pp_paysim.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
 
-        sc = MinMaxScaler()
-        if len(x_sv_train) > len(x_usv_train):
-            x_sv_train = sc.fit_transform(x_sv_train)
-            x_usv_train = sc.transform(x_usv_train)
-        else:
-            x_usv_train = sc.fit_transform(x_usv_train)
-            x_sv_train = sc.transform(x_sv_train)
-        x_test = sc.transform(x_test)
+        print(pp_paysim.inverse_preprocessing(x_sv_train).head(5))
 
-        return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
+        exit(0)
 
-    def with_ccfraud(self, parameters):
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-            self.data_sampling(parameters)
+        return x_usv_train, x_sv_train, x_test
 
-        sc = MinMaxScaler()
-        if len(x_sv_train) > len(x_usv_train):
-            x_sv_train = sc.fit_transform(x_sv_train)
-            x_usv_train = sc.transform(x_usv_train)
-        else:
-            x_usv_train = sc.fit_transform(x_usv_train)
-            x_sv_train = sc.transform(x_sv_train)
+    def with_ccfraud(self):
+        pp_ccfraud = self.preprocess_class
 
-        x_test = sc.transform(x_test)
+        x_sv_train, x_usv_train, x_test = pp_ccfraud.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
 
-        return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
+        return x_usv_train, x_sv_train, x_test
 
     def with_ieee(self, parameters):
         x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-            self.data_sampling(parameters)
+            self.split_data(parameters)
 
         # Cleaning infinite values to NaN
         x_usv_train = clean_inf_nan(x_usv_train)
@@ -105,28 +99,21 @@ class SplitPreprocessData(object):
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
     def with_nslkdd(self, parameters):
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-            self.data_sampling(parameters)
+        pp_nslkdd = self.preprocess_class
 
-        sc = MinMaxScaler()
-        if len(x_sv_train) > len(x_usv_train):
-            x_sv_train = sc.fit_transform(x_sv_train)
-            x_usv_train = sc.transform(x_usv_train)
-        else:
-            x_usv_train = sc.fit_transform(x_usv_train)
-            x_sv_train = sc.transform(x_sv_train)
+        x_sv_train, x_usv_train, x_test = pp_nslkdd.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
 
-        x_test = sc.transform(x_test)
+        # print(pp_nslkdd.inverse_preprocessing(x_sv_train).head(10))
 
-        return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
+        return x_usv_train, x_sv_train, x_test
 
     def with_saperp(self, parameters):
         x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-            self.data_sampling(parameters)
+            self.split_data(parameters)
 
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
-    def data_sampling(self, parameters, is_numpy=False):
+    def split_data(self, parameters):
         k = self.cross_validation_k
         usv_train = parameters['usv_train']
         sv_train_ben = parameters['sv_train_ben']
@@ -135,11 +122,6 @@ class SplitPreprocessData(object):
         test_fraud = parameters['test_fraud']
         x_ben = parameters['x_ben']
         x_fraud = parameters['x_fraud']
-
-        if not is_numpy:
-            x_ben = x_ben.sample(n=k * (usv_train + sv_train_ben + sv_train_fraud + test_benign + test_fraud),
-                                 random_state=self.seed).values
-            x_fraud = x_fraud.sample(frac=1, random_state=self.seed).values
 
         x_usv_train = x_ben[0:k * usv_train]
         x_sv_train_ben = x_ben[0:k * sv_train_ben]
@@ -159,8 +141,15 @@ class SplitPreprocessData(object):
 
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
 
-    def with_mnist(self, parameters):
+    def with_mnist(self):
+        pp_mnist = self.preprocess_class
+
+        x_sv_train, x_usv_train, x_test = pp_mnist.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
+
+        return x_usv_train, x_sv_train, x_test
+
+    def with_cifar10(self, parameters):
         x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-            self.data_sampling(parameters, is_numpy=True)
+            self.split_data(parameters)
 
         return x_usv_train, x_sv_train, y_sv_train, x_test, y_test

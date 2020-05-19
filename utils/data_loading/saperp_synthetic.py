@@ -4,27 +4,27 @@ import datetime
 from sklearn.preprocessing import MinMaxScaler
 
 
-def get_data_saperp(dataset_string, path, seed, fraud_only):
+def get_data_saperp(dataset_string, path, fraud_only):
     path = path['one']
 
     if dataset_string == "saperp-ek":
-        x_ben, x_fraud = load_EK(path, seed, fraud_only)
+        x_ben, x_fraud = load_EK(path, fraud_only)
     else:
-        x_ben, x_fraud = load_VK(path, seed, fraud_only)
+        x_ben, x_fraud = load_VK(path, fraud_only)
 
     return x_ben, x_fraud
 
 
-def load_EK(path, seed, fraud_only):
+def load_EK(path, fraud_only):
     df = load_data_EK_gen(path)
     df = prepare_data_EK_gen(df)
 
     if fraud_only:
-        x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1, random_state=seed)
-        x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))].sample(frac=1, random_state=seed)
+        x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))]
+        x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))]
     else:
-        x_ben = df.loc[df['Label'] == 'regular'].sample(frac=1, random_state=seed)
-        x_fraud = df.loc[df['Label'] != 'regular'].sample(frac=1, random_state=seed)
+        x_ben = df.loc[df['Label'] == 'regular']
+        x_fraud = df.loc[df['Label'] != 'regular']
 
     x_ben.drop(['Label'], axis=1, inplace=True)
     x_fraud.drop(['Label'], axis=1, inplace=True)
@@ -32,16 +32,16 @@ def load_EK(path, seed, fraud_only):
     return x_ben, x_fraud
 
 
-def load_VK(path, seed, fraud_only):
+def load_VK(path, fraud_only):
     df = load_data_VK_gen(path)
     df = prepare_data_VK_gen(df)
 
     if fraud_only:
-        x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))].sample(frac=1, random_state=seed)
-        x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))].sample(frac=1, random_state=seed)
+        x_ben = df.loc[df['Label'].apply(lambda x: not x.endswith('fraud'))]
+        x_fraud = df.loc[df['Label'].apply(lambda x: x.endswith('fraud'))]
     else:
-        x_ben = df.loc[df['Label'] == 'regular'].sample(frac=1, random_state=seed)
-        x_fraud = df.loc[df['Label'] != 'regular'].sample(frac=1, random_state=seed)
+        x_ben = df.loc[df['Label'] == 'regular']
+        x_fraud = df.loc[df['Label'] != 'regular']
 
     x_ben.drop(['Label'], axis=1, inplace=True)
     x_fraud.drop(['Label'], axis=1, inplace=True)

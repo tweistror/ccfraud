@@ -2,10 +2,12 @@ import numpy as np
 
 from mlxtend.data import loadlocal_mnist
 
-from utils.list_operations import sample_shuffle
+from utils.preprocessing.mnist import Preprocess_mnist
 
 
-def get_data_mnist(path, seed, fraud_number):
+def get_data_mnist(path, anomaly_number):
+    pp_mnist = Preprocess_mnist()
+
     train_images, train_labels = loadlocal_mnist(
         images_path=path['train_images'],
         labels_path=path['train_labels'])
@@ -13,14 +15,29 @@ def get_data_mnist(path, seed, fraud_number):
         images_path=path['test_images'],
         labels_path=path['test_labels'])
 
-    def is_label(x):
-        return True if x != fraud_number else False
+    def is_anomaly(x):
+        return True if x == anomaly_number else False
 
-    def is_not_label(x):
-        return True if x == fraud_number else False
+    def is_not_anomaly(x):
+        return True if x != anomaly_number else False
 
-    train_benign = train_images[np.vectorize(is_label)(train_labels)]
-    train_fraud = train_images[np.vectorize(is_not_label)(train_labels)]
+    train_benign = train_images[np.vectorize(is_not_anomaly)(train_labels)]
+    train_fraud = train_images[np.vectorize(is_anomaly)(train_labels)]
 
-    return sample_shuffle(train_benign, seed), sample_shuffle(train_fraud, seed)
+    test_benign = test_images[np.vectorize(is_not_anomaly)(test_labels)]
+    test_fraud = test_images[np.vectorize(is_anomaly)(test_labels)]
+
+    train_test_dimensions = {
+        'train_benign': train_benign.shape[0],
+        'train_fraud': train_fraud.shape[0],
+        'test_benign': test_benign.shape[0],
+        'test_fraud': test_fraud.shape[0],
+    }
+
+    pp_mnist.set_train_test_dimensions(train_test_dimensions)
+
+    x_ben = np.concatenate((train_benign, test_benign))
+    x_fraud = np.concatenate((train_fraud, test_fraud))
+
+    return x_ben, x_fraud, pp_mnist
 

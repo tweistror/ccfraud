@@ -4,8 +4,15 @@ import pandas as pd
 
 from sklearn.preprocessing import LabelEncoder
 
+from utils.data_loading.cifar10 import get_data_cifar10
 from utils.data_loading.mnist import get_data_mnist
 from utils.data_loading.saperp_synthetic import get_data_saperp
+from utils.list_operations import sample_shuffle
+from utils.preprocessing.ccfraud import Preprocess_ccfraud
+from utils.preprocessing.nslkdd import Preprocess_nslkdd
+from utils.preprocessing.paysim import Preprocess_paysim
+from utils.preprocessing.paysim_custom import Preprocess_paysim_custom
+from utils.preprocessing.utils import drop_columns, one_hot_encode_column
 
 
 class LoadData(object):
@@ -17,26 +24,43 @@ class LoadData(object):
         self.parameter_class = parameter_class
 
     def get_data(self):
+        x_ben = None
+        x_fraud = None
+        preprocessing_class = None
+
         if self.dataset_string == "paysim":
-            x_ben, x_fraud = self.get_data_paysim()
+            x_ben, x_fraud, preprocessing_class = self.get_data_paysim()
         if self.dataset_string == "paysim-custom":
-            x_ben, x_fraud = self.get_data_paysim_custom()
+            x_ben, x_fraud, preprocessing_class = self.get_data_paysim_custom()
         elif self.dataset_string == "ccfraud":
-            x_ben, x_fraud = self.get_data_ccfraud()
+            x_ben, x_fraud, preprocessing_class = self.get_data_ccfraud()
         elif self.dataset_string == "ieee":
-            x_ben, x_fraud = self.get_data_ieee()
+            x_ben, x_fraud, preprocessing_class = self.get_data_ieee()
         elif self.dataset_string == "nslkdd":
-            x_ben, x_fraud = self.get_data_nslkdd()
+            x_ben, x_fraud, preprocessing_class = self.get_data_nslkdd()
         elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
             fraud_only = self.parameter_class.get_saperp_mode()['fraud_only']
-            x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path, self.seed, fraud_only)
+            x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path, fraud_only)
         elif self.dataset_string == "mnist":
-            fraud_number = self.parameter_class.get_mnist_mode()['fraud_number']
-            x_ben, x_fraud = get_data_mnist(self.path, self.seed, fraud_number)
+            anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
+            x_ben, x_fraud, preprocessing_class = get_data_mnist(self.path, anomaly_number)
+        elif self.dataset_string == "cifar10":
+            anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
+            x_ben, x_fraud = get_data_cifar10(self.path, anomaly_number)
 
-        return x_ben, x_fraud
+        if self.dataset_string == "cifar10" or self.dataset_string == "mnist":
+            x_ben = sample_shuffle(x_ben, self.seed)
+            x_fraud = sample_shuffle(x_fraud, self.seed)
+        else:
+            preprocessing_class.set_columns(x_ben)
+            x_ben = x_ben.sample(frac=1, random_state=self.seed).values
+            x_fraud = x_fraud.sample(frac=1, random_state=self.seed).values
+
+        return x_ben, x_fraud, preprocessing_class
 
     def get_data_paysim(self):
+        pp_paysim = Preprocess_paysim()
+
         data = self.read_csv(self.path['one'])
 
         # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
@@ -47,38 +71,38 @@ class LoadData(object):
         # data = pd.concat([data, pd.get_dummies(data['from_to'], prefix='from_to')], axis=1)
         # data.drop(columns=['from_to'], inplace=True)
 
-        # Drop `isFlaggedFraud` column
-        data.drop(columns=['nameOrig', 'nameDest', 'isFlaggedFraud'], inplace=True)
-
-        # One-hot encode type
-        data = pd.concat([data, pd.get_dummies(data['type'], prefix='type')], axis=1)
-        data.drop(['type'], axis=1, inplace=True)
+        data = drop_columns(data, ['nameOrig', 'nameDest', 'isFlaggedFraud'])
+        data = one_hot_encode_column(data, 'type')
 
         # Extract fraud and benign transactions and randomize order
-        x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1, random_state=self.seed)
-        x_ben = data.loc[data['isFraud'] == 0].sample(frac=1, random_state=self.seed)
+        x_fraud = data.loc[data['isFraud'] == 1]
+        x_ben = data.loc[data['isFraud'] == 0]
 
-        x_fraud.drop(['isFraud'], axis=1, inplace=True)
-        x_ben.drop(['isFraud'], axis=1, inplace=True)
+        x_fraud = drop_columns(x_fraud, ['isFraud'])
+        x_ben = drop_columns(x_ben, ['isFraud'])
 
-        return x_ben, x_fraud
+        return x_ben, x_fraud, pp_paysim
 
     def get_data_ccfraud(self):
+        pp_ccfraud = Preprocess_ccfraud()
+
         data = self.read_csv(self.path['one'])
 
         # Drop `Time` and `Amount`
-        data.drop(['Time', 'Amount'], axis=1, inplace=True)
+        data = drop_columns(data, ['Time', 'Amount'])
 
         # Extract fraud and benign transactions and randomize order
-        x_fraud = data.loc[data['Class'] == 1].sample(frac=1, random_state=self.seed)
-        x_ben = data.loc[data['Class'] == 0].sample(frac=1, random_state=self.seed)
+        x_fraud = data.loc[data['Class'] == 1]
+        x_ben = data.loc[data['Class'] == 0]
 
-        x_fraud.drop(['Class'], axis=1, inplace=True)
-        x_ben.drop(['Class'], axis=1, inplace=True)
+        x_fraud = drop_columns(x_fraud, ['Class'])
+        x_ben = drop_columns(x_ben, ['Class'])
 
-        return x_ben, x_fraud
+        return x_ben, x_fraud, pp_ccfraud
 
     def get_data_paysim_custom(self):
+        pp_paysim_custom = Preprocess_paysim_custom()
+
         data = self.read_csv(self.path['one'])
 
         # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
@@ -89,21 +113,17 @@ class LoadData(object):
         # data = pd.concat([data, pd.get_dummies(data['from_to'], prefix='from_to')], axis=1)
         # data.drop(columns=['from_to'], inplace=True)
 
-        # Drop `isFlaggedFraud` column
-        data.drop(columns=['nameOrig', 'nameDest', 'isFlaggedFraud'], inplace=True)
-
-        # One-hot encode type
-        data = pd.concat([data, pd.get_dummies(data['action'], prefix='action')], axis=1)
-        data.drop(['action'], axis=1, inplace=True)
+        data = drop_columns(data, ['nameOrig', 'nameDest', 'isFlaggedFraud'])
+        data = one_hot_encode_column(data, 'action')
 
         # Extract fraud and benign transactions and randomize order
-        x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1, random_state=self.seed)
-        x_ben = data.loc[data['isFraud'] == 0].sample(frac=1, random_state=self.seed)
+        x_fraud = data.loc[data['isFraud'] == 1]
+        x_ben = data.loc[data['isFraud'] == 0]
 
-        x_fraud.drop(['isFraud'], axis=1, inplace=True)
-        x_ben.drop(['isFraud'], axis=1, inplace=True)
+        x_fraud = drop_columns(x_fraud, ['isFraud'])
+        x_ben = drop_columns(x_ben, ['isFraud'])
 
-        return x_ben, x_fraud
+        return x_ben, x_fraud, pp_paysim_custom
 
     def get_data_ieee(self):
         # if skip is True:
@@ -153,8 +173,8 @@ class LoadData(object):
         data.drop(['TransactionDT', 'TransactionID'], axis=1, inplace=True)
 
         # Extract `positive_samples` of benign transactions and all fraud transactions
-        x_ben = data.loc[data['isFraud'] == 0].sample(frac=1, random_state=self.seed)
-        x_fraud = data.loc[data['isFraud'] == 1].sample(frac=1, random_state=self.seed)
+        x_ben = data.loc[data['isFraud'] == 0]
+        x_fraud = data.loc[data['isFraud'] == 1]
 
         x_fraud.drop(['isFraud'], axis=1, inplace=True)
         x_ben.drop(['isFraud'], axis=1, inplace=True)
@@ -165,6 +185,8 @@ class LoadData(object):
         return x_ben, x_fraud
 
     def get_data_nslkdd(self):
+        pp_nslkdd = Preprocess_nslkdd()
+
         columns = ["duration", "protocol_type", "service", "flag", "src_bytes",
                    "dst_bytes", "land", "wrong_fragment", "urgent", "hot", "num_failed_logins",
                    "logged_in", "num_compromised", "root_shell", "su_attempted", "num_root",
@@ -232,7 +254,7 @@ class LoadData(object):
         data = train_data.append(test_data)
         del train_data, test_data
 
-        data.drop(['difficulty'], axis=1, inplace=True)
+        data = drop_columns(data, ['difficulty'])
 
         cat_cols = ['protocol_type', 'service', 'flag']
 
@@ -241,14 +263,15 @@ class LoadData(object):
                 le = LabelEncoder()
                 le.fit(list(data[col].astype(str).values))
                 data[col] = le.transform(list(data[col].astype(str).values))
+                pp_nslkdd.add_cat_column_encoder(col, le)
 
-        x_ben = data.loc[data['label'] == 'normal'].sample(frac=1, random_state=self.seed)
-        x_fraud = data.loc[data['label'] != 'normal'].sample(frac=1, random_state=self.seed)
+        x_ben = data.loc[data['label'] == 'normal']
+        x_fraud = data.loc[data['label'] != 'normal']
 
-        x_ben.drop(['label'], axis=1, inplace=True)
-        x_fraud.drop(['label'], axis=1, inplace=True)
+        x_ben = drop_columns(x_ben, ['label'])
+        x_fraud = drop_columns(x_fraud, ['label'])
 
-        return x_ben, x_fraud
+        return x_ben, x_fraud, pp_nslkdd
 
     def read_csv(self, path, columns=None):
         start_time = datetime.now()
