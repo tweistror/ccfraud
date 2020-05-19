@@ -9,6 +9,7 @@ from sklearn.metrics import precision_recall_fscore_support, accuracy_score, pre
 
 from advanced_methods.AE.utils import build_ae_model
 from baseline_methods.utils import plot_pr_curve, plot_roc_curve
+from utils.plotting.images import plot_images
 
 
 class Autoencoder(object):
@@ -24,12 +25,19 @@ class Autoencoder(object):
         self.train_test_split = None
         self.learning_rate = None
         self.dims = None
-        self.activation_fct = None
         self.loss = None
         self.optimizer = None
+        self.activation_fct = None
+        self.output_activation_fct = None
+        self.kernel_regularizer = None
+        self.activity_regularizer = None
 
         self.threshold = None
         self.autoencoder = None
+
+        self.autoencoded_x_test = None
+        self.y_pred = None
+        self.mse = None
 
     def set_parameters(self, parameters):
         self.input_dim = self.x_train.shape[1]
@@ -37,20 +45,22 @@ class Autoencoder(object):
         self.batch_size = parameters['batch_size']
         self.train_test_split = parameters['train_test_split']
         self.learning_rate = parameters['learning_rate']
-        self.activation_fct = parameters['activation_fct']
         self.loss = parameters['loss']
         self.optimizer = parameters['optimizer']
+        self.activation_fct = parameters['activation_fct']
+        self.output_activation_fct = parameters['output_activation_fct']
+        self.kernel_regularizer = parameters['kernel_regularizer']
+        self.activity_regularizer = parameters['activity_regularizer']
 
         dim_input = self.x_train.shape[1]
         self.dims = parameters['dims']
         self.dims[0] = dim_input
 
     def build(self):
-        autoencoder = build_ae_model(self.dims, self.learning_rate, self.activation_fct)
+        autoencoder = build_ae_model(self.dims, self.learning_rate, self.activation_fct,
+                                     self.output_activation_fct, self.kernel_regularizer, self.activity_regularizer)
 
-        autoencoder.compile(metrics=['accuracy'],
-                            loss=self.loss,
-                            optimizer=self.optimizer)
+        autoencoder.compile(loss=self.loss, optimizer=self.optimizer)
 
         x_train_split, x_valid_split = train_test_split(self.x_train, test_size=self.train_test_split,
                                                         random_state=self.seed)
@@ -58,7 +68,6 @@ class Autoencoder(object):
         autoencoder.fit(x_train_split, x_train_split,
                         epochs=self.epochs,
                         batch_size=self.batch_size,
-                        shuffle=True,
                         validation_data=(x_valid_split, x_valid_split),
                         verbose=self.verbosity)
 
@@ -73,7 +82,10 @@ class Autoencoder(object):
         # Predict the test set
         y_pred = self.autoencoder.predict(x_test)
 
+        self.autoencoded_x_test = y_pred
+
         mse = np.mean(np.power(x_test - y_pred, 2), axis=1)
+        self.mse = mse
 
         precision_pts, recall_pts, _ = precision_recall_curve(y_test, mse)
         pr_auc = metrics.auc(recall_pts, precision_pts)
@@ -86,6 +98,7 @@ class Autoencoder(object):
             plot_roc_curve(y_test, mse, 'Autoencoder')
 
         y_pred = [1 if val > self.threshold else 0 for val in mse]
+        self.y_pred = y_pred
         acc_score = accuracy_score(y_test, y_pred)
 
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
@@ -102,3 +115,6 @@ class Autoencoder(object):
         }
 
         return results
+
+    def plot_autoencoded_data(self, x_test):
+        plot_images(x_test, self.autoencoded_x_test, 10)
