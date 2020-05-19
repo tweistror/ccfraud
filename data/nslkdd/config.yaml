@@ -14,13 +14,16 @@ parameters:
     g_dim: [50, 100, dim_input]
   autoencoder:
     dims: [dim_input, 44, 22, 8, 4]
-    epochs: 50
+    epochs: 20
     batch_size: 64
     train_test_split: 0.2
     learning_rate: 1e-4
-    activation_fct: 'relu'
     optimizer: 'adam'
     loss: 'mean_squared_error'
+    activation_fct: 'relu'
+    output_activation_fct: 'sigmoid'
+    kernel_regularizer: 'None'
+    activity_regularizer: 'None'
   vae:
     intermediate_dim: 12
     latent_dim: 2
@@ -42,6 +45,9 @@ parameters:
 path:
   one: './data/nslkdd/KDDTrain+.csv'
   two: './data/nslkdd/KDDTest+.csv'
+benchmark_mode: # Mode using intended training and test datasets as in literature
+  active: True
+
 metadata:
   source: 'https://web.archive.org/web/20150205070216/http://nsl.cs.unb.ca/NSL-KDD/'
   entries: 148517

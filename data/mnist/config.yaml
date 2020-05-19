@@ -1,5 +1,5 @@
 parameters:
-  usv_train_size: 20000
+  usv_train_size: 5000
   sv_train_size: 5000
   sv_train_fraud_percentage: 0.04
   test_benign_count: 2000
@@ -13,17 +13,20 @@ parameters:
     d_dim: [dim_input, 256, 64, 2]
     g_dim: [64, 256, dim_input]
   autoencoder:
-    dims: [dim_input, 512, 256, 64, 4]
-    epochs: 50
-    batch_size: 64
+    dims: [dim_input, 128, 32]
+    epochs: 5
+    batch_size: 32
     train_test_split: 0.2
     learning_rate: 1e-3
     activation_fct: 'relu'
+    output_activation_fct: 'sigmoid'
     optimizer: 'adam'
-    loss: 'mean_squared_error'
+    loss: 'binary_crossentropy'
+    kernel_regularizer: 'None'
+    activity_regularizer: 'None'
   vae:
-    intermediate_dim: 200
-    latent_dim: 2
+    intermediate_dim: 128
+    latent_dim: 32
     activation_fct: 'relu'
     optimizer: 'adam'
     loss: 'mean_squared_error'
@@ -40,15 +43,14 @@ parameters:
     stddev: 0.1
     train_test_split: 0.2
 mode:
-  fraud_number: 8
+  anomaly_number: 6
 path:
   train_labels: './data/mnist/train-labels-idx1-ubyte'
   train_images: './data/mnist/train-images-idx3-ubyte'
   test_labels: './data/mnist/t10k-labels-idx1-ubyte'
   test_images: './data/mnist/t10k-images-idx3-ubyte'
 metadata:
-  source: 'https://www.kaggle.com/c/ieee-fraud-detection/data'
-  entries: 590540
-  frauds: 569877
-  benign: 20663
-  features: 431
+  source: 'http://yann.lecun.com/exdb/mnist/'
+  features: 784
+  train_size: 60000
+  test_size: 10000

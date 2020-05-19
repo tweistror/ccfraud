@@ -18,9 +18,12 @@ parameters:
     batch_size: 64
     train_test_split: 0.2
     learning_rate: 1e-4
-    activation_fct: 'relu'
     optimizer: 'adam'
     loss: 'mean_squared_error'
+    activation_fct: 'relu'
+    output_activation_fct: 'linear'
+    kernel_regularizer: 'None'
+    activity_regularizer: 'l1'
   vae:
     intermediate_dim: 5
     latent_dim: 2
