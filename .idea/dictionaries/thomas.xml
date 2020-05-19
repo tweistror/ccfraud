@@ -4,9 +4,11 @@
       <w>accs</w>
       <w>adaboost</w>
       <w>adadelta</w>
+      <w>autoencoded</w>
       <w>autoencoder</w>
       <w>autoencoding</w>
       <w>ccfraud</w>
+      <w>cifar</w>
       <w>crossvalidator</w>
       <w>datasets</w>
       <w>fscore</w>
@@ -20,8 +22,11 @@
       <w>perceptron</w>
       <w>prec</w>
       <w>precs</w>
+      <w>preprocessing</w>
       <w>reca</w>
       <w>recas</w>
+      <w>regularizer</w>
+      <w>regularizers</w>
       <w>relu</w>
       <w>reparameterization</w>
       <w>repre</w>
