@@ -162,7 +162,7 @@ for i in range(iteration_count):
         # Execute supervised learning baseline methods
         if cross_validation_count > 1:
             cv = Crossvalidator(cross_validation_count, x_sv_train, y_sv_train)
-            # TODO: CV correct results
+            # TODO: CV correct results with pr_auc and roc_auc
             prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = cv.execute_cv()
         else:
             results = build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
@@ -195,7 +195,6 @@ if verbosity > 1:
     time_required = str(datetime.now() - start_time_complete)
     print(f'All {iteration_count} iterations finished in {time_required}')
 
-# TODO: Create a method "to np array"
 prec_coll, reca_coll, f1_coll, acc_coll, pr_auc_coll, roc_auc_coll, method_list = \
     np.array(prec_coll), np.array(reca_coll), np.array(f1_coll), np.array(acc_coll), np.array(pr_auc_coll), \
     np.array(roc_auc_coll), np.array(method_list)

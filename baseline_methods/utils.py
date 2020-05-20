@@ -18,9 +18,7 @@ def get_metrics(y_test, y_pred, y_score, label, result_list):
 
     precision_pts, recall_pts, _ = precision_recall_curve(y_test, y_score)
 
-    # TODO: Small difference between metrics.auc(recall, precision) and average_precision_score(y_test, y_score)
     pr_auc = metrics.auc(recall_pts, precision_pts)
-    # pr_auc = average_precision_score(y_test, y_score)
 
     roc_auc = roc_auc_score(y_test, y_score)
 
