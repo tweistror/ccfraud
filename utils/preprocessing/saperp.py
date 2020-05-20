@@ -29,8 +29,6 @@ class Preprocess_saperp:
         return x_ben, x_fraud
 
     def initial_loading_ek(self):
-        path = self.path['one']
-
         df = self.load_data_EK_gen()
         df = self.prepare_data_EK_gen(df)
 
