@@ -35,8 +35,6 @@ class Autoencoder(object):
         self.threshold = None
         self.autoencoder = None
 
-        self.autoencoded_x_test = None
-        self.y_pred = None
         self.mse = None
 
     def set_parameters(self, parameters):
@@ -82,8 +80,6 @@ class Autoencoder(object):
         # Predict the test set
         y_pred = self.autoencoder.predict(x_test)
 
-        self.autoencoded_x_test = y_pred
-
         mse = np.mean(np.power(x_test - y_pred, 2), axis=1)
         self.mse = mse
 
@@ -98,7 +94,6 @@ class Autoencoder(object):
             plot_roc_curve(y_test, mse, 'Autoencoder')
 
         y_pred = [1 if val > self.threshold else 0 for val in mse]
-        self.y_pred = y_pred
         acc_score = accuracy_score(y_test, y_pred)
 
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
@@ -116,7 +111,8 @@ class Autoencoder(object):
 
         return results
 
-    def plot_autoencoded_data(self, x_test):
-        # plot_cifar10_images(x_test, self.autoencoded_x_test, 'Autoencoder', self.dataset_string, 10)
-        # plot_mnist_images(x_test, self.autoencoded_x_test, 'Autoencoder', self.dataset_string, 10)
+    def plot_reconstructed_data(self, x_test):
+        reconstructed_x_test = self.autoencoder.predict(x_test)
+        plot_mnist_images(x_test, reconstructed_x_test, 'Autoencoder', self.dataset_string, 10)
+        # plot_cifar10_images(x_test, reconstructed_x_test, 'Autoencoder', self.dataset_string, 10)
         return None

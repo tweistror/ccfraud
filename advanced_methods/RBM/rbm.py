@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 from advanced_methods.RBM import utils
 from baseline_methods.utils import plot_pr_curve, plot_roc_curve
-from utils.plotting.images import plot_mnist_images
+from utils.plotting.images import plot_mnist_images, plot_cifar10_images
 
 tf.disable_v2_behavior()
 
@@ -412,10 +412,6 @@ class RBM(object):
 
         test_reconstruction_errors = self.getReconstructError(x_test)
 
-        # TODO: Conditional plotting
-        # reconstructed_x_test = self.getReconstruction(x_test)
-        # plot_mnist_images(x_test, reconstructed_x_test, 'RBM', self.dataset_string, 10)
-
         y_pred = [1 if val > threshold else 0 for val in test_reconstruction_errors]
         acc_score = accuracy_score(y_test, y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
@@ -441,3 +437,10 @@ class RBM(object):
         }
 
         return results
+
+    def plot_reconstructed_data(self, x_test):
+        # TODO: Conditional plotting
+        reconstructed_x_test = self.getReconstruction(x_test)
+        plot_mnist_images(x_test, reconstructed_x_test, 'RBM', self.dataset_string, 10)
+        # plot_cifar10_images(x_test, reconstructed_x_test, 'RBM', self.dataset_string, 10)
+
