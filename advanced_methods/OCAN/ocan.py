@@ -205,9 +205,6 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     n_round = 200
 
     for n_epoch in range(n_round):
-        # TODO: More info
-        print(f'Epoch : {n_epoch + 1}/{n_round}')
-
         x_mb_oc = sample_shuffle(x_train, seed)
 
         for n_batch in range(int(q)):
@@ -240,6 +237,8 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
         y_pred = np.argmax(prob, axis=1)
         conf_mat = classification_report(y_test, y_pred, target_names=['benign', 'fraud'], digits=4, zero_division=0)
         f1_score.append(float(list(filter(None, conf_mat.strip().split(" ")))[12]))
+
+        print(f'Epoch : {n_epoch + 1}/{n_round} - fm_loss: {fm_loss_curr}')
 
     acc = accuracy_score(y_test, y_pred)
     precision, recall, f1, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
