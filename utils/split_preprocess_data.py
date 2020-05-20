@@ -1,10 +1,6 @@
 import numpy as np
 
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-
-from utils.list_operations import sample_shuffle, clean_inf_nan
-from utils.preprocessing.utils import is_image_dataset
+from utils.list_operations import sample_shuffle
 
 
 class SplitPreprocessData(object):
@@ -85,11 +81,12 @@ class SplitPreprocessData(object):
 
         return x_usv_train, x_sv_train, x_test
 
-    def with_saperp(self, parameters):
-        x_usv_train, x_sv_train, y_sv_train, x_test, y_test = \
-            self.split_data(parameters)
+    def with_saperp(self):
+        pp_saperp = self.preprocess_class
 
-        return x_usv_train, x_sv_train, y_sv_train, x_test, y_test
+        x_sv_train, x_usv_train, x_test = pp_saperp.preprocess(self.x_sv_train, self.x_usv_train, self.x_test)
+
+        return x_usv_train, x_sv_train, x_test
 
     def with_mnist(self):
         pp_mnist = self.preprocess_class

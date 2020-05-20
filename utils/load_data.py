@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from mlxtend.data import loadlocal_mnist
 
-from utils.data_loading.saperp_synthetic import get_data_saperp
 from utils.list_operations import sample_shuffle
 from utils.preprocessing.ccfraud import Preprocess_ccfraud
 from utils.preprocessing.cifar10 import Preprocess_cifar10
@@ -13,6 +12,7 @@ from utils.preprocessing.mnist import Preprocess_mnist
 from utils.preprocessing.nslkdd import Preprocess_nslkdd
 from utils.preprocessing.paysim import Preprocess_paysim
 from utils.preprocessing.paysim_custom import Preprocess_paysim_custom
+from utils.preprocessing.saperp import Preprocess_saperp
 from utils.preprocessing.utils import drop_columns, one_hot_encode_column, unpickle
 
 
@@ -40,8 +40,7 @@ class LoadData(object):
         elif self.dataset_string == "nslkdd":
             x_ben, x_fraud, preprocessing_class = self.get_data_nslkdd()
         elif self.dataset_string == "saperp-ek" or self.dataset_string == "saperp-vk":
-            fraud_only = self.parameter_class.get_saperp_mode()['fraud_only']
-            x_ben, x_fraud = get_data_saperp(self.dataset_string, self.path, fraud_only)
+            x_ben, x_fraud, preprocessing_class = self.get_data_saperp()
         elif self.dataset_string == "mnist":
             x_ben, x_fraud, preprocessing_class = self.get_data_mnist()
         elif self.dataset_string == "cifar10":
@@ -117,6 +116,14 @@ class LoadData(object):
 
         return x_ben, x_fraud, pp_ieee
 
+    def get_data_saperp(self):
+        fraud_only = self.parameter_class.get_saperp_mode()['fraud_only']
+        pp_saperp = Preprocess_saperp(self.dataset_string, self.path, fraud_only)
+
+        x_ben, x_fraud = pp_saperp.initial_processing()
+
+        return x_ben, x_fraud, pp_saperp
+
     def get_data_nslkdd(self):
         pp_nslkdd = Preprocess_nslkdd()
 
@@ -176,7 +183,6 @@ class LoadData(object):
         x_ben, x_fraud = pp_mnist.initial_processing(train_images, train_labels, test_images, test_labels)
 
         return x_ben, x_fraud, pp_mnist
-
 
     def read_csv(self, path, columns=None):
         start_time = datetime.now()
