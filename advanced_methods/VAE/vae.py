@@ -13,12 +13,12 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support, pre
 from sklearn.model_selection import train_test_split
 
 from advanced_methods.VAE.utils import sampling
-from baseline_methods.utils import plot_pr_curve, plot_roc_curve
-from utils.plotting.images import plot_mnist_images
 
 
 class VAE(object):
     def __init__(self, x_train, dataset_string, seed, epochs=20, batch_size=32, verbosity=0):
+        self.label = 'VAE'
+
         self.x_train = x_train
         self.dataset_string = dataset_string
         self.seed = seed
@@ -38,6 +38,7 @@ class VAE(object):
 
         self.threshold = None
         self.vae = None
+        self.mse = None
 
     def set_parameters(self, parameters):
         self.original_dim = self.x_train.shape[1]
@@ -98,24 +99,19 @@ class VAE(object):
         self.threshold = np.quantile(train_mse, 0.9)
         self.vae = vae
 
-    def predict(self, x_test, y_test, plots):
+    def predict(self, x_test, y_test):
         y_pred = self.vae.predict(x_test)
 
-        test_mse = np.mean(np.power(x_test - y_pred, 2), axis=1)
-        y_pred = [1 if val > self.threshold else 0 for val in test_mse]
+        mse_ = np.mean(np.power(x_test - y_pred, 2), axis=1)
+        self.mse = mse_
+        y_pred = [1 if val > self.threshold else 0 for val in mse_]
         acc_score = accuracy_score(y_test, y_pred)
 
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
-        precision_pts, recall_pts, _ = precision_recall_curve(y_test, test_mse)
+        precision_pts, recall_pts, _ = precision_recall_curve(y_test, mse_)
         pr_auc = metrics.auc(recall_pts, precision_pts)
-        roc_auc = roc_auc_score(y_test, test_mse)
-
-        if plots == 'pr' or plots == 'both':
-            plot_pr_curve(y_test, test_mse, 'RBM')
-
-        if plots == 'roc' or plots == 'both':
-            plot_roc_curve(y_test, test_mse, 'RBM')
+        roc_auc = roc_auc_score(y_test, mse_)
 
         results = {
             'prec_list': [precision[1]],
@@ -124,12 +120,15 @@ class VAE(object):
             'acc_list': [acc_score],
             'pr_auc_list': [pr_auc],
             'roc_auc_list': [roc_auc],
-            'method_list': ['VAE'],
+            'method_list': [self.label],
         }
 
         return results
 
+    def build_plots(self, y_test, image_creator):
+        image_creator.add_curves(y_test, self.mse, self.label)
+
     def plot_reconstructed_data(self, x_test):
         reconstructed_x_test = self.vae.predict(x_test)
-        plot_mnist_images(x_test, reconstructed_x_test, 'VAE', self.dataset_string, 10)
+        # plot_mnist_images(x_test, reconstructed_x_test, 'VAE', self.dataset_string, 10)
         # plot_cifar10_images(x_test, reconstructed_x_test, 'VAE', self.dataset_string, 10)

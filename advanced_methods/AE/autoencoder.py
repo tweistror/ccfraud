@@ -8,9 +8,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score, precision_recall_curve, roc_auc_score
 
 from advanced_methods.AE.utils import build_ae_model
-from baseline_methods.utils import plot_pr_curve, plot_roc_curve
-from utils.plotting.images import plot_mnist_images, plot_cifar10_images
-
 
 class Autoencoder(object):
     def __init__(self, x_train, dataset_string, seed, verbosity=0):
@@ -36,6 +33,7 @@ class Autoencoder(object):
         self.autoencoder = None
 
         self.mse = None
+        self.label = 'Autoencoder'
 
     def set_parameters(self, parameters):
         self.input_dim = self.x_train.shape[1]
@@ -76,7 +74,7 @@ class Autoencoder(object):
         self.threshold = np.quantile(mse, 0.9)
         self.autoencoder = autoencoder
 
-    def predict(self, x_test, y_test, plots):
+    def predict(self, x_test, y_test):
         # Predict the test set
         y_pred = self.autoencoder.predict(x_test)
 
@@ -86,12 +84,6 @@ class Autoencoder(object):
         precision_pts, recall_pts, _ = precision_recall_curve(y_test, mse)
         pr_auc = metrics.auc(recall_pts, precision_pts)
         roc_auc = roc_auc_score(y_test, mse)
-
-        if plots == 'pr' or plots == 'both':
-            plot_pr_curve(y_test, mse, 'Autoencoder')
-
-        if plots == 'roc' or plots == 'both':
-            plot_roc_curve(y_test, mse, 'Autoencoder')
 
         y_pred = [1 if val > self.threshold else 0 for val in mse]
         acc_score = accuracy_score(y_test, y_pred)
@@ -106,13 +98,16 @@ class Autoencoder(object):
             'acc_list': [acc_score],
             'pr_auc_list': [pr_auc],
             'roc_auc_list': [roc_auc],
-            'method_list': ['Autoencoder'],
+            'method_list': [self.label],
         }
 
         return results
 
+    def build_plots(self, y_test, image_creator):
+        image_creator.add_curves(y_test, self.mse, self.label)
+
     def plot_reconstructed_data(self, x_test):
         reconstructed_x_test = self.autoencoder.predict(x_test)
-        plot_mnist_images(x_test, reconstructed_x_test, 'Autoencoder', self.dataset_string, 10)
+        # plot_mnist_images(x_test, reconstructed_x_test, 'Autoencoder', self.dataset_string, 10)
         # plot_cifar10_images(x_test, reconstructed_x_test, 'Autoencoder', self.dataset_string, 10)
         return None

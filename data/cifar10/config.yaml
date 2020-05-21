@@ -44,6 +44,7 @@ parameters:
     train_test_split: 0.2
 mode:
   anomaly_number: 0
+  # TODO: Invert mode
 #airplane 0
 #automobile 1
 #bird 2

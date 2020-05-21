@@ -33,26 +33,6 @@ def get_metrics(y_test, y_pred, y_score, label, result_list):
     return result_list
 
 
-def plot_pr_curve(y_test, y_score, label):
-    precision, recall, _ = precision_recall_curve(y_test, y_score)
-
-    plt.plot(recall, precision, lw=2)
-    plt.xlabel('Recall')
-    plt.ylabel('Precision')
-    plt.title(f'{label} - Precision-Recall-Curve - AUC: {metrics.auc(recall, precision).round(3)}')
-    plt.show()
-
-
-def plot_roc_curve(y_test, y_score, label):
-    fpr, tpr, _ = metrics.roc_curve(y_test, y_score)
-
-    plt.plot(fpr, tpr, lw=2)
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title(f'{label} - Receiver Operating Characteristic - AUC: {metrics.auc(fpr, tpr).round(3)}')
-    plt.show()
-
-
 def execute_predict_proba(clf, train_test_split, label, result_list, unsupervised=False):
     x_train = train_test_split['x_train']
     y_train = train_test_split['y_train']

@@ -12,6 +12,7 @@ from utils.list_operations import update_result_lists
 from utils.load_data import LoadData
 from utils.parameters import Parameters
 from utils.parser import Parser
+from utils.plotting.image_creator import Image_Creator
 from utils.printing import print_results
 from utils.smote import execute_smote
 from utils.split_preprocess_data import SplitPreprocessData
@@ -22,7 +23,7 @@ baselines = ["both", "usv", "sv", "none"]
 
 parser = Parser(datasets, methods, baselines)
 
-dataset_string, verbosity, seed, method, baseline, iteration_count, use_oversampling, cross_validation_count, plots = \
+dataset_string, verbosity, seed, method, baseline, iteration_count, use_oversampling, cross_validation_count = \
     parser.get_args()
 
 # Set parameters
@@ -52,6 +53,8 @@ start_time_complete = datetime.now()
 if verbosity > 0:
     print(f'Start {iteration_count} iterations')
 
+image_creator = Image_Creator(dataset_string)
+
 for i in range(iteration_count):
     iterated_seed = seed + 1
 
@@ -80,7 +83,7 @@ for i in range(iteration_count):
     if method == 'all' or method == 'ocan':
         results = execute_oc_gan(x_usv_train, x_test[:test_benign],
                                  x_test[test_benign:], test_benign,
-                                 parameter_class.get_oc_gan_parameters(), iterated_seed, plots,
+                                 parameter_class.get_oc_gan_parameters(), iterated_seed,
                                  autoencoding=False, verbosity=verbosity)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
@@ -92,7 +95,7 @@ for i in range(iteration_count):
     if method == 'all' or method == 'ocan-ae':
         results = execute_oc_gan(x_usv_train, x_test[:test_benign],
                                  x_test[test_benign:], test_benign,
-                                 parameter_class.get_oc_gan_parameters(), iterated_seed, plots,
+                                 parameter_class.get_oc_gan_parameters(), iterated_seed,
                                  autoencoding=True, verbosity=verbosity)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
@@ -105,9 +108,10 @@ for i in range(iteration_count):
         ae_model = Autoencoder(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
         ae_model.set_parameters(parameter_class.get_autoencoder_parameters())
         ae_model.build()
-        results = ae_model.predict(x_test, y_test, plots)
+        results = ae_model.predict(x_test, y_test)
+        ae_model.build_plots(y_test, image_creator)
 
-        ae_model.plot_reconstructed_data(x_test)
+        # ae_model.plot_reconstructed_data(x_test)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
@@ -118,9 +122,9 @@ for i in range(iteration_count):
     if method == 'all' or method == 'rbm':
         rbm_model = RBM(dataset_string, iterated_seed, verbosity=verbosity)
         rbm_model.set_parameters(x_usv_train.shape[1], parameter_class.get_rbm_parameters())
-        results = rbm_model.execute(x_usv_train, x_test, y_test, plots)
+        results = rbm_model.execute(x_usv_train, x_test, y_test)
 
-        rbm_model.plot_reconstructed_data(x_test)
+        # rbm_model.plot_reconstructed_data(x_test)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
@@ -132,9 +136,9 @@ for i in range(iteration_count):
         vae_model = VAE(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
         vae_model.set_parameters(parameter_class.get_vae_parameters())
         vae_model.build()
-        results = vae_model.predict(x_test, y_test, plots)
+        results = vae_model.predict(x_test, y_test)
 
-        vae_model.plot_reconstructed_data(x_test)
+        # vae_model.plot_reconstructed_data(x_test)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
@@ -192,6 +196,10 @@ for i in range(iteration_count):
     if verbosity > 0:
         time_required = str(datetime.now() - start_time)
         print(f'Iteration #{i + 1} finished in {time_required}')
+
+# TODO: Print all available methods
+
+image_creator.create_plots()
 
 if verbosity > 1:
     time_required = str(datetime.now() - start_time_complete)

@@ -24,7 +24,6 @@ Parameter name  | Required | Default | Choices | Description
 --cv    | no | -- | number (not too high) | Activate crossvalidation with the desired count of train/test-splits
 --oversampling  | no | n | y, n | Flag for activation of oversampling (default is no)
 --seed | no | random | 'random' or a concrete number| Specify a number as concrete seed (default is random)
---plots | no | none | none, roc, pr, both | Curves to be plotted
 
 Further, `--help` is available to show console-based help.
 

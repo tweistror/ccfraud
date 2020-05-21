@@ -31,6 +31,7 @@ parameters:
     optimizer: 'adam'
     loss: 'mean_squared_error'
     train_test_split: 0.2
+#    TODO: epochs
   rbm:
     num_hidden: 180
     visible_unit_type: 'bin' # bin or gauss
@@ -43,7 +44,8 @@ parameters:
     stddev: 0.1
     train_test_split: 0.2
 mode:
-  anomaly_number: 6
+  anomaly_number: 8
+# TODO: Invert mode
 path:
   train_labels: './data/mnist/train-labels-idx1-ubyte'
   train_images: './data/mnist/train-images-idx3-ubyte'

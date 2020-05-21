@@ -9,8 +9,6 @@ from sklearn.metrics import accuracy_score, precision_recall_fscore_support, pre
 from sklearn.model_selection import train_test_split
 
 from advanced_methods.RBM import utils
-from baseline_methods.utils import plot_pr_curve, plot_roc_curve
-from utils.plotting.images import plot_mnist_images, plot_cifar10_images
 
 tf.disable_v2_behavior()
 
@@ -24,6 +22,9 @@ class RBM(object):
         self.dataset_string = dataset_string
         tf.set_random_seed(seed)
         self.seed = seed
+
+        self.rec_error = None
+        self.label = 'RBM'
 
         self.visible_unit_type = 'bin'
         self.gibbs_sampling_steps = None
@@ -82,13 +83,12 @@ class RBM(object):
         self.stddev = parameters['stddev']
         self.train_test_split = parameters['train_test_split']
 
-    def execute(self, x_train, x_test, y_test, plots):
+    def execute(self, x_train, x_test, y_test):
 
         """ Execute the model with given training and test data.
         :param x_train: training set
         :param x_test: testing set
         :param y_test: testing labels
-        :param plots: plots
         :return: self
         """
 
@@ -110,7 +110,7 @@ class RBM(object):
                 plt.ylabel("Reconstruction error")
                 plt.show()
 
-            return self.predict(x_train, x_test, y_test, plots)
+            return self.predict(x_train, x_test, y_test)
 
     def _initialize_tf_utilities_and_ops(self):
 
@@ -405,26 +405,21 @@ class RBM(object):
                 'bv_': self.bv_.eval()
             }
 
-    def predict(self, x_train, x_test, y_test, plots):
+    def predict(self, x_train, x_test, y_test):
         # Threshold calculation
         train_reconstruction_errors = self.getReconstructError(x_train)
         threshold = np.quantile(train_reconstruction_errors, 0.9)
 
-        test_reconstruction_errors = self.getReconstructError(x_test)
+        rec_error = self.getReconstructError(x_test)
+        self.rec_error = rec_error
 
-        y_pred = [1 if val > threshold else 0 for val in test_reconstruction_errors]
+        y_pred = [1 if val > threshold else 0 for val in rec_error]
         acc_score = accuracy_score(y_test, y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
-        precision_pts, recall_pts, _ = precision_recall_curve(y_test, test_reconstruction_errors)
+        precision_pts, recall_pts, _ = precision_recall_curve(y_test, rec_error)
         pr_auc = metrics.auc(recall_pts, precision_pts)
-        roc_auc = roc_auc_score(y_test, test_reconstruction_errors)
-
-        if plots == 'pr' or plots == 'both':
-            plot_pr_curve(y_test, test_reconstruction_errors, 'RBM')
-
-        if plots == 'roc' or plots == 'both':
-            plot_roc_curve(y_test, test_reconstruction_errors, 'RBM')
+        roc_auc = roc_auc_score(y_test, rec_error)
 
         results = {
             'prec_list': [precision[1]],
@@ -433,14 +428,17 @@ class RBM(object):
             'acc_list': [acc_score],
             'pr_auc_list': [pr_auc],
             'roc_auc_list': [roc_auc],
-            'method_list': ['RBM'],
+            'method_list': [self.label],
         }
 
         return results
 
+    def build_plots(self, y_test, image_creator):
+        image_creator.add_curves(y_test, self.rec_error, self.label)
+
     def plot_reconstructed_data(self, x_test):
         # TODO: Conditional plotting
         reconstructed_x_test = self.getReconstruction(x_test)
-        plot_mnist_images(x_test, reconstructed_x_test, 'RBM', self.dataset_string, 10)
-        # plot_cifar10_images(x_test, reconstructed_x_test, 'RBM', self.dataset_string, 10)
+        # plot_mnist_images(x_test, reconstructed_x_test, self.label, self.dataset_string, 10)
+        # plot_cifar10_images(x_test, reconstructed_x_test, self.label self.dataset_string, 10)
 

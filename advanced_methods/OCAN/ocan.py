@@ -11,14 +11,15 @@ from sklearn.metrics import classification_report, precision_recall_fscore_suppo
 from advanced_methods.OCAN.autoencoder import Dense_Autoencoder
 from advanced_methods.OCAN.utils import xavier_init, pull_away_loss, sample_Z, draw_trend, \
     preprocess_minus_1_and_pos_1
-from baseline_methods.utils import plot_pr_curve, plot_roc_curve
 from utils.list_operations import one_hot, sample_shuffle
 
 tf.compat.v1.disable_eager_execution()
 
 
-def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters, seed, plots,
+def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters, seed, image_creator,
                    autoencoding=False, verbosity=0):
+
+    label = 'OCAN'
 
     # Set parameters using YAML-config
     normal_parameters = parameters['normal']
@@ -203,7 +204,7 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     d_val_pro = list()
 
     # TODO: Variable in config
-    n_round = 200
+    n_round = 10
 
     for n_epoch in range(n_round):
         start_time = datetime.now()
@@ -253,11 +254,7 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     pr_auc = metrics.auc(recall_pts, precision_pts)
     roc_auc = roc_auc_score(y_test, y_prob)
 
-    if plots == 'pr' or plots == 'both':
-        plot_pr_curve(y_test, y_prob, f'OCAN{" with AE" if autoencoding is True else ""}')
-
-    if plots == 'roc' or plots == 'both':
-        plot_roc_curve(y_test, y_prob, f'OCAN{" with AE" if autoencoding is True else ""}')
+    image_creator.add_curves(y_test, y_prob,label)
 
     results = {
         'prec_list': [precision[1]],
@@ -266,7 +263,7 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
         'acc_list': [acc],
         'pr_auc_list': [pr_auc],
         'roc_auc_list': [roc_auc],
-        'method_list': [f'OCAN{" with AE" if autoencoding is True else ""}'],
+        'method_list': [f'{label}{" with AE" if autoencoding is True else ""}'],
     }
 
     # print(conf_mat)
