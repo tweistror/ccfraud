@@ -46,13 +46,10 @@ class LoadData(object):
         elif self.dataset_string == "cifar10":
             x_ben, x_fraud, preprocessing_class = self.get_data_cifar10()
 
-        if self.dataset_string == "cifar10" or self.dataset_string == "mnist":
-            x_ben = sample_shuffle(x_ben, self.seed)
-            x_fraud = sample_shuffle(x_fraud, self.seed)
-        else:
+        if self.dataset_string != "cifar10" and self.dataset_string != "mnist":
             preprocessing_class.set_columns(x_ben)
-            x_ben = x_ben.sample(frac=1, random_state=self.seed).values
-            x_fraud = x_fraud.sample(frac=1, random_state=self.seed).values
+            x_ben = x_ben.values
+            x_fraud = x_fraud.values
 
         return x_ben, x_fraud, preprocessing_class
 

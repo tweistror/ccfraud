@@ -112,6 +112,9 @@ class SplitPreprocessData(object):
         x_ben = parameters['x_ben']
         x_fraud = parameters['x_fraud']
 
+        x_ben = sample_shuffle(x_ben, self.seed)
+        x_fraud = sample_shuffle(x_fraud, self.seed)
+
         x_usv_train = x_ben[0:k * usv_train]
         x_sv_train_ben = x_ben[0:k * sv_train_ben]
         x_sv_train_fraud = x_fraud[0: k * sv_train_fraud]

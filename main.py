@@ -56,7 +56,7 @@ if verbosity > 0:
 image_creator = Image_Creator(dataset_string)
 
 for i in range(iteration_count):
-    iterated_seed = seed + 1
+    iterated_seed = seed + i
 
     start_time = datetime.now()
 
@@ -111,8 +111,6 @@ for i in range(iteration_count):
         results = ae_model.predict(x_test, y_test)
         ae_model.build_plots(y_test, image_creator)
 
-        # ae_model.plot_reconstructed_data(x_test)
-
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
 
@@ -123,8 +121,7 @@ for i in range(iteration_count):
         rbm_model = RBM(dataset_string, iterated_seed, verbosity=verbosity)
         rbm_model.set_parameters(x_usv_train.shape[1], parameter_class.get_rbm_parameters())
         results = rbm_model.execute(x_usv_train, x_test, y_test)
-
-        # rbm_model.plot_reconstructed_data(x_test)
+        rbm_model.build_plots(y_test, image_creator)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
@@ -137,8 +134,7 @@ for i in range(iteration_count):
         vae_model.set_parameters(parameter_class.get_vae_parameters())
         vae_model.build()
         results = vae_model.predict(x_test, y_test)
-
-        # vae_model.plot_reconstructed_data(x_test)
+        vae_model.build_plots(y_test, image_creator)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
