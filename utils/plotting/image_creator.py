@@ -54,6 +54,18 @@ def merge_curves(x_label, y_label, curve_dict, curve_list):
     return curve_list
 
 
+def save_plt(dataset_string, label, dpi=None):
+    timestamp = datetime.now().isoformat(timespec='seconds').replace(':', '.')
+    date, time = timestamp.split('T')
+
+    results_dir = os.path.join('output/', f'{dataset_string}/', f'{date}/')
+
+    if not os.path.isdir(results_dir):
+        os.makedirs(results_dir)
+
+    plt.savefig(f'{results_dir}{label}_{time}.png', dpi=dpi)
+
+
 class Image_Creator:
     def __init__(self, dataset_string, baseline, parameter_class):
         self.dataset_string = dataset_string
@@ -153,15 +165,7 @@ class Image_Creator:
 
         plt.legend(prop={'size': 8}, loc='lower left')
 
-        timestamp = datetime.now().isoformat(timespec='seconds').replace(':', '.')
-        date, time = timestamp.split('T')
-
-        results_dir = os.path.join('output/', f'{self.dataset_string}/', f'{date}/')
-
-        if not os.path.isdir(results_dir):
-            os.makedirs(results_dir)
-
-        plt.savefig(f'output/{self.dataset_string}/{date}/pr_baselines_{time}.png', dpi=400)
+        save_plt(self.dataset_string, 'pr_baselines', dpi=400)
 
     def __plot_baseline_roc_curves(self, roc_curves):
         plt.clf()
@@ -177,15 +181,7 @@ class Image_Creator:
 
         plt.legend(prop={'size': 8}, loc='lower right')
 
-        timestamp = datetime.now().isoformat(timespec='seconds').replace(':', '.')
-        date, time = timestamp.split('T')
-
-        results_dir = os.path.join('output/', f'{self.dataset_string}/', f'{date}/')
-
-        if not os.path.isdir(results_dir):
-            os.makedirs(results_dir)
-
-        plt.savefig(f'output/{self.dataset_string}/{date}/roc_baselines_{time}.png', dpi=400)
+        save_plt(self.dataset_string, 'roc_baselines', dpi=400)
 
     def add_curves(self, y_test, y_score, method):
         precision, recall, _ = precision_recall_curve(y_test, y_score)
@@ -217,15 +213,7 @@ class Image_Creator:
         plt.ylabel('Precision')
         plt.title(f'{self.dataset_string} - {method} - PR-Curve - AUC: {mean(pr_auc_list).round(3)}')
 
-        timestamp = datetime.now().isoformat(timespec='seconds').replace(':', '.')
-        date, time = timestamp.split('T')
-
-        results_dir = os.path.join('output/', f'{self.dataset_string}/', f'{date}/')
-
-        if not os.path.isdir(results_dir):
-            os.makedirs(results_dir)
-
-        plt.savefig(f'output/{self.dataset_string}/{date}/pr_{method}_{time}.png')
+        save_plt(self.dataset_string, f'pr_{method}')
 
     def __plot_roc_curves(self, method):
         roc_auc_list = []
@@ -241,15 +229,53 @@ class Image_Creator:
         plt.ylabel('True Positive Rate')
         plt.title(f'{self.dataset_string} - {method} - ROC-Curve - AUC: {mean(roc_auc_list).round(3)}')
 
-        timestamp = datetime.now().isoformat(timespec='seconds').replace(':', '.')
-        date, time = timestamp.split('T')
+        save_plt(self.dataset_string, f'roc_{method}')
 
-        results_dir = os.path.join('output/', f'{self.dataset_string}/', f'{date}/')
 
-        if not os.path.isdir(results_dir):
-            os.makedirs(results_dir)
+    def plot_conf_matrix(self, cm, method):
+        plt.clf()
 
-        plt.savefig(f'output/{self.dataset_string}/{date}/roc_{method}_{time}.png')
+        cm_numeric = cm
+        cm_percentage = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        cmap = plt.cm.Blues
+        classes = ['benign', 'fraud']
+        fontsize = 12
+
+        plt.imshow(cm, interpolation='nearest', cmap=cmap)
+        plt.colorbar()
+        tick_marks = np.arange(len(classes))
+        plt.xticks(tick_marks, classes, size=fontsize)
+        plt.yticks(tick_marks, classes, size=fontsize)
+
+        thresh = cm.max() / 2.
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            # Set color parameters
+            color = "white" if cm[i, j] > thresh else "black"
+
+            # Plot percentage
+            text = format(cm_percentage[i, j], '.5f')
+            text = text + '%'
+            plt.text(j, i,
+                     text,
+                     fontsize=fontsize,
+                     verticalalignment='baseline',
+                     horizontalalignment='center',
+                     color=color)
+            # Plot numeric
+            text = format(cm_numeric[i, j], 'd')
+            text = '\n \n' + text
+            plt.text(j, i,
+                     text,
+                     fontsize=fontsize,
+                     verticalalignment='center',
+                     horizontalalignment='center',
+                     color=color)
+
+        plt.ylabel('True label'.title(), size=fontsize)
+        plt.xlabel('Predicted label'.title(), size=fontsize)
+        plt.title(f'Confusion Matrix - {get_dataset_name(self.dataset_string)} - {method}')
+
+        save_plt(self.dataset_string, f'cm_{method}')
 
     def add_image_plots(self, x_test, x_generated, method, dataset_string, n=5):
         if dataset_string == 'mnist':
@@ -291,15 +317,7 @@ class Image_Creator:
             if i == n/2:
                 ax.set_title('Reconstructed Images')
 
-        timestamp = datetime.now().isoformat(timespec='seconds').replace(':', '.')
-        date, time = timestamp.split('T')
-
-        results_dir = os.path.join('output/', f'{self.dataset_string}/', f'{date}/')
-
-        if not os.path.isdir(results_dir):
-            os.makedirs(results_dir)
-
-        plt.savefig(f'output/{self.dataset_string}/{date}/mnist_images_{method}_{time}.png')
+        save_plt(self.dataset_string, f'images_{method}')
 
     def plot_cifar10_images(self, x_test, x_generated, method, anomaly_number, train_mode, n=5):
         # TODO: Randomness - Yes or No?
@@ -330,15 +348,7 @@ class Image_Creator:
             if i == n/2:
                 ax.set_title('Reconstructed Images')
 
-        timestamp = datetime.now().isoformat(timespec='seconds').replace(':', '.')
-        date, time = timestamp.split('T')
-
-        results_dir = os.path.join('output/', f'{self.dataset_string}/', f'{date}/')
-
-        if not os.path.isdir(results_dir):
-            os.makedirs(results_dir)
-
-        plt.savefig(f'output/{self.dataset_string}/{date}/cifar10_images_{method}_{time}.png')
+        save_plt(self.dataset_string, f'images_{method}')
 
     def tsne_plot(self, x1, y1, name="graph.png"):
         tsne = TSNE(n_components=2, random_state=0)
