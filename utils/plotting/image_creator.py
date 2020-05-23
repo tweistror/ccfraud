@@ -9,6 +9,7 @@ from xgboost import plot_importance
 import random
 from datetime import datetime
 from statistics import mean
+from utils.preprocessing.cifar10 import get_cifar10_object
 
 
 def get_dataset_name(dataset_string):
@@ -54,9 +55,11 @@ def merge_curves(x_label, y_label, curve_dict, curve_list):
 
 
 class Image_Creator:
-    def __init__(self, dataset_string, baseline):
+    def __init__(self, dataset_string, baseline, parameter_class):
         self.dataset_string = dataset_string
         self.baseline = baseline
+        self.parameter_class = parameter_class
+
         self.roc_curve_list = []
         self.pr_curve_list = []
 
@@ -75,6 +78,9 @@ class Image_Creator:
         for method in method_list:
             self.__plot_pr_curves(method)
             self.__plot_roc_curves(method)
+
+        if self.baseline == 'none':
+            return
 
         for curve in self.baseline_pr_curve_list:
             if curve['baseline_type'] == 'Supervised':
@@ -245,13 +251,26 @@ class Image_Creator:
 
         plt.savefig(f'output/{self.dataset_string}/{date}/roc_{method}_{time}.png')
 
-    def plot_mnist_images(self, x_test, x_generated, label, dataset='', n=5):
+    def add_image_plots(self, x_test, x_generated, method, dataset_string, n=5):
+        if dataset_string == 'mnist':
+            anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
+            train_mode = self.parameter_class.get_mnist_mode()['train_mode']
 
+            self.plot_mnist_images(x_test, x_generated, method, anomaly_number, train_mode, n)
+        elif dataset_string == 'cifar10':
+            anomaly_number = self.parameter_class.get_cifar10_mode()['anomaly_number']
+            train_mode = self.parameter_class.get_cifar10_mode()['train_mode']
+
+            self.plot_cifar10_images(x_test, x_generated, method, anomaly_number, train_mode, n)
+
+    def plot_mnist_images(self, x_test, x_generated, method, anomaly_number, train_mode, n=5):
+        # TODO: Randomness - Yes or No?
         indices = random.sample(range(0, x_test.shape[0] - 1), n)
 
         dim = 28
 
         plt.figure(figsize=(10, 4.5))
+        plt.suptitle(f'MNIST - {method} - Training mode: {train_mode} - Number: {anomaly_number}')
 
         for i in range(n):
             # plot original image
@@ -271,17 +290,31 @@ class Image_Creator:
             ax.get_yaxis().set_visible(False)
             if i == n/2:
                 ax.set_title('Reconstructed Images')
-        plt.show()
 
-    def plot_cifar10_images(self, x_test, x_generated, label, dataset='', n=5):
+        timestamp = datetime.now().isoformat(timespec='seconds').replace(':', '.')
+        date, time = timestamp.split('T')
+
+        results_dir = os.path.join('output/', f'{self.dataset_string}/', f'{date}/')
+
+        if not os.path.isdir(results_dir):
+            os.makedirs(results_dir)
+
+        plt.savefig(f'output/{self.dataset_string}/{date}/mnist_images_{method}_{time}.png')
+
+    def plot_cifar10_images(self, x_test, x_generated, method, anomaly_number, train_mode, n=5):
+        # TODO: Randomness - Yes or No?
         indices = random.sample(range(0, x_test.shape[0] - 1), n)
 
+        dim = 32
+
         plt.figure(figsize=(10, 4.5))
+        plt.suptitle(f'CIFAR10 - {method} - Training mode: {train_mode} - Object: {get_cifar10_object(anomaly_number)}'
+                     f'({anomaly_number})')
 
         for i in range(n):
             # plot original image
             ax = plt.subplot(2, n, i + 1)
-            plt.imshow(x_test[indices[i]].reshape(3, 32, 32).transpose([1, 2, 0]))
+            plt.imshow(x_test[indices[i]].reshape(3, dim, dim).transpose([1, 2, 0]))
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
@@ -290,13 +323,22 @@ class Image_Creator:
 
             # plot reconstruction
             ax = plt.subplot(2, n, i + 1 + n)
-            plt.imshow(x_generated[indices[i]].reshape(3, 32, 32).transpose([1, 2, 0]))
+            plt.imshow(x_generated[indices[i]].reshape(3, dim, dim).transpose([1, 2, 0]))
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
             if i == n/2:
                 ax.set_title('Reconstructed Images')
-        plt.show()
+
+        timestamp = datetime.now().isoformat(timespec='seconds').replace(':', '.')
+        date, time = timestamp.split('T')
+
+        results_dir = os.path.join('output/', f'{self.dataset_string}/', f'{date}/')
+
+        if not os.path.isdir(results_dir):
+            os.makedirs(results_dir)
+
+        plt.savefig(f'output/{self.dataset_string}/{date}/cifar10_images_{method}_{time}.png')
 
     def tsne_plot(self, x1, y1, name="graph.png"):
         tsne = TSNE(n_components=2, random_state=0)

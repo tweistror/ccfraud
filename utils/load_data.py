@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from mlxtend.data import loadlocal_mnist
 
-from utils.list_operations import sample_shuffle
 from utils.preprocessing.ccfraud import Preprocess_ccfraud
 from utils.preprocessing.cifar10 import Preprocess_cifar10
 from utils.preprocessing.ieee import Preprocess_ieee
@@ -146,8 +145,10 @@ class LoadData(object):
         return x_ben, x_fraud, pp_nslkdd
 
     def get_data_cifar10(self):
-        anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
-        pp_cifar10 = Preprocess_cifar10(anomaly_number)
+        anomaly_number = self.parameter_class.get_cifar10_mode()['anomaly_number']
+        train_mode = self.parameter_class.get_cifar10_mode()['train_mode']
+
+        pp_cifar10 = Preprocess_cifar10(anomaly_number, train_mode)
 
         labels = None
         images = None
@@ -168,7 +169,9 @@ class LoadData(object):
 
     def get_data_mnist(self):
         anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
-        pp_mnist = Preprocess_mnist(anomaly_number)
+        train_mode = self.parameter_class.get_mnist_mode()['train_mode']
+
+        pp_mnist = Preprocess_mnist(anomaly_number, train_mode)
 
         train_images, train_labels = loadlocal_mnist(
             images_path=self.path['train_images'],

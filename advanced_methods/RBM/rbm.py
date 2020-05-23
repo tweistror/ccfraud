@@ -24,6 +24,7 @@ class RBM(object):
         self.seed = seed
 
         self.rec_error = None
+        self.reconstruction = None
         self.label = 'RBM'
 
         self.visible_unit_type = 'bin'
@@ -413,6 +414,9 @@ class RBM(object):
         rec_error = self.getReconstructError(x_test)
         self.rec_error = rec_error
 
+        # TODO: Move this into `plot_reconstructed_images`-method (“RuntimeError: Attempted to use a closed Session”)
+        self.reconstruction = self.getReconstruction(x_test)
+
         y_pred = [1 if val > threshold else 0 for val in rec_error]
         acc_score = accuracy_score(y_test, y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
@@ -436,9 +440,6 @@ class RBM(object):
     def build_plots(self, y_test, image_creator):
         image_creator.add_curves(y_test, self.rec_error, self.label)
 
-    def plot_reconstructed_data(self, x_test):
-        # TODO: Conditional plotting
-        reconstructed_x_test = self.getReconstruction(x_test)
-        # plot_mnist_images(x_test, reconstructed_x_test, self.label, self.dataset_string, 10)
-        # plot_cifar10_images(x_test, reconstructed_x_test, self.label self.dataset_string, 10)
-
+    def plot_reconstructed_images(self, x_test, image_creator):
+        reconstructed_x_test = self.reconstruction
+        image_creator.add_image_plots(x_test, reconstructed_x_test, self.label, self.dataset_string, 10)

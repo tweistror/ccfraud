@@ -129,7 +129,6 @@ class VAE(object):
     def build_plots(self, y_test, image_creator):
         image_creator.add_curves(y_test, self.mse, self.label)
 
-    def plot_reconstructed_data(self, x_test):
+    def plot_reconstructed_images(self, x_test, image_creator):
         reconstructed_x_test = self.vae.predict(x_test)
-        # plot_mnist_images(x_test, reconstructed_x_test, 'VAE', self.dataset_string, 10)
-        # plot_cifar10_images(x_test, reconstructed_x_test, 'VAE', self.dataset_string, 10)
+        image_creator.add_image_plots(x_test, reconstructed_x_test, self.label, self.dataset_string, 10)

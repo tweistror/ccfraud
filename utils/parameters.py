@@ -46,5 +46,8 @@ class Parameters(object):
     def get_mnist_mode(self):
         return self.config['mode']
 
+    def get_cifar10_mode(self):
+        return self.config['mode']
+
     def get_all_parameters(self):
         return self.config['parameters']

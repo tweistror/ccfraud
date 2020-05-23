@@ -2,8 +2,9 @@ import numpy as np
 
 
 class Preprocess_mnist:
-    def __init__(self, anomaly_number):
+    def __init__(self, anomaly_number, train_mode):
         self.anomaly_number = anomaly_number
+        self.train_mode = train_mode
 
         self.columns = None
 
@@ -37,10 +38,14 @@ class Preprocess_mnist:
         anomaly_number = self.anomaly_number
 
         def is_anomaly(x):
-            return True if x == anomaly_number else False
+            if self.train_mode == 'rest':
+                return True if x == anomaly_number else False
+            return True if x != anomaly_number else False
 
         def is_not_anomaly(x):
-            return True if x != anomaly_number else False
+            if self.train_mode == 'rest':
+                return True if x != anomaly_number else False
+            return True if x == anomaly_number else False
 
         train_benign = train_images[np.vectorize(is_not_anomaly)(train_labels)]
         train_fraud = train_images[np.vectorize(is_anomaly)(train_labels)]

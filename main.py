@@ -53,7 +53,7 @@ start_time_complete = datetime.now()
 if verbosity > 0:
     print(f'Start {iteration_count} iterations')
 
-image_creator = Image_Creator(dataset_string, baseline)
+image_creator = Image_Creator(dataset_string, baseline, parameter_class)
 
 for i in range(iteration_count):
     iterated_seed = seed + i
@@ -116,6 +116,7 @@ for i in range(iteration_count):
 
         if i == 0:
             method_special_list = method_special_list + results['method_list']
+            ae_model.plot_reconstructed_images(x_test, image_creator)
 
     if method == 'all' or method == 'rbm':
         rbm_model = RBM(dataset_string, iterated_seed, verbosity=verbosity)
@@ -128,6 +129,7 @@ for i in range(iteration_count):
 
         if i == 0:
             method_special_list = method_special_list + results['method_list']
+            rbm_model.plot_reconstructed_images(x_test, image_creator)
 
     if method == 'all' or method == 'vae':
         vae_model = VAE(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
@@ -141,6 +143,7 @@ for i in range(iteration_count):
 
         if i == 0:
             method_special_list = method_special_list + results['method_list']
+            vae_model.plot_reconstructed_images(x_test, image_creator)
 
     # Some verbosity output
     if verbosity > 1:

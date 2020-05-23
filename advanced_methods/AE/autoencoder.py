@@ -9,6 +9,7 @@ from sklearn.metrics import precision_recall_fscore_support, accuracy_score, pre
 
 from advanced_methods.AE.utils import build_ae_model
 
+
 class Autoencoder(object):
     def __init__(self, x_train, dataset_string, seed, verbosity=0):
         self.x_train = x_train
@@ -106,8 +107,6 @@ class Autoencoder(object):
     def build_plots(self, y_test, image_creator):
         image_creator.add_curves(y_test, self.mse, self.label)
 
-    def plot_reconstructed_data(self, x_test):
+    def plot_reconstructed_images(self, x_test, image_creator):
         reconstructed_x_test = self.autoencoder.predict(x_test)
-        # plot_mnist_images(x_test, reconstructed_x_test, 'Autoencoder', self.dataset_string, 10)
-        # plot_cifar10_images(x_test, reconstructed_x_test, 'Autoencoder', self.dataset_string, 10)
-        return None
+        image_creator.add_image_plots(x_test, reconstructed_x_test, self.label, self.dataset_string, 10)
