@@ -163,9 +163,8 @@ for i in range(iteration_count):
     if baseline == 'sv' or baseline == 'both':
         # Execute supervised learning baseline methods
         if cross_validation_count > 1:
-            cv = Crossvalidator(cross_validation_count, x_sv_train, y_sv_train)
-            # TODO: CV correct results with pr_auc and roc_auc
-            prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = cv.execute_cv()
+            cv = Crossvalidator(cross_validation_count, x_sv_train, y_sv_train, image_creator, iterated_seed)
+            results = cv.execute_cv(x_test, y_test)
         else:
             results = build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test, image_creator)
 
