@@ -80,11 +80,14 @@ for i in range(iteration_count):
     if verbosity > 1:
         print(f'Starting iteration #{i + 1}')
 
+    # OCAN
     if method == 'all' or method == 'ocan':
         results = execute_ocan(x_usv_train, x_test[:test_benign],
                                x_test[test_benign:], test_benign,
                                parameter_class.get_ocan_parameters(), iterated_seed, image_creator,
                                autoencoding=False, verbosity=verbosity)
+
+        # TODO: Image plots
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
@@ -97,6 +100,8 @@ for i in range(iteration_count):
                                x_test[test_benign:], test_benign,
                                parameter_class.get_ocan_parameters(), iterated_seed, image_creator,
                                autoencoding=True, verbosity=verbosity)
+
+        # TODO: Image plots
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
