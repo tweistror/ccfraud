@@ -1,3 +1,4 @@
+import itertools
 import os
 
 import matplotlib.pyplot as plt
@@ -230,7 +231,6 @@ class Image_Creator:
         plt.title(f'{self.dataset_string} - {method} - ROC-Curve - AUC: {mean(roc_auc_list).round(3)}')
 
         save_plt(self.dataset_string, f'roc_{method}')
-
 
     def plot_conf_matrix(self, cm, method):
         plt.clf()

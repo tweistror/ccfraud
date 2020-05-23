@@ -5,7 +5,8 @@ import tensorflow.compat.v1 as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import metrics
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, precision_recall_curve, roc_auc_score
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, precision_recall_curve, roc_auc_score, \
+    confusion_matrix
 from sklearn.model_selection import train_test_split
 
 from advanced_methods.RBM import utils
@@ -26,6 +27,7 @@ class RBM(object):
         self.rec_error = None
         self.reconstruction = None
         self.label = 'RBM'
+        self.cm = None
 
         self.visible_unit_type = 'bin'
         self.gibbs_sampling_steps = None
@@ -420,6 +422,7 @@ class RBM(object):
         y_pred = [1 if val > threshold else 0 for val in rec_error]
         acc_score = accuracy_score(y_test, y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
+        self.cm = confusion_matrix(y_test, y_pred)
 
         precision_pts, recall_pts, _ = precision_recall_curve(y_test, rec_error)
         pr_auc = metrics.auc(recall_pts, precision_pts)
@@ -443,3 +446,6 @@ class RBM(object):
     def plot_reconstructed_images(self, x_test, image_creator):
         reconstructed_x_test = self.reconstruction
         image_creator.add_image_plots(x_test, reconstructed_x_test, self.label, self.dataset_string, 10)
+
+    def plot_conf_matrix(self, image_creator):
+        image_creator.plot_conf_matrix(self.cm, self.label)

@@ -9,7 +9,8 @@ from keras import backend as K
 import numpy as np
 from sklearn import metrics
 
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, precision_recall_curve, roc_auc_score
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, precision_recall_curve, roc_auc_score, \
+    confusion_matrix
 from sklearn.model_selection import train_test_split
 
 from advanced_methods.VAE.utils import sampling
@@ -38,6 +39,7 @@ class VAE(object):
         self.threshold = None
         self.vae = None
         self.mse = None
+        self.cm = None
 
     def set_parameters(self, parameters):
         self.original_dim = self.x_train.shape[1]
@@ -109,6 +111,7 @@ class VAE(object):
         acc_score = accuracy_score(y_test, y_pred)
 
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
+        self.cm = confusion_matrix(y_test, y_pred)
 
         precision_pts, recall_pts, _ = precision_recall_curve(y_test, mse_)
         pr_auc = metrics.auc(recall_pts, precision_pts)
@@ -132,3 +135,6 @@ class VAE(object):
     def plot_reconstructed_images(self, x_test, image_creator):
         reconstructed_x_test = self.vae.predict(x_test)
         image_creator.add_image_plots(x_test, reconstructed_x_test, self.label, self.dataset_string, 10)
+
+    def plot_conf_matrix(self, image_creator):
+        image_creator.plot_conf_matrix(self.cm, self.label)

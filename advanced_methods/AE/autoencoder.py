@@ -5,7 +5,8 @@ import numpy as np
 
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_recall_fscore_support, accuracy_score, precision_recall_curve, roc_auc_score
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score, precision_recall_curve, roc_auc_score, \
+    confusion_matrix
 
 from advanced_methods.AE.utils import build_ae_model
 
@@ -35,6 +36,7 @@ class Autoencoder(object):
 
         self.mse = None
         self.label = 'Autoencoder'
+        self.cm = None
 
     def set_parameters(self, parameters):
         self.input_dim = self.x_train.shape[1]
@@ -90,6 +92,7 @@ class Autoencoder(object):
         acc_score = accuracy_score(y_test, y_pred)
 
         precision, recall, fscore, support = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
+        self.cm = confusion_matrix(y_test, y_pred)
         # class_report = classification_report(self.y_test, y_pred, target_names=['benign', 'fraud'], digits=4)
 
         results = {
@@ -110,3 +113,6 @@ class Autoencoder(object):
     def plot_reconstructed_images(self, x_test, image_creator):
         reconstructed_x_test = self.autoencoder.predict(x_test)
         image_creator.add_image_plots(x_test, reconstructed_x_test, self.label, self.dataset_string, 10)
+
+    def plot_conf_matrix(self, image_creator):
+        image_creator.plot_conf_matrix(self.cm, self.label)

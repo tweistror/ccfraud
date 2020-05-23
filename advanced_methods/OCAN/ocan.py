@@ -6,7 +6,7 @@ from sklearn import metrics
 from datetime import datetime
 
 from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score, \
-    precision_recall_curve, roc_auc_score
+    precision_recall_curve, roc_auc_score, confusion_matrix
 
 from advanced_methods.OCAN.autoencoder import Dense_Autoencoder
 from advanced_methods.OCAN.utils import xavier_init, pull_away_loss, sample_Z, draw_trend, \
@@ -254,7 +254,10 @@ def execute_ocan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parame
     pr_auc = metrics.auc(recall_pts, precision_pts)
     roc_auc = roc_auc_score(y_test, y_prob)
 
+    cm = confusion_matrix(y_test, y_pred)
+
     image_creator.add_curves(y_test, y_prob, label)
+    image_creator.plot_conf_matrix(cm, label)
 
     results = {
         'prec_list': [precision[1]],
