@@ -27,6 +27,8 @@ parameters:
     kernel_regularizer: 'None'
     activity_regularizer: 'None'
   vae:
+    epochs: 20
+    batch_size: 32
     intermediate_dim: 200
     latent_dim: 2
     activation_fct: 'relu'
@@ -45,8 +47,8 @@ parameters:
     stddev: 0.1
     train_test_split: 0.2
 mode:
-  anomaly_number: 0
-  # TODO: Invert mode
+  anomaly_number: 9
+  train_mode: rest # specify training method: `anomaly` = training only on anomaly_number, 'rest' = training on rest
 #airplane 0
 #automobile 1
 #bird 2

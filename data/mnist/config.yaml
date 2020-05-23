@@ -27,13 +27,14 @@ parameters:
     kernel_regularizer: 'None'
     activity_regularizer: 'None'
   vae:
+    epochs: 20
+    batch_size: 32
     intermediate_dim: 128
     latent_dim: 32
     activation_fct: 'relu'
     optimizer: 'adam'
     loss: 'mean_squared_error'
     train_test_split: 0.2
-#    TODO: epochs
   rbm:
     num_hidden: 180
     visible_unit_type: 'bin' # bin or gauss
@@ -47,7 +48,7 @@ parameters:
     train_test_split: 0.2
 mode:
   anomaly_number: 8
-# TODO: Invert mode
+  train_mode: rest # specify training method: `anomaly` = training only on anomaly_number, 'rest' = training on rest
 path:
   train_labels: './data/mnist/train-labels-idx1-ubyte'
   train_images: './data/mnist/train-images-idx3-ubyte'

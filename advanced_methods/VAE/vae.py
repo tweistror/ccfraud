@@ -16,7 +16,7 @@ from advanced_methods.VAE.utils import sampling
 
 
 class VAE(object):
-    def __init__(self, x_train, dataset_string, seed, epochs=20, batch_size=32, verbosity=0):
+    def __init__(self, x_train, dataset_string, seed, verbosity=0):
         self.label = 'VAE'
 
         self.x_train = x_train
@@ -24,9 +24,8 @@ class VAE(object):
         self.seed = seed
         self.verbosity = 1 if verbosity == 2 else 0
 
-        self.epochs = epochs
-        self.batch_size = batch_size
-
+        self.epochs = None
+        self.batch_size = None
         self.original_dim = None
         self.input_shape = None
         self.intermediate_dim = None
@@ -44,6 +43,8 @@ class VAE(object):
         self.original_dim = self.x_train.shape[1]
         self.input_shape = (self.original_dim,)
 
+        self.epochs = parameters['epochs']
+        self.batch_size = parameters['batch_size']
         self.intermediate_dim = parameters['intermediate_dim']
         self.latent_dim = parameters['latent_dim']
         self.activation_fct = parameters['activation_fct']

@@ -27,6 +27,8 @@ parameters:
     kernel_regularizer: 'None'
     activity_regularizer: 'None'
   vae:
+    epochs: 20
+    batch_size: 32
     intermediate_dim: 12
     latent_dim: 2
     activation_fct: 'relu'
