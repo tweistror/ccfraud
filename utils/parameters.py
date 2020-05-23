@@ -24,12 +24,12 @@ class Parameters(object):
     def get_path(self):
         return self.config['path']
 
-    def get_oc_gan_parameters(self):
-        oc_gan_parameters = {
-            'normal': self.config['parameters']['oc_gan'],
-            'ae': self.config['parameters']['oc_gan_ae'],
+    def get_ocan_parameters(self):
+        ocan_parameters = {
+            'gan': self.config['parameters']['ocan'],
+            'ae': self.config['parameters']['ocan_ae'],
         }
-        return oc_gan_parameters
+        return ocan_parameters
 
     def get_autoencoder_parameters(self):
         return self.config['parameters']['autoencoder']

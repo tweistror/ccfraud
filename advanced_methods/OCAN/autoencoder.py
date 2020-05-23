@@ -12,10 +12,11 @@ from keras import regularizers
 class Dense_Autoencoder(object):
     """docstring for LSTM_Autoencoder"""
 
-    def __init__(self, input_dim, hidden_dim, verbosity=0):
+    def __init__(self, input_dim, hidden_dim, epochs, verbosity=0):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
-        self.autoencoder = Autoencoder(1 if verbosity == 2 else 0)
+        self.epochs = epochs
+        self.autoencoder = Autoencoder(epochs, 1 if verbosity == 2 else 0)
         self.autoencoder.modelMasking('dense', [self.input_dim], self.hidden_dim)
 
         self.hidden_representation = None
@@ -41,8 +42,8 @@ class Autoencoder(object):
     """docstring for Autoencoder"""
 
     # def __init__(self, sample_weights, sample_weight_mode):
-    def __init__(self, verbosity):
-        self.epochs = 50
+    def __init__(self, epochs, verbosity):
+        self.epochs = epochs
         self.batch_size = 256
         self.shuffle = True
         self.validation_split = 0.05

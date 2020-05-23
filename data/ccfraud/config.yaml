@@ -4,14 +4,16 @@ parameters:
   sv_train_fraud_percentage: 0.01
   test_benign_count: 492
   test_fraud_count: 492
-  oc_gan:
+  ocan:
     mb_size: 70
     d_dim: [dim_input, 100, 50, 2]
     g_dim: [50, 100, dim_input]
     hid_dim: [100]
-  oc_gan_ae:
+    epochs: 200
+  ocan_ae:
     d_dim: [dim_input, 100, 50, 2]
     g_dim: [50, 100, dim_input]
+    ae_epochs: 50
   autoencoder:
     dims: [dim_input, 32, 16, 8, 4]
     epochs: 50
@@ -24,6 +26,7 @@ parameters:
     output_activation_fct: 'sigmoid'
     kernel_regularizer: 'None'
     activity_regularizer: 'None'
+
   vae:
     intermediate_dim: 12
     latent_dim: 2

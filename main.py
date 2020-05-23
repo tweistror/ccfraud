@@ -4,7 +4,7 @@ from datetime import datetime
 from advanced_methods.AE.autoencoder import Autoencoder
 from advanced_methods.RBM.rbm import RBM
 from advanced_methods.VAE.vae import VAE
-from advanced_methods.OCAN.ocan import execute_oc_gan
+from advanced_methods.OCAN.ocan import execute_ocan
 from baseline_methods.evaluate_sv_baselines import build_supervised_baselines
 from baseline_methods.evaluate_usv_baselines import build_unsupervised_baselines
 from utils.crossvalidator import Crossvalidator
@@ -81,10 +81,10 @@ for i in range(iteration_count):
         print(f'Starting iteration #{i + 1}')
 
     if method == 'all' or method == 'ocan':
-        results = execute_oc_gan(x_usv_train, x_test[:test_benign],
-                                 x_test[test_benign:], test_benign,
-                                 parameter_class.get_oc_gan_parameters(), iterated_seed,
-                                 autoencoding=False, verbosity=verbosity)
+        results = execute_ocan(x_usv_train, x_test[:test_benign],
+                               x_test[test_benign:], test_benign,
+                               parameter_class.get_ocan_parameters(), iterated_seed, image_creator,
+                               autoencoding=False, verbosity=verbosity)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
@@ -93,10 +93,10 @@ for i in range(iteration_count):
             method_special_list = method_special_list + results['method_list']
 
     if method == 'all' or method == 'ocan-ae':
-        results = execute_oc_gan(x_usv_train, x_test[:test_benign],
-                                 x_test[test_benign:], test_benign,
-                                 parameter_class.get_oc_gan_parameters(), iterated_seed,
-                                 autoencoding=True, verbosity=verbosity)
+        results = execute_ocan(x_usv_train, x_test[:test_benign],
+                               x_test[test_benign:], test_benign,
+                               parameter_class.get_ocan_parameters(), iterated_seed, image_creator,
+                               autoencoding=True, verbosity=verbosity)
 
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
             = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
@@ -192,8 +192,6 @@ for i in range(iteration_count):
     if verbosity > 0:
         time_required = str(datetime.now() - start_time)
         print(f'Iteration #{i + 1} finished in {time_required}')
-
-# TODO: Print all available methods
 
 image_creator.create_plots()
 

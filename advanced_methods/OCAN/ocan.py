@@ -16,27 +16,29 @@ from utils.list_operations import one_hot, sample_shuffle
 tf.compat.v1.disable_eager_execution()
 
 
-def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters, seed, image_creator,
-                   autoencoding=False, verbosity=0):
+def execute_ocan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, parameters, seed, image_creator,
+                 autoencoding=False, verbosity=0):
 
-    label = 'OCAN'
+    label = f'OCAN{" with AE" if autoencoding is True else ""}'
 
     # Set parameters using YAML-config
-    normal_parameters = parameters['normal']
+    gan_parameters = parameters['gan']
 
     dim_input = x_usv_train.shape[1]
-    mb_size = normal_parameters['mb_size']
-    d_dim = normal_parameters['d_dim']
+    mb_size = gan_parameters['mb_size']
+    d_dim = gan_parameters['d_dim']
     d_dim[0] = dim_input
-    g_dim = normal_parameters['g_dim']
+    g_dim = gan_parameters['g_dim']
     g_dim[len(g_dim) - 1] = dim_input
     z_dim = g_dim[0]
-    hid_dim = normal_parameters['hid_dim']
+    hid_dim = gan_parameters['hid_dim']
 
     if autoencoding is True:
+        ae_parameters = parameters['ae']
+
         x_ben = np.concatenate((x_usv_train, x_test_benign))
         x_fraud = x_test_fraud
-        dense_ae = Dense_Autoencoder(dim_input, hid_dim, verbosity)
+        dense_ae = Dense_Autoencoder(dim_input, hid_dim, ae_parameters['ae_epochs'], verbosity)
         dense_ae.compile()
         dense_ae.fit(x_usv_train)
         dense_ae.get_hidden_layer()
@@ -45,7 +47,6 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
         ben_hid_repre, van_hid_repre = list(map(lambda x: preprocess_minus_1_and_pos_1(x),
                                                 [ben_hid_repre, van_hid_repre]))
 
-        ae_parameters = parameters['ae']
         dim_input = int(hid_dim[0] / 2)
         d_dim = ae_parameters['d_dim']
         d_dim[0] = dim_input
@@ -203,8 +204,7 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     f1_score = list()
     d_val_pro = list()
 
-    # TODO: Variable in config
-    n_round = 10
+    n_round = gan_parameters['epochs']
 
     for n_epoch in range(n_round):
         start_time = datetime.now()
@@ -254,7 +254,7 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
     pr_auc = metrics.auc(recall_pts, precision_pts)
     roc_auc = roc_auc_score(y_test, y_prob)
 
-    image_creator.add_curves(y_test, y_prob,label)
+    image_creator.add_curves(y_test, y_prob, label)
 
     results = {
         'prec_list': [precision[1]],
@@ -263,7 +263,7 @@ def execute_oc_gan(x_usv_train, x_test_benign, x_test_fraud, n_test_benign, para
         'acc_list': [acc],
         'pr_auc_list': [pr_auc],
         'roc_auc_list': [roc_auc],
-        'method_list': [f'{label}{" with AE" if autoencoding is True else ""}'],
+        'method_list': [label],
     }
 
     # print(conf_mat)

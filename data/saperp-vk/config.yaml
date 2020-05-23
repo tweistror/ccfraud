@@ -4,14 +4,16 @@ parameters:
   sv_train_fraud_percentage: 0.005
   test_benign_count: 20
   test_fraud_count: 20
-  oc_gan:
+  ocan:
     mb_size: 70
     d_dim: [dim_input, 128, 64, 2]
     g_dim: [64, 128, dim_input]
     hid_dim: [100]
-  oc_gan_ae:
+    epochs: 200
+  ocan_ae:
     d_dim: [dim_input, 128, 64, 2]
     g_dim: [64, 128, dim_input]
+    ae_epochs: 50
   autoencoder:
     dims: [dim_input, 512, 256, 128, 64, 32, 16, 8, 3]
     epochs: 50
@@ -44,7 +46,7 @@ parameters:
 path:
   one: './data/saperp-vk'
 mode:
-  fraud_only: True # only fraud transactions are labeled positive, anomalies are labeled negative
+  fraud_only: False # only fraud transactions are labeled positive, anomalies are labeled negative
 metadata:
   source: --
   entries: 18111

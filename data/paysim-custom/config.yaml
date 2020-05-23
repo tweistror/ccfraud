@@ -4,14 +4,16 @@ parameters:
   sv_train_fraud_percentage: 0.01
   test_benign_count: 1000
   test_fraud_count: 1000
-  oc_gan:
+  ocan:
     mb_size: 70
     d_dim: [dim_input, 30, 15, 2]
     g_dim: [15, 30, dim_input]
     hid_dim: [30]
-  oc_gan_ae:
+    epochs: 200
+  ocan_ae:
     d_dim: [dim_input, 30, 15, 2]
     g_dim: [15, 30, dim_input]
+    ae_epochs: 50
   autoencoder:
     dims: [dim_input, 16, 8, 4]
     epochs: 50
