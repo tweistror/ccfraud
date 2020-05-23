@@ -1,8 +1,8 @@
-from baseline_methods.usv_baselines import svm_oneclass, elliptic_envelope, iso_forest, local_outlier_factor
+from baseline_methods.usv_baselines import USV_Baselines
 from baseline_methods.utils import binarize_usv_test_labels
 
 
-def build_unsupervised_baselines(x_train, x_test, y_test):
+def build_unsupervised_baselines(x_train, x_test, y_test, image_creator):
     results = {
         'prec_list': list(),
         'reca_list': list(),
@@ -20,16 +20,18 @@ def build_unsupervised_baselines(x_train, x_test, y_test):
         'y_test': binarize_usv_test_labels(y_test),
     }
 
+    usv_baselines_class = USV_Baselines(image_creator, train_test_split)
+
     # OC-SVM
-    results = svm_oneclass(train_test_split, 'OC-SVM', results)
+    results = usv_baselines_class.svm_oneclass('OC-SVM', results)
 
     # Elliptic Envelope
-    results = elliptic_envelope(train_test_split, 'Elliptic Envelope', results)
+    results = usv_baselines_class.elliptic_envelope('Elliptic Envelope', results)
 
     # Isolation Forest
-    results = iso_forest(train_test_split, 'Isolation Forest', results)
+    results = usv_baselines_class.iso_forest('Isolation Forest', results)
 
     # kNN Local Outlier Factor
-    results = local_outlier_factor(train_test_split, 'kNN Local Outlier Factor', results)
+    results = usv_baselines_class.local_outlier_factor('kNN Local Outlier Factor', results)
 
     return results

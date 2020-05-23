@@ -12,14 +12,13 @@ def binarize_usv_test_labels(y_test):
     return [1 if val == 0 else -1 for val in y_test]
 
 
-def get_metrics(y_test, y_pred, y_score, label, result_list):
+def get_metrics(y_test, y_pred, y_score, method, result_list):
     acc = accuracy_score(y_test, y_pred)
     precision, recall, fscore, _ = precision_recall_fscore_support(y_test, y_pred, zero_division=0)
 
     precision_pts, recall_pts, _ = precision_recall_curve(y_test, y_score)
 
     pr_auc = metrics.auc(recall_pts, precision_pts)
-
     roc_auc = roc_auc_score(y_test, y_score)
 
     result_list['prec_list'].append(precision[1])
@@ -28,12 +27,12 @@ def get_metrics(y_test, y_pred, y_score, label, result_list):
     result_list['acc_list'].append(acc)
     result_list['pr_auc_list'].append(pr_auc)
     result_list['roc_auc_list'].append(roc_auc)
-    result_list['method_list'].append(label)
+    result_list['method_list'].append(method)
 
     return result_list
 
 
-def execute_predict_proba(clf, train_test_split, label, result_list, unsupervised=False):
+def execute_predict_proba(clf, train_test_split, method, result_list, image_creator, unsupervised=False):
     x_train = train_test_split['x_train']
     y_train = train_test_split['y_train']
     x_test = train_test_split['x_test']
@@ -47,13 +46,12 @@ def execute_predict_proba(clf, train_test_split, label, result_list, unsupervise
     y_pred = clf.predict(x_test)
     y_score = clf.predict_proba(x_test)[:, 1]
 
-    # plot_pr_curve(y_test, y_score, label)
-    # plot_roc_curve(y_test, y_score, label)
+    image_creator.add_baseline_curves(y_test, y_score, method, unsupervised)
 
-    return get_metrics(y_test, y_pred, y_score, label, result_list)
+    return get_metrics(y_test, y_pred, y_score, method, result_list)
 
 
-def execute_decision_function(clf, train_test_split, label, result_list, unsupervised=False):
+def execute_decision_function(clf, train_test_split, method, result_list, image_creator, unsupervised=False):
     x_train = train_test_split['x_train']
     y_train = train_test_split['y_train']
     x_test = train_test_split['x_test']
@@ -67,9 +65,7 @@ def execute_decision_function(clf, train_test_split, label, result_list, unsuper
     y_pred = clf.predict(x_test)
     y_score = clf.decision_function(x_test)
 
-    # TODO: Conditional display of curves?
-    # plot_pr_curve(y_test, y_score, label)
-    # plot_roc_curve(y_test, y_score, label)
+    image_creator.add_baseline_curves(y_test, y_score, method, unsupervised)
 
-    return get_metrics(y_test, y_pred, y_score, label, result_list)
+    return get_metrics(y_test, y_pred, y_score, method, result_list)
 

@@ -1,9 +1,8 @@
-from baseline_methods.sv_baselines import svm_svc, knn, random_forest, decision_tree, svm_linearsvc, gnb, xgboost, \
-    logistic_regression, sgd, gaussian_process, adaboost, mlp
+from baseline_methods.sv_baselines import SV_Baselines
 from baseline_methods.utils import binarize_sv_test_labels
 
 
-def build_supervised_baselines(x_train, y_train, x_test, y_test):
+def build_supervised_baselines(x_train, y_train, x_test, y_test, image_creator):
     results = {
         'prec_list': list(),
         'reca_list': list(),
@@ -21,40 +20,42 @@ def build_supervised_baselines(x_train, y_train, x_test, y_test):
         'y_test': binarize_sv_test_labels(y_test),
     }
 
+    sv_baselines_class = SV_Baselines(image_creator, train_test_split)
+
     # SVM RBF SVC
-    results = svm_svc(train_test_split, 'SVM RBF SVC', results)
+    results = sv_baselines_class.svm_svc('SVM RBF SVC', results)
 
     # kNN
-    results = knn(train_test_split, 'kNN', results)
+    results = sv_baselines_class.knn('kNN', results)
 
     # Decision Tree
-    results = decision_tree(train_test_split, 'Decision Tree', results)
+    results = sv_baselines_class.decision_tree('Decision Tree', results)
 
     # Random Forest
-    results = random_forest(train_test_split, 'Random Forest', results)
+    results = sv_baselines_class.random_forest('Random Forest', results)
 
     # SVM Linear SVC
-    results = svm_linearsvc(train_test_split, 'SVM Linear SVC', results)
+    results = sv_baselines_class.svm_linearsvc('SVM Linear SVC', results)
 
     # Gaussian NB
-    results = gnb(train_test_split, 'Gaussian NB', results)
+    results = sv_baselines_class.gnb('Gaussian NB', results)
 
     # Logistic Regression
-    results = logistic_regression(train_test_split, 'Logistic Regression', results)
+    results = sv_baselines_class.logistic_regression('Logistic Regression', results)
 
     # XGBoost
-    results = xgboost(train_test_split, 'XG Boost', results)
+    results = sv_baselines_class.xgboost('XG Boost', results)
 
     # SGD Classifier
-    results = sgd(train_test_split, 'SGD', results)
+    results = sv_baselines_class.sgd('SGD', results)
 
     # Gaussian Process
-    results = gaussian_process(train_test_split, 'Gaussian Process', results)
+    results = sv_baselines_class.gaussian_process('Gaussian Process', results)
 
     # Adaboost
-    results = adaboost(train_test_split, 'Adaboost', results)
+    results = sv_baselines_class.adaboost('Adaboost', results)
 
     # Multi-Layer Perceptron
-    results = mlp(train_test_split, 'MLP', results)
+    results = sv_baselines_class.mlp('MLP', results)
 
     return results

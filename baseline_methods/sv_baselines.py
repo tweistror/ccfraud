@@ -10,73 +10,67 @@ from sklearn.neural_network import MLPClassifier
 from baseline_methods.utils import execute_decision_function, execute_predict_proba
 
 
-def svm_svc(train_test_split, label, result_list):
-    clf = svm.SVC(kernel='rbf')
+class SV_Baselines:
+    def __init__(self, image_creator, train_test_split):
+        self.image_creator = image_creator
+        self.train_test_split = train_test_split
 
-    return execute_decision_function(clf, train_test_split, label, result_list)
+    def svm_svc(self, label, result_list):
+        clf = svm.SVC(kernel='rbf')
 
+        return execute_decision_function(clf, self.train_test_split, label, result_list, self.image_creator)
 
-def knn(train_test_split, label, result_list):
-    clf = neighbors.KNeighborsClassifier(n_neighbors=3, weights='distance')
+    def knn(self, label, result_list):
+        clf = neighbors.KNeighborsClassifier(n_neighbors=3, weights='distance')
 
-    return execute_predict_proba(clf, train_test_split, label, result_list)
+        return execute_predict_proba(clf, self.train_test_split, label, result_list, self.image_creator)
 
+    def decision_tree(self, label, result_list):
+        clf = tree.DecisionTreeClassifier()
 
-def decision_tree(train_test_split, label, result_list):
-    clf = tree.DecisionTreeClassifier()
+        return execute_predict_proba(clf, self.train_test_split, label, result_list, self.image_creator)
 
-    return execute_predict_proba(clf, train_test_split, label, result_list)
+    def random_forest(self, label, result_list):
+        clf = ensemble.RandomForestClassifier()
 
+        return execute_predict_proba(clf, self.train_test_split, label, result_list, self.image_creator)
 
-def random_forest(train_test_split, label, result_list):
-    clf = ensemble.RandomForestClassifier()
+    def svm_linearsvc(self, label, result_list):
+        clf = svm.LinearSVC()
 
-    return execute_predict_proba(clf, train_test_split, label, result_list)
+        return execute_decision_function(clf, self.train_test_split, label, result_list, self.image_creator)
 
+    def gnb(self, label, result_list):
+        clf = GaussianNB()
 
-def svm_linearsvc(train_test_split, label, result_list):
-    clf = svm.LinearSVC()
+        return execute_predict_proba(clf, self.train_test_split, label, result_list, self.image_creator)
 
-    return execute_decision_function(clf, train_test_split, label, result_list)
+    def logistic_regression(self, label, result_list):
+        clf = LogisticRegression(max_iter=1000)
 
+        return execute_decision_function(clf, self.train_test_split, label, result_list, self.image_creator)
 
-def gnb(train_test_split, label, result_list):
-    clf = GaussianNB()
+    def xgboost(self, label, result_list):
+        clf = xgb.XGBClassifier(max_depth=10)
 
-    return execute_predict_proba(clf, train_test_split, label, result_list)
+        return execute_predict_proba(clf, self.train_test_split, label, result_list, self.image_creator)
 
+    def sgd(self, label, result_list):
+        clf = SGDClassifier()
 
-def logistic_regression(train_test_split, label, result_list):
-    clf = LogisticRegression(max_iter=1000)
+        return execute_decision_function(clf, self.train_test_split, label, result_list, self.image_creator)
 
-    return execute_decision_function(clf, train_test_split, label, result_list)
+    def gaussian_process(self, label, result_list):
+        clf = GaussianProcessClassifier()
 
+        return execute_predict_proba(clf, self.train_test_split, label, result_list, self.image_creator)
 
-def xgboost(train_test_split, label, result_list):
-    clf = xgb.XGBClassifier(max_depth=10)
+    def adaboost(self, label, result_list):
+        clf = AdaBoostClassifier()
 
-    return execute_predict_proba(clf, train_test_split, label, result_list)
+        return execute_decision_function(clf, self.train_test_split, label, result_list, self.image_creator)
 
+    def mlp(self, label, result_list):
+        clf = MLPClassifier()
 
-def sgd(train_test_split, label, result_list):
-    clf = SGDClassifier()
-
-    return execute_decision_function(clf, train_test_split, label, result_list)
-
-
-def gaussian_process(train_test_split, label, result_list):
-    clf = GaussianProcessClassifier()
-
-    return execute_predict_proba(clf, train_test_split, label, result_list)
-
-
-def adaboost(train_test_split, label, result_list):
-    clf = AdaBoostClassifier()
-
-    return execute_decision_function(clf, train_test_split, label, result_list)
-
-
-def mlp(train_test_split, label, result_list):
-    clf = MLPClassifier()
-
-    return execute_predict_proba(clf, train_test_split, label, result_list)
+        return execute_predict_proba(clf, self.train_test_split, label, result_list, self.image_creator)

@@ -53,7 +53,7 @@ start_time_complete = datetime.now()
 if verbosity > 0:
     print(f'Start {iteration_count} iterations')
 
-image_creator = Image_Creator(dataset_string)
+image_creator = Image_Creator(dataset_string, baseline)
 
 for i in range(iteration_count):
     iterated_seed = seed + i
@@ -148,7 +148,7 @@ for i in range(iteration_count):
 
     if baseline == 'usv' or baseline == 'both':
         # Execute unsupervised learning baseline methods
-        results = build_unsupervised_baselines(x_usv_train, x_test, y_test)
+        results = build_unsupervised_baselines(x_usv_train, x_test, y_test, image_creator)
 
         # Add metrics to collections
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
@@ -167,7 +167,7 @@ for i in range(iteration_count):
             # TODO: CV correct results with pr_auc and roc_auc
             prec_sv_list, reca_sv_list, f1_sv_list, acc_sv_list, method_sv_list = cv.execute_cv()
         else:
-            results = build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test)
+            results = build_supervised_baselines(x_sv_train, y_sv_train, x_test, y_test, image_creator)
 
         # Add metrics to collections
         prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
