@@ -2,6 +2,7 @@ import numpy as np
 from datetime import datetime
 
 from advanced_methods.AE.autoencoder import Autoencoder
+from advanced_methods.CNN.cnn import ConvolutionalNN
 from advanced_methods.DAE.dae import DenoisingAutoencoder
 from advanced_methods.RBM.rbm import RBM
 from advanced_methods.VAE.vae import VAE
@@ -19,7 +20,7 @@ from utils.smote import execute_smote
 from utils.split_preprocess_data import SplitPreprocessData
 
 datasets = ["paysim", "paysim-custom", "ccfraud", "ieee", "nslkdd", "saperp-ek", "saperp-vk", "mnist", "cifar10"]
-methods = ["all", "ocan", "ocan-ae", "ae", "rbm", "vae", "dae"]
+methods = ["all", "ocan", "ocan-ae", "ae", "rbm", "vae", "dae", "cnn"]
 baselines = ["both", "usv", "sv", "none"]
 
 parser = Parser(datasets, methods, baselines)
@@ -168,6 +169,21 @@ for i in range(iteration_count):
             method_special_list = method_special_list + results['method_list']
             dae_model.plot_reconstructed_images(x_test, image_creator)
             dae_model.plot_conf_matrix(image_creator)
+
+    if method == 'all' or method == 'cnn':
+        cnn_model = ConvolutionalNN(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
+        cnn_model.set_parameters(parameter_class.get_autoencoder_parameters())
+        cnn_model.build()
+        results = cnn_model.predict(x_test, y_test)
+        cnn_model.build_plots(y_test, image_creator)
+
+        prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
+            = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
+
+        if i == 0:
+            method_special_list = method_special_list + results['method_list']
+            cnn_model.plot_reconstructed_images(x_test, image_creator)
+            cnn_model.plot_conf_matrix(image_creator)
 
     # Some verbosity output
     if verbosity > 1:
