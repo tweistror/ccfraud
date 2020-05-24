@@ -277,30 +277,30 @@ class Image_Creator:
 
         save_plt(self.dataset_string, f'cm_{method}')
 
-    def add_image_plots(self, x_test, x_generated, method, dataset_string, n=5):
+    def add_image_plots(self, x_test, x_generated, method, dataset_string, n=5, noisy_images=None):
         if dataset_string == 'mnist':
             anomaly_number = self.parameter_class.get_mnist_mode()['anomaly_number']
             train_mode = self.parameter_class.get_mnist_mode()['train_mode']
 
-            self.plot_mnist_images(x_test, x_generated, method, anomaly_number, train_mode, n)
+            self.plot_mnist_images(x_test, x_generated, method, anomaly_number, train_mode, n, noisy_images)
         elif dataset_string == 'cifar10':
             anomaly_number = self.parameter_class.get_cifar10_mode()['anomaly_number']
             train_mode = self.parameter_class.get_cifar10_mode()['train_mode']
 
-            self.plot_cifar10_images(x_test, x_generated, method, anomaly_number, train_mode, n)
+            self.plot_cifar10_images(x_test, x_generated, method, anomaly_number, train_mode, n, noisy_images)
 
-    def plot_mnist_images(self, x_test, x_generated, method, anomaly_number, train_mode, n=5):
+    def plot_mnist_images(self, x_test, x_generated, method, anomaly_number, train_mode, n=5, noisy_images=None):
         # TODO: Randomness - Yes or No?
         indices = random.sample(range(0, x_test.shape[0] - 1), n)
 
         dim = 28
 
-        plt.figure(figsize=(10, 4.5))
+        plt.figure(figsize=(10 if noisy_images is None else 15, 4.5))
         plt.suptitle(f'MNIST - {method} - Training mode: {train_mode} - Number: {anomaly_number}')
 
         for i in range(n):
             # plot original image
-            ax = plt.subplot(2, n, i + 1)
+            ax = plt.subplot(2 if noisy_images is None else 3, n, i + 1)
             plt.imshow(x_test[indices[i]].reshape(dim, dim))
             plt.gray()
             ax.get_xaxis().set_visible(False)
@@ -308,8 +308,20 @@ class Image_Creator:
             if i == n/2:
                 ax.set_title('Original Images')
 
+            if noisy_images is not None:
+                # plot reconstruction
+                ax = plt.subplot(3, n, i + 1 + n)
+                plt.imshow(noisy_images[indices[i]].reshape(dim, dim))
+                plt.gray()
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
+                if i == n / 2:
+                    ax.set_title('Noisy Input Images Images')
+
+            factor = 1 if noisy_images is None else 2
+
             # plot reconstruction
-            ax = plt.subplot(2, n, i + 1 + n)
+            ax = plt.subplot(2 if noisy_images is None else 3, n, i + 1 + n * factor)
             plt.imshow(x_generated[indices[i]].reshape(dim, dim))
             plt.gray()
             ax.get_xaxis().set_visible(False)
@@ -319,19 +331,19 @@ class Image_Creator:
 
         save_plt(self.dataset_string, f'images_{method}')
 
-    def plot_cifar10_images(self, x_test, x_generated, method, anomaly_number, train_mode, n=5):
+    def plot_cifar10_images(self, x_test, x_generated, method, anomaly_number, train_mode, n=5, noisy_images=False):
         # TODO: Randomness - Yes or No?
         indices = random.sample(range(0, x_test.shape[0] - 1), n)
 
         dim = 32
 
-        plt.figure(figsize=(10, 4.5))
+        plt.figure(figsize=(10 if noisy_images is None else 15, 4.5))
         plt.suptitle(f'CIFAR10 - {method} - Training mode: {train_mode} - Object: {get_cifar10_object(anomaly_number)}'
                      f'({anomaly_number})')
 
         for i in range(n):
             # plot original image
-            ax = plt.subplot(2, n, i + 1)
+            ax = plt.subplot(2 if noisy_images is None else 3, n, i + 1)
             plt.imshow(x_test[indices[i]].reshape(3, dim, dim).transpose([1, 2, 0]))
             plt.gray()
             ax.get_xaxis().set_visible(False)
@@ -339,8 +351,20 @@ class Image_Creator:
             if i == n/2:
                 ax.set_title('Original Images')
 
+            if noisy_images is not None:
+                # plot reconstruction
+                ax = plt.subplot(3, n, i + 1 + n)
+                plt.imshow(noisy_images[indices[i]].reshape(3, dim, dim).transpose([1, 2, 0]))
+                plt.gray()
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
+                if i == n / 2:
+                    ax.set_title('Noisy Input Images Images')
+
+            factor = 1 if noisy_images is None else 2
+
             # plot reconstruction
-            ax = plt.subplot(2, n, i + 1 + n)
+            ax = plt.subplot(2 if noisy_images is None else 3, n, i + 1 + n * factor)
             plt.imshow(x_generated[indices[i]].reshape(3, dim, dim).transpose([1, 2, 0]))
             plt.gray()
             ax.get_xaxis().set_visible(False)

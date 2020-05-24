@@ -40,6 +40,9 @@ class Parameters(object):
     def get_rbm_parameters(self):
         return self.config['parameters']['rbm']
 
+    def get_denoising_autoencoder_parameters(self):
+        return self.config['parameters']['dae']
+
     def get_saperp_mode(self):
         return self.config['mode']
 

@@ -2,6 +2,7 @@ import numpy as np
 from datetime import datetime
 
 from advanced_methods.AE.autoencoder import Autoencoder
+from advanced_methods.DAE.dae import DenoisingAutoencoder
 from advanced_methods.RBM.rbm import RBM
 from advanced_methods.VAE.vae import VAE
 from advanced_methods.OCAN.ocan import execute_ocan
@@ -18,7 +19,7 @@ from utils.smote import execute_smote
 from utils.split_preprocess_data import SplitPreprocessData
 
 datasets = ["paysim", "paysim-custom", "ccfraud", "ieee", "nslkdd", "saperp-ek", "saperp-vk", "mnist", "cifar10"]
-methods = ["all", "ocan", "ocan-ae", "ae", "rbm", "vae"]
+methods = ["all", "ocan", "ocan-ae", "ae", "rbm", "vae", "dae"]
 baselines = ["both", "usv", "sv", "none"]
 
 parser = Parser(datasets, methods, baselines)
@@ -152,6 +153,21 @@ for i in range(iteration_count):
             method_special_list = method_special_list + results['method_list']
             vae_model.plot_reconstructed_images(x_test, image_creator)
             vae_model.plot_conf_matrix(image_creator)
+
+    if method == 'all' or method == 'dae':
+        dae_model = DenoisingAutoencoder(x_usv_train, dataset_string, iterated_seed, verbosity=verbosity)
+        dae_model.set_parameters(parameter_class.get_denoising_autoencoder_parameters())
+        dae_model.build()
+        results = dae_model.predict(x_test, y_test)
+        dae_model.build_plots(y_test, image_creator)
+
+        prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list \
+            = update_result_lists(results, prec_list, reca_list, f1_list, acc_list, pr_auc_list, roc_auc_list)
+
+        if i == 0:
+            method_special_list = method_special_list + results['method_list']
+            dae_model.plot_reconstructed_images(x_test, image_creator)
+            dae_model.plot_conf_matrix(image_creator)
 
     # Some verbosity output
     if verbosity > 1:

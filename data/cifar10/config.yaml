@@ -35,6 +35,19 @@ parameters:
     optimizer: 'adam'
     loss: 'mean_squared_error'
     train_test_split: 0.2
+  dae:
+    dims: [dim_input, 512, 64]
+    epochs: 10
+    batch_size: 32
+    train_test_split: 0.2
+    learning_rate: 1e-3
+    optimizer: 'adam'
+    loss: 'mean_squared_error'
+    activation_fct: 'relu'
+    output_activation_fct: 'sigmoid'
+    kernel_regularizer: 'None'
+    activity_regularizer: 'None'
+    noise_factor: 0.2
   rbm:
     num_hidden: 180
     visible_unit_type: 'bin' # bin or gauss
