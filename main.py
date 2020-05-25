@@ -221,6 +221,9 @@ for i in range(iteration_count):
         if verbosity > 1:
             print(f'Supervised: Iteration #{i + 1} finished')
 
+    if i == 0 and (baseline == 'sv' or baseline == 'usv' or baseline == 'both'):
+        image_creator.plot_baseline_conf_matrices()
+
     prec_coll.append(prec_list)
     reca_coll.append(reca_list)
     f1_coll.append(f1_list)

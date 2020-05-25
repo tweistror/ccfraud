@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 
 from sklearn import metrics
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, precision_recall_curve, roc_auc_score
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, precision_recall_curve, roc_auc_score, \
+    confusion_matrix
 
 
 def binarize_sv_test_labels(y_test):
@@ -46,7 +47,10 @@ def execute_predict_proba(clf, train_test_split, method, result_list, image_crea
     y_pred = clf.predict(x_test)
     y_score = clf.predict_proba(x_test)[:, 1]
 
+    cm = confusion_matrix(y_test, y_pred)
+
     image_creator.add_baseline_curves(y_test, y_score, method, unsupervised)
+    image_creator.add_baseline_conf_matrix(cm, method, unsupervised)
 
     return get_metrics(y_test, y_pred, y_score, method, result_list)
 
@@ -65,7 +69,10 @@ def execute_decision_function(clf, train_test_split, method, result_list, image_
     y_pred = clf.predict(x_test)
     y_score = clf.decision_function(x_test)
 
+    cm = confusion_matrix(y_test, y_pred)
+
     image_creator.add_baseline_curves(y_test, y_score, method, unsupervised)
+    image_creator.add_baseline_conf_matrix(cm, method, unsupervised)
 
     return get_metrics(y_test, y_pred, y_score, method, result_list)
 

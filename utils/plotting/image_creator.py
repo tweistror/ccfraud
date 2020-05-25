@@ -1,4 +1,5 @@
 import itertools
+import math
 import os
 
 import matplotlib.pyplot as plt
@@ -32,7 +33,7 @@ def get_dataset_name(dataset_string):
         return 'MNIST'
     elif dataset_string == "cifar10":
         return 'CIFAR10'
-        
+
     return dataset_string
 
 
@@ -78,6 +79,7 @@ class Image_Creator:
 
         self.baseline_pr_curve_list = []
         self.baseline_roc_curve_list = []
+        self.baseline_conf_matrices = []
 
     def create_plots(self):
         method_list = []
@@ -198,7 +200,10 @@ class Image_Creator:
         self.baseline_pr_curve_list.append({'precision': precision, 'recall': recall, 'method': method,
                                             'baseline_type': 'Supervised' if unsupervised is False else 'Unsupervised'})
         self.baseline_roc_curve_list.append({'fpr': fpr, 'tpr': tpr, 'method': method,
-                                            'baseline_type': 'Supervised' if unsupervised is False else 'Unsupervised'})
+                                             'baseline_type': 'Supervised' if unsupervised is False else 'Unsupervised'})
+
+    def add_baseline_conf_matrix(self, cm, method, unsupervised=False):
+        self.baseline_conf_matrices.append({'cm': cm, 'method': method})
 
     def __plot_pr_curves(self, method):
         pr_auc_list = []
@@ -231,6 +236,64 @@ class Image_Creator:
         plt.title(f'{self.dataset_string} - {method} - ROC-Curve - AUC: {mean(roc_auc_list).round(3)}')
 
         save_plt(self.dataset_string, f'roc_{method}')
+
+    def plot_baseline_conf_matrices(self):
+        plt.clf()
+
+        cms = self.baseline_conf_matrices
+
+        cols = 4
+        rows = math.ceil(len(cms) / 4)
+        cmap = plt.cm.Blues
+        classes = ['benign', 'fraud']
+        fontsize = 12
+
+        plt.figure(figsize=(6 * cols, 5.5 * rows))
+        plt.suptitle(f'Baseline Methods - Confusion Matrices')
+
+        for index, cm_entry in enumerate(cms):
+            cm = cm_entry['cm']
+            method = cm_entry['method']
+
+            cm_numeric = cm
+            cm_percentage = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+            ax = plt.subplot(rows, cols, index + 1)
+            ax.imshow(cm, interpolation='nearest', cmap=cmap)
+            tick_marks = np.arange(len(classes))
+            ax.set_xticks(tick_marks)
+            ax.set_yticks(tick_marks)
+            ax.set_xticklabels(classes)
+            ax.set_yticklabels(classes)
+
+            thresh = cm.max() / 2.
+            for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+                # Set color parameters
+                color = "white" if cm[i, j] > thresh else "black"
+
+                # Plot percentage
+                text = format(cm_percentage[i, j], '.5f')
+                text = text + '%'
+                ax.text(j, i,
+                        text,
+                        fontsize=fontsize,
+                        verticalalignment='baseline',
+                        horizontalalignment='center',
+                        color=color)
+                # Plot numeric
+                text = format(cm_numeric[i, j], 'd')
+                text = '\n \n' + text
+                ax.text(j, i,
+                        text,
+                        fontsize=fontsize,
+                        verticalalignment='center',
+                        horizontalalignment='center',
+                        color=color)
+
+            ax.set_ylabel('True label'.title(), size=fontsize)
+            ax.set_xlabel('Predicted label'.title(), size=fontsize)
+            ax.set_title(f'Confusion Matrix - {get_dataset_name(self.dataset_string)} - {method}')
+
+        save_plt(self.dataset_string, f'cm_baselines')
 
     def plot_conf_matrix(self, cm, method):
         plt.clf()
@@ -305,7 +368,7 @@ class Image_Creator:
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
-            if i == n/2:
+            if i == n / 2:
                 ax.set_title('Original Images')
 
             if noisy_images is not None:
@@ -326,7 +389,7 @@ class Image_Creator:
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
-            if i == n/2:
+            if i == n / 2:
                 ax.set_title('Reconstructed Images')
 
         save_plt(self.dataset_string, f'images_{method}')
@@ -348,7 +411,7 @@ class Image_Creator:
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
-            if i == n/2:
+            if i == n / 2:
                 ax.set_title('Original Images')
 
             if noisy_images is not None:
@@ -369,7 +432,7 @@ class Image_Creator:
             plt.gray()
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
-            if i == n/2:
+            if i == n / 2:
                 ax.set_title('Reconstructed Images')
 
         save_plt(self.dataset_string, f'images_{method}')
@@ -378,9 +441,11 @@ class Image_Creator:
         tsne = TSNE(n_components=2, random_state=0)
         X_t = tsne.fit_transform(x1)
         #     plt.figure(figsize=(12, 8))
-        plt.scatter(X_t[np.where(y1 == 0), 0], X_t[np.where(y1 == 0), 1], marker='o', color='g', linewidth='1', alpha=0.8,
+        plt.scatter(X_t[np.where(y1 == 0), 0], X_t[np.where(y1 == 0), 1], marker='o', color='g', linewidth='1',
+                    alpha=0.8,
                     label='Non Fraud', s=2)
-        plt.scatter(X_t[np.where(y1 == 1), 0], X_t[np.where(y1 == 1), 1], marker='o', color='r', linewidth='1', alpha=0.8,
+        plt.scatter(X_t[np.where(y1 == 1), 0], X_t[np.where(y1 == 1), 1], marker='o', color='r', linewidth='1',
+                    alpha=0.8,
                     label='Fraud', s=2)
 
         plt.legend(loc='best')
