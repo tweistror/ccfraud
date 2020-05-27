@@ -52,6 +52,8 @@ class LoadData(object):
 
         return x_ben, x_fraud, preprocessing_class
 
+    # TODO: Data loading in classes
+
     def get_data_paysim(self):
         pp_paysim = Preprocess_paysim()
 
