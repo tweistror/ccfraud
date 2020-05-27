@@ -112,6 +112,7 @@ class SplitPreprocessData(object):
         x_ben = parameters['x_ben']
         x_fraud = parameters['x_fraud']
 
+        # TODO: Define max
         x_ben = sample_shuffle(x_ben, self.seed)
         x_fraud = sample_shuffle(x_fraud, self.seed)
 
