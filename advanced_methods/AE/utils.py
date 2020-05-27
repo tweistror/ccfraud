@@ -1,7 +1,7 @@
 import itertools
 
-from keras import Input, regularizers, Model
-from keras.layers import Dense
+from tensorflow_core.python.keras import Input, Model, regularizers
+from tensorflow_core.python.keras.layers import Dense
 
 
 def build_ae_model(dims, learning_rate, act_fct="relu", output_act_fct="sigmoid",

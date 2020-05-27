@@ -1,17 +1,16 @@
 # Taken from https://keras.io/examples/variational_autoencoder/ and
 # https://link.springer.com/content/pdf/10.1007%2F978-1-4842-5177-5.pdf with some modifications
 
-from keras.layers import Lambda, Input, Dense
-from keras.models import Model
-from keras.losses import mse
-from keras import backend as K
-
 import numpy as np
 from sklearn import metrics
 
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, precision_recall_curve, roc_auc_score, \
     confusion_matrix
 from sklearn.model_selection import train_test_split
+from tensorflow_core.python.keras import Input, Model
+from tensorflow_core.python.keras.layers import Dense, Lambda
+from tensorflow_core.python.keras.losses import mse
+import tensorflow.keras.backend as K
 
 from advanced_methods.VAE.utils import sampling
 

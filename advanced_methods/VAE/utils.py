@@ -1,7 +1,7 @@
 # Taken from https://keras.io/examples/variational_autoencoder/ and
 # https://link.springer.com/content/pdf/10.1007%2F978-1-4842-5177-5.pdf with some modifications
 
-from keras import backend as K
+import tensorflow.keras.backend as K
 
 
 def sampling(args):

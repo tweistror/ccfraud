@@ -2,11 +2,8 @@
 
 import numpy as np
 import theano.tensor as T
-
-from keras.layers import Input, Dense, LSTM, RepeatVector
-from keras.models import Sequential, Model
-from keras.layers.core import Masking
-from keras import regularizers
+from tensorflow_core.python.keras import Input, Model, regularizers, Sequential
+from tensorflow_core.python.keras.layers import LSTM, RepeatVector, Dense, Masking
 
 
 class Dense_Autoencoder(object):
