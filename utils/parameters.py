@@ -10,7 +10,7 @@ class Parameters(object):
                 print('Error while trying to load YAML-file')
 
     def get_main_parameters(self, cross_validation_count):
-        factor = 0 if cross_validation_count < 2 else cross_validation_count - 1
+        factor = 1 if cross_validation_count < 2 else cross_validation_count - 1
         parameters = self.config['parameters']
 
         usv_train_size = parameters['usv_train_size']
