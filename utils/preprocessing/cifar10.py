@@ -1,8 +1,11 @@
 import numpy as np
 
+from utils.preprocessing.utils import unpickle
+
 
 class Preprocess_cifar10:
-    def __init__(self, anomaly_number, train_mode):
+    def __init__(self, path, anomaly_number, train_mode):
+        self.path = path
         self.anomaly_number = anomaly_number
         self.train_mode = train_mode
 
@@ -34,7 +37,20 @@ class Preprocess_cifar10:
 
         return data
 
-    def initial_processing(self, images, labels):
+    def initial_processing(self):
+        labels = None
+        images = None
+
+        for i in range(1, 7):
+            batch_path = self.path[f'batch{i}']
+            batch = unpickle(batch_path)
+            if i == 1:
+                labels = batch[b'labels']
+                images = batch[b'data']
+            else:
+                labels = np.concatenate((labels, batch[b'labels']))
+                images = np.concatenate((images, batch[b'data']))
+
         anomaly_number = self.anomaly_number
 
         def is_anomaly(x):

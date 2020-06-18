@@ -3,11 +3,13 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 from utils.preprocessing.utils import perform_scaling, inverse_scaling, perform_pca, inverse_pca, drop_columns, \
-    inverse_one_hot_encoding, round_one_hot_endoced_columns, one_hot_encode_column
+    inverse_one_hot_encoding, round_one_hot_endoced_columns, one_hot_encode_column, read_csv
 
 
 class Preprocess_paysim:
-    def __init__(self):
+    def __init__(self, path):
+        self.path = path
+
         self.columns = None
 
         self.scaler = None
@@ -39,14 +41,8 @@ class Preprocess_paysim:
 
         return df
 
-    def initial_processing(self, data):
-        # Add feature for `nameOrig` to `nameDest` relation with one-hot encoding
-        #  => Feature is not important
-        # data['nameOrig'] = data['nameOrig'].apply(lambda x: x[:1])
-        # data['nameDest'] = data['nameDest'].apply(lambda x: x[:1])
-        # data['from_to'] = data['nameOrig'] + data['nameDest']
-        # data = pd.concat([data, pd.get_dummies(data['from_to'], prefix='from_to')], axis=1)
-        # data.drop(columns=['from_to'], inplace=True)
+    def initial_processing(self):
+        data = read_csv(self.path['one'])
 
         data = drop_columns(data, self.columns_to_drop)
         data = one_hot_encode_column(data, 'type')

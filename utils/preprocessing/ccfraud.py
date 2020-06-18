@@ -1,10 +1,12 @@
 from sklearn.preprocessing import MinMaxScaler
 
-from utils.preprocessing.utils import perform_scaling, inverse_scaling, drop_columns
+from utils.preprocessing.utils import perform_scaling, inverse_scaling, drop_columns, read_csv
 
 
 class Preprocess_ccfraud:
-    def __init__(self):
+    def __init__(self, path):
+        self.path = path
+
         self.columns = None
 
         self.scaler = None
@@ -25,7 +27,9 @@ class Preprocess_ccfraud:
 
         return data
 
-    def initial_processing(self, data):
+    def initial_processing(self):
+        data = read_csv(self.path['one'])
+
         # Drop `Time` and `Amount`
         data = drop_columns(data, self.columns_to_drop)
 

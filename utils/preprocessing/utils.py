@@ -1,6 +1,21 @@
 import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
+from datetime import datetime
+
+
+def read_csv(path, verbosity, columns=None):
+    start_time = datetime.now()
+    if verbosity > 0:
+        print(f'{path}: Start loading dataset')
+
+    data = pd.read_csv(f'{path}', names=columns)
+
+    if verbosity > 0:
+        time_required = str(datetime.now() - start_time)
+        print(f'{path}: Dataset loaded in {time_required}')
+
+    return data
 
 
 def drop_columns(df, columns):

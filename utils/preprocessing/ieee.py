@@ -4,11 +4,13 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler, LabelEncoder
 
 from utils.list_operations import clean_inf_nan
 from utils.preprocessing.utils import perform_scaling, inverse_scaling, perform_pca, inverse_pca, drop_columns, \
-    inverse_one_hot_encoding, round_one_hot_endoced_columns
+    inverse_one_hot_encoding, round_one_hot_endoced_columns, read_csv
 
 
 class Preprocess_ieee:
-    def __init__(self):
+    def __init__(self, path):
+        self.path = path
+
         self.columns = None
 
         self.scaler = None
@@ -53,7 +55,13 @@ class Preprocess_ieee:
 
         return df
 
-    def initial_processing(self, data):
+    def initial_processing(self):
+        transaction_data = read_csv(self.path['one'])
+        identity_data = read_csv(self.path['two'])
+
+        data = pd.merge(transaction_data, identity_data, on='TransactionID', how='left')
+        del transaction_data, identity_data
+
         # Remove columns with: Only 1 value, many null values and big top values
         # one_value_cols = [col for col in data.columns if data[col].nunique() <= 1]
         # many_null_cols = [col for col in data.columns if data[col].isnull().sum() / data.shape[0] > 0.9]

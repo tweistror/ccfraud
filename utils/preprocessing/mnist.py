@@ -1,8 +1,10 @@
 import numpy as np
+from mlxtend.data import loadlocal_mnist
 
 
 class Preprocess_mnist:
-    def __init__(self, anomaly_number, train_mode):
+    def __init__(self, path, anomaly_number, train_mode):
+        self.path = path
         self.anomaly_number = anomaly_number
         self.train_mode = train_mode
 
@@ -34,7 +36,14 @@ class Preprocess_mnist:
 
         return data
 
-    def initial_processing(self, train_images, train_labels, test_images, test_labels):
+    def initial_processing(self):
+        train_images, train_labels = loadlocal_mnist(
+            images_path=self.path['train_images'],
+            labels_path=self.path['train_labels'])
+        test_images, test_labels = loadlocal_mnist(
+            images_path=self.path['test_images'],
+            labels_path=self.path['test_labels'])
+
         anomaly_number = self.anomaly_number
 
         def is_anomaly(x):
